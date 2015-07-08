@@ -8,6 +8,7 @@ class Vna(GenericInstrument):
 
     def __init__(self):
         GenericInstrument.__init__(self)
+        self.properties = VnaProperties(self)
 
     def is_error(self):
         codes, messages = self.errors()
@@ -34,8 +35,8 @@ class Vna(GenericInstrument):
 
 
     ### Properties
-    def properties(self):
-        return VnaProperties(self)
+    #set in constructor:
+    #    self.properties = VnaProperties(self)
 
 
     ### Channels
