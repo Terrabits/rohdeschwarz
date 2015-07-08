@@ -1,8 +1,8 @@
-from rsatoolbox.instruments.genericinstrument import GenericInstrument
-from rsatoolbox.instruments.vna.vnachannel import VnaChannel
-from rsatoolbox.instruments.vna.vnadiagram import VnaDiagram
-from rsatoolbox.instruments.vna.vnatrace import VnaTrace
-from rsatoolbox.instruments.vna.vnaproperties import VnaProperties
+from rohdeschwarz.instruments.genericinstrument import GenericInstrument
+from rohdeschwarz.instruments.vna.vnachannel import VnaChannel
+from rohdeschwarz.instruments.vna.vnadiagram import VnaDiagram
+from rohdeschwarz.instruments.vna.vnatrace import VnaTrace
+from rohdeschwarz.instruments.vna.vnaproperties import VnaProperties
 
 class Vna(GenericInstrument):
 
@@ -11,8 +11,7 @@ class Vna(GenericInstrument):
         self.properties = VnaProperties(self)
 
     def is_error(self):
-        codes, messages = self.errors()
-        return bool(codes)
+        return bool(self._errors())
     
     def next_error(self):
         code = 0;
@@ -21,17 +20,20 @@ class Vna(GenericInstrument):
         comma_index = result.find(',')
         code = int(result[:comma_index])
         message = result[comma_index+2:-1]
-        return(code, message)
+        if (code != 0):
+            return(code, message)
+        else:
+            return None
 
-    def errors(self):
-        codes = []
-        messages = []
-        code, message = self.next_error()
-        while (code != 0):
-            codes.append(code)
-            messages.append(message)
-            code, message = self.next_error()
-        return(codes, messages)
+    def _errors(self):
+        errors = []
+        error = self.next_error()
+        while error:
+            errors.append(error)
+            error = self.next_error()
+        return errors
+
+    errors = property(_errors)
 
 
     ### Properties
@@ -145,14 +147,12 @@ class Vna(GenericInstrument):
     def _set_diagrams(self, diagrams):
         _allDiagrams = self._diagrams()
         while len(diagrams) > len(_allDiagrams):
-            _allDiagrams.append(self.create_diagram)
+            _allDiagrams.append(self.create_diagram())
         while len(diagrams) < len(_allDiagrams):
             self.delete_diagram(_allDiagrams[-1])
             _allDiagrams.pop(-1)
 
     diagrams = property(_diagrams, _set_diagrams)
-
-
 
     def create_diagram(self, index=None):
         if not index:

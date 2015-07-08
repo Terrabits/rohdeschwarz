@@ -1,7 +1,7 @@
 import visa
 import pyvisa.errors
 import re
-from rsatoolbox.general import ConnectionMethod
+from rohdeschwarz.general import ConnectionMethod
 
 
 class GenericInstrument:

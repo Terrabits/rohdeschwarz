@@ -69,9 +69,73 @@ class VnaProperties:
     def is_known_model(self):
         return self.is_znb_family() or self.is_zva_family()
 
+    def _serial_number(self):
+        id_list = self._vna.id_string().strip().split(',');
+        if len(id_list) < 3:
+            return None
+        else:
+            return id_list[2].strip();
+
+    serial_number = property(_serial_number)
+
+    def _firmware_version(self):
+        id_list = self._vna.id_string().strip().split(',');
+        if len(id_list) < 4:
+            return None
+        else:
+            return id_list[3].strip();
+
+    firmware_version = property(_firmware_version)
+
+    def _options_list(self):
+        return self._vna.options_string().strip().split(',')
+
+    options_list = property(_options_list)
+
     def _physical_ports(self):
         result = self._vna.query(':INST:PORT:COUN?')
         return int(result.strip())
 
     physical_ports = property(_physical_ports)
 
+    def _minimum_frequency_Hz(self):
+        result = self._vna.query(':SYST:FREQ? MIN').strip()
+        return float(result)
+
+    minimum_frequency_Hz = property(_minimum_frequency_Hz)
+
+    def _maximum_frequency_Hz(self):
+        result = self._vna.query(':SYST:FREQ? MAX').strip()
+        return float(result)
+
+    maximum_frequency_Hz = property(_maximum_frequency_Hz)        
+
+    def _minimum_power_dBm(self):
+        if self.is_zva_family():
+            return -150
+        elif self.is_znb_family:
+            return -40
+        else:
+            return -40
+
+    minimum_power_dBm = property(_minimum_power_dBm)
+
+    def _maximum_power_dBm(self):
+        if self.is_zva_family():
+            return 100
+        elif self.is_znb_family():
+            return 10
+        else:
+            return 10
+
+    maximum_power_dBm = property(_maximum_power_dBm)
+
+    def _maximum_points(self):
+        if self.is_zva_family():
+            return 60001
+        if self.is_znb_family():
+            return 100001
+        else:
+            return 60001
+
+    maximum_points = property(_maximum_points)
