@@ -27,7 +27,7 @@ class VnaProperties:
     def __init__(self, vna):
         self._vna = vna
 
-    def is_znb_family(self):
+    def is_znx(self):
         id = self._vna.id_string()
         if Model.znb.is_in(id):
             return True
@@ -42,7 +42,7 @@ class VnaProperties:
         else:
             return False
 
-    def is_zva_family(self):
+    def is_zvx(self):
         id = self._vna.id_string()
         if Model.zva.is_in(id):
             return True
@@ -67,7 +67,7 @@ class VnaProperties:
     model = property(_model)
 
     def is_known_model(self):
-        return self.is_znb_family() or self.is_zva_family()
+        return self.is_znx() or self.is_zvx()
 
     def _serial_number(self):
         id_list = self._vna.id_string().strip().split(',');
@@ -111,9 +111,9 @@ class VnaProperties:
     maximum_frequency_Hz = property(_maximum_frequency_Hz)        
 
     def _minimum_power_dBm(self):
-        if self.is_zva_family():
+        if self.is_zvx():
             return -150
-        elif self.is_znb_family:
+        elif self.is_znx:
             return -40
         else:
             return -40
@@ -121,9 +121,9 @@ class VnaProperties:
     minimum_power_dBm = property(_minimum_power_dBm)
 
     def _maximum_power_dBm(self):
-        if self.is_zva_family():
+        if self.is_zvx():
             return 100
-        elif self.is_znb_family():
+        elif self.is_znx():
             return 10
         else:
             return 10
@@ -131,9 +131,9 @@ class VnaProperties:
     maximum_power_dBm = property(_maximum_power_dBm)
 
     def _maximum_points(self):
-        if self.is_zva_family():
+        if self.is_zvx():
             return 60001
-        if self.is_znb_family():
+        if self.is_znx():
             return 100001
         else:
             return 60001

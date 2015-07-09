@@ -94,6 +94,8 @@ class VnaChannel:
 
     sweep_type = property(_sweep_type, _set_sweep_type)
 
+
+    ### Linear, Log frequency sweeps:
     def _start_frequency(self):
         scpi = ':SENS{0}:FREQ:STAR?'
         scpi = scpi.format(self.index)
@@ -111,18 +113,6 @@ class VnaChannel:
         self._vna.write(scpi)
 
     start_frequency_Hz = property(_start_frequency, _set_start_frequency)
-
-    def _start_power(self):
-        scpi = ':SOUR{0}:POW:STAR?'
-        scpi = scpi.format(self.index)
-        return float(self._vna.query(scpi).strip())
-
-    def _set_start_power(self, value):
-        scpi = ':SOUR{0}:POW:STAR {1} dBm'
-        scpi = scpi.format(self.index, value)
-        self._vna.write(scpi)
-
-    start_power_dBm = property(_start_power, _set_start_power)
 
     def _stop_frequency(self):
         scpi = ':SENS{0}:FREQ:STOP?'
@@ -142,17 +132,12 @@ class VnaChannel:
 
     stop_frequency_Hz = property(_stop_frequency, _set_stop_frequency)
 
-    def _stop_power(self):
-        scpi = ':SOUR{0}:POW:STOP?'
+    def _frequencies(self):
+        scpi = ':CALC{0}:DATA:STIM?'
         scpi = scpi.format(self.index)
-        return float(self._vna.query(scpi).strip())
+        return self._vna.queryVector(scpi)
 
-    def _set_stop_power(self, value, prefix=SiPrefix.none):
-        scpi = ':SOUR{0}:POW:STOP {1} dBm'
-        scpi = scpi.format(self.index, value)
-        self._vna.write(scpi)
-
-    stop_power_dBm = property(_stop_power, _set_stop_power)
+    frequencies_Hz = property(_frequencies)
 
     def _power(self):
         scpi = ':SOUR{0}:POW?'.format(self.index)
@@ -165,6 +150,32 @@ class VnaChannel:
         self._vna.write(scpi)
 
     power_dBm = property(_power, _set_power)
+
+
+    ### Power sweep:
+    def _start_power(self):
+        scpi = ':SOUR{0}:POW:STAR?'
+        scpi = scpi.format(self.index)
+        return float(self._vna.query(scpi).strip())
+
+    def _set_start_power(self, value):
+        scpi = ':SOUR{0}:POW:STAR {1} dBm'
+        scpi = scpi.format(self.index, value)
+        self._vna.write(scpi)
+
+    start_power_dBm = property(_start_power, _set_start_power)
+
+    def _stop_power(self):
+        scpi = ':SOUR{0}:POW:STOP?'
+        scpi = scpi.format(self.index)
+        return float(self._vna.query(scpi).strip())
+
+    def _set_stop_power(self, value, prefix=SiPrefix.none):
+        scpi = ':SOUR{0}:POW:STOP {1} dBm'
+        scpi = scpi.format(self.index, value)
+        self._vna.write(scpi)
+
+    stop_power_dBm = property(_stop_power, _set_stop_power)
 
     def _frequency(self):
         scpi = ':SOUR{0}:FREQ?'.format(self.index)
@@ -184,6 +195,7 @@ class VnaChannel:
 
     frequency_Hz = property(_frequency, _set_frequency)
 
+    ### All sweep types
     def _if_bandwidth(self):
         scpi = 'SENS{0}:BAND?'.format(self.index)
         result = self._vna.query(scpi).strip()

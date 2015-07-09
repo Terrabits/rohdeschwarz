@@ -1,3 +1,4 @@
+import sys
 import visa
 import pyvisa.errors
 import re
@@ -20,11 +21,31 @@ class GenericInstrument:
         resource_string = "{0}::{1}::INSTR".format(connection_method, address)
         self.bus = visa.ResourceManager().open_resource(resource_string)
 
+    def close(self):
+        if self.bus:
+            self.bus.close()
+            self.bus = None
+
     def connected(self):
+        if not self.bus:
+            return False
         try:
             return len(self.id_string()) > 0
         except (AttributeError, pyvisa.errors.InvalidSession):
             return False
+
+    def open_log(self, filename):
+        self.log = open(filename, 'w')
+        if self.log.closed:
+            message = "Could not open log at '{0}'\n"
+            message = message.format(filename)
+            sys.stderr.write(message)
+            self.log = None
+
+    def close_log(self):
+        if self.log:
+            self.log.close()
+            self.log = None
 
     def id_string(self):
         return self.query('*IDN?')
@@ -107,9 +128,7 @@ class GenericInstrument:
         return self.read()
 
     def _print_read(self, buffer):
-        if not self.log:
-            return
-        if self.log.closed:
+        if not self.log or self.log.closed:
             return
         buffer = buffer.strip()
         if len(buffer) > self._MAX_PRINT:
@@ -119,9 +138,7 @@ class GenericInstrument:
         self.log.write('\n')
 
     def _print_write(self, buffer):
-        if not self.log:
-            return
-        if self.log.closed:
+        if not self.log or self.log.closed:
             return
         buffer = buffer.strip()
         if len(buffer) > self._MAX_PRINT:

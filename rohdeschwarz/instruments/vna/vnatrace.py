@@ -1,3 +1,4 @@
+import sys
 
 
 class VnaTrace:
@@ -12,12 +13,12 @@ class VnaTrace:
         return int(result)
 
     def _set_channel(self, index):
-        print('Cannot change channel of existing trace via SCPI')
+        sys.stderr.write("Cannot change trace's channel via SCPI\n")
 
     channel = property(_channel, _set_channel)
 
     def _diagram(self):
-        if self._vna.properties().is_zva_family():
+        if self._vna.properties().is_zvx():
             _diagrams = self._vna.diagrams
             for d in _diagrams:
                 _traces = self._vna.diagram(d).traces

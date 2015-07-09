@@ -3,12 +3,14 @@ from rohdeschwarz.instruments.vna.vnachannel import VnaChannel
 from rohdeschwarz.instruments.vna.vnadiagram import VnaDiagram
 from rohdeschwarz.instruments.vna.vnatrace import VnaTrace
 from rohdeschwarz.instruments.vna.vnaproperties import VnaProperties
+from rohdeschwarz.instruments.vna.vnasettings import VnaSettings
 
 class Vna(GenericInstrument):
 
     def __init__(self):
         GenericInstrument.__init__(self)
         self.properties = VnaProperties(self)
+        self.settings = VnaSettings(self)
 
     def is_error(self):
         return bool(self._errors())

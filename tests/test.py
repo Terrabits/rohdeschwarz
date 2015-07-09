@@ -9,16 +9,16 @@ try:
 except VisaIOError:
     print('Instrument not found!')
     sys.exit("Instrument not found!")
-
 if not vna.connected():
     print('Instrument not found!')
     sys.exit("Instrument not found!")
 
-vna.log = open('Test Log.txt', 'w')
-
+log_filename = 'Test Log.txt'
+vna.open_log(log_filename)
 print_header(vna.log, "R&S Application", "1.0")
 vna.print_info()
 
 vna.is_error()
 vna.clear_status()
+vna.preset()
 
