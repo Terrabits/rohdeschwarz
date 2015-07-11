@@ -5,7 +5,7 @@ from rohdeschwarz.instruments.vna import *
 
 vna = Vna()
 try:
-    vna.open()
+    vna.open_tcp()
 except VisaIOError:
     print('Instrument not found!')
     sys.exit("Instrument not found!")
@@ -21,4 +21,3 @@ vna.print_info()
 vna.is_error()
 vna.clear_status()
 vna.preset()
-

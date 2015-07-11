@@ -1,0 +1,24 @@
+R&S Application Version 1.0
+(C) 2015 Rohde & Schwarz
+
+Fri 10 Jul 22:23:31 2015
+
+INSTRUMENT INFO
+Connection: 
+Address:    
+Make:       Rohde & Schwarz
+Id string:  Rohde-Schwarz,ZNB8-4Port,1311601044100104,1.93.2.45
+
+
+Write:    ":SYST:ERR?"
+Read:     "0,"No error""
+Write:    "*CLS"
+Write:    "*RST"
+Write:    "*IDN?"
+Read:     "Rohde-Schwarz,ZNB8-4Port,1311601044100104,1.93.2.45"
+Write:    "*OPT?"
+Read:     "ZNB-K2,ZNB-K4,ZNB-K14,ZNB-K17,ZNB-K19,ZNB8-B24,ZNB8-B31,ZNB8-B32,ZNB8-B33,ZNB8-B34,ZNB-B81,ZNB-B2,ZN..."
+Write:    ":DISP:CAT?"
+Read:     "'1,1'"
+Write:    ":DISP:CAT?"
+Read:     "'1,1'"

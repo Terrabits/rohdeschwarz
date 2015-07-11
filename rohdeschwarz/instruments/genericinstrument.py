@@ -1,8 +1,11 @@
 import sys
 import visa
-import pyvisa.errors
+from pyvisa.errors import VisaIOError
+import pyvisa.resources as visa_resources
+import socket
 import re
 from rohdeschwarz.general import ConnectionMethod
+from rohdeschwarz.bus.tcp import TcpBus
 
 
 class GenericInstrument:
@@ -15,11 +18,20 @@ class GenericInstrument:
         self.address = ''
         self.bytes_transferred = 0
 
+    def __del__(self):
+        if self.bus:
+            self.bus.close()
+            self.bus = None
+
     def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
         self.connection_method = connection_method
         self.address = address
         resource_string = "{0}::{1}::INSTR".format(connection_method, address)
         self.bus = visa.ResourceManager().open_resource(resource_string)
+
+    def open_tcp(self, ip_address='127.0.0.1', socket=5025):
+        self.bus = TcpBus()
+        self.bus.open(ip_address, socket)
 
     def close(self):
         if self.bus:
@@ -31,8 +43,10 @@ class GenericInstrument:
             return False
         try:
             return len(self.id_string()) > 0
-        except (AttributeError, pyvisa.errors.InvalidSession):
+        except:
             return False
+        # Else
+        return True
 
     def open_log(self, filename):
         self.log = open(filename, 'w')
@@ -108,12 +122,8 @@ class GenericInstrument:
     def last_status_name(self):
         return self.bus.last_status.name
 
-    def isError(self):
-        return self.last_status_value() < 0
-
     def read(self):
         buffer = self.bus.read()
-        self.last_status = self.bus.last_status
         self.bytes_transferred = len(buffer)
         self._print_read(buffer)
         return buffer
@@ -134,8 +144,9 @@ class GenericInstrument:
         if len(buffer) > self._MAX_PRINT:
             buffer = buffer[:self._MAX_PRINT] + '...'
         self.log.write('Read:     "{0}"\n'.format(buffer))
-        self.log.write(self.status())
-        self.log.write('\n')
+        if self._is_visa():
+            self.log.write(self.status())
+            self.log.write('\n')
 
     def _print_write(self, buffer):
         if not self.log or self.log.closed:
@@ -144,11 +155,28 @@ class GenericInstrument:
         if len(buffer) > self._MAX_PRINT:
             buffer = buffer[:self._MAX_PRINT] + '...'
         self.log.write('Write:    "{0}"\n'.format(buffer))
-        self.log.write(self.status())
-        self.log.write('\n')
+        if self._is_visa():
+            self.log.write(self.status())
+            self.log.write('\n')
+
+    def _is_visa(self):
+        types = (visa_resources.SerialInstrument, \
+                 visa_resources.TCPIPInstrument, \
+                 visa_resources.TCPIPSocket, \
+                 visa_resources.USBInstrument, \
+                 visa_resources.USBRaw, \
+                 visa_resources.GPIBInstrument, \
+                 visa_resources.GPIBInterface, \
+                 visa_resources.FirewireInstrument, \
+                 visa_resources.PXIInstrument, \
+                 visa_resources.PXIInstrument, \
+                 visa_resources.VXIInstrument, \
+                 visa_resources.VXIMemory, \
+                 visa_resources.VXIBackplane)
+        return isinstance(self.bus ,types)
 
     def status(self):
         result = 'Bytes:    {0}\n'.format(self.bytes_transferred)
-        visa_io_error = pyvisa.errors.VisaIOError(self.last_status_value())
+        visa_io_error = VisaIOError(self.last_status_value())
         result +='Status:   {0} {1} {2}\n'.format(hex(self.last_status_value()), visa_io_error.abbreviation, visa_io_error.description)
         return result

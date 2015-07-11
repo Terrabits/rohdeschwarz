@@ -18,7 +18,7 @@ class VnaTrace:
     channel = property(_channel, _set_channel)
 
     def _diagram(self):
-        if self._vna.properties().is_zvx():
+        if self._vna.properties.is_zvx():
             _diagrams = self._vna.diagrams
             for d in _diagrams:
                 _traces = self._vna.diagram(d).traces
@@ -36,4 +36,3 @@ class VnaTrace:
         self._vna.write(scpi)
 
     diagram = property(_diagram, _set_diagram)
-
