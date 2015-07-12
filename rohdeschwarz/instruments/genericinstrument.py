@@ -1,11 +1,8 @@
 import sys
-import visa
-from pyvisa.errors import VisaIOError
-import pyvisa.resources as visa_resources
-import socket
 import re
 from rohdeschwarz.general import ConnectionMethod
 from rohdeschwarz.bus.tcp import TcpBus
+from rohdeschwarz.bus.visa import VisaBus
 
 
 class GenericInstrument:
@@ -21,16 +18,15 @@ class GenericInstrument:
 
     def __del__(self):
         if self.bus:
-            self.bus.close()
-            self.bus = None
+            self.close()
 
     def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
-        self.connection_method = connection_method
-        self.address = address
-        resource_string = "{0}::{1}::INSTR".format(connection_method, address)
-        self.bus = visa.ResourceManager().open_resource(resource_string)
+        self.bus = VisaBus()
+        self.bus.open(connection_method, address)
 
     def open_tcp(self, ip_address='127.0.0.1', socket=5025):
+        self.connection_method = ConnectionMethod.tcpip
+        self.address = ip_address + " :{0}".format(socket)
         self.bus = TcpBus()
         self.bus.open(ip_address, socket)
 
@@ -50,9 +46,9 @@ class GenericInstrument:
         return True
 
     def _timeout_ms(self):
-        return self.bus.timeout
+        return self.bus.timeout_ms
     def _set_timeout_ms(self, time):
-        self.bus.timeout = time
+        self.bus.timeout_ms = time
     timeout_ms = property(_timeout_ms, _set_timeout_ms)
 
     def open_log(self, filename):
@@ -120,15 +116,6 @@ class GenericInstrument:
         _log.write('Id string:  {0}\n\n'.format(self.id_string()))
         self.log = _log
 
-    def last_status_bytes(self):
-        return self.bytes_transferred
-
-    def last_status_value(self):
-        return self.bus.last_status.value
-
-    def last_status_name(self):
-        return self.bus.last_status.name
-
     def read(self):
         buffer = self.bus.read()
         self.bytes_transferred = len(buffer)
@@ -136,7 +123,7 @@ class GenericInstrument:
         return buffer
 
     def write(self, buffer):
-        self.last_status = self.bus.write(buffer)
+        self.bus.write(buffer)
         self.bytes_transferred = len(buffer)
         self._print_write(buffer)
 
@@ -144,15 +131,44 @@ class GenericInstrument:
         self.write(buffer)
         return self.read()
 
-    def read_raw(self, bytes=None):
-        return b''
+    def read_raw_no_end(self, buffer_size=1024):
+        buffer = self.bus.read_raw_no_end(buffer_size)
+        self.bytes_transferred = len(buffer)
+        self._print_read(buffer)
+        return buffer
 
-    def write_raw(self, buffer):
+    def write_raw_no_end(self, buffer):
+        self.bus.read_raw_no_end(buffer)
+        self.bytes_transferred = len(buffer)
+        self._print_write(buffer)
+
+    def query_raw_no_end(self, buffer, buffer_size=1024):
+        self.write_raw_no_end(buffer)
+        return self.read_raw_no_end(buffer_size)
+
+    def read_block_data(self, buffer_size=1024):
         return False
 
-    def query_raw(self, buffer, bytes=None):
+    def write_block_data(self, buffer):
         return False
 
+    def read_block_data_to_file(self, filename, buffer_size=1024):
+        return False
+
+    def write_block_data_from_file(self, filename, buffer_size=1024):
+        return False
+
+    def read_64_bit_vector_block_data(self, buffer_size=1024, big_endian = False):
+        return False
+
+    def write_64_bit_vector_block_data(self, buffer_size=1024, big_endian = False):
+        return False
+
+    def read_64_bit_complex_vector_block_data(self, buffer_size=1024, big_endian = False):
+        return False
+
+    def write_64_bit_complex_vector_block_data(self, address, big_endian = False):
+        return False
 
     def _print_read(self, buffer):
         if not self.log or self.log.closed:
@@ -161,9 +177,11 @@ class GenericInstrument:
         if len(buffer) > self._MAX_PRINT:
             buffer = buffer[:self._MAX_PRINT] + '...'
         self.log.write('Read:     "{0}"\n'.format(buffer))
-        if self._is_visa():
-            self.log.write(self.status())
-            self.log.write('\n')
+        self.log.write('Bytes:    {0}\n'.format(self.bytes_transferred))
+        status = self.bus.status_string()
+        if status:
+            self.log.write('Status:   {0}\n'.format(status))
+        self.log.write('\n')
 
     def _print_write(self, buffer):
         if not self.log or self.log.closed:
@@ -172,28 +190,8 @@ class GenericInstrument:
         if len(buffer) > self._MAX_PRINT:
             buffer = buffer[:self._MAX_PRINT] + '...'
         self.log.write('Write:    "{0}"\n'.format(buffer))
-        if self._is_visa():
-            self.log.write(self.status())
-            self.log.write('\n')
-
-    def _is_visa(self):
-        types = (visa_resources.SerialInstrument, \
-                 visa_resources.TCPIPInstrument, \
-                 visa_resources.TCPIPSocket, \
-                 visa_resources.USBInstrument, \
-                 visa_resources.USBRaw, \
-                 visa_resources.GPIBInstrument, \
-                 visa_resources.GPIBInterface, \
-                 visa_resources.FirewireInstrument, \
-                 visa_resources.PXIInstrument, \
-                 visa_resources.PXIInstrument, \
-                 visa_resources.VXIInstrument, \
-                 visa_resources.VXIMemory, \
-                 visa_resources.VXIBackplane)
-        return isinstance(self.bus ,types)
-
-    def status(self):
-        result = 'Bytes:    {0}\n'.format(self.bytes_transferred)
-        visa_io_error = VisaIOError(self.last_status_value())
-        result +='Status:   {0} {1} {2}\n'.format(hex(self.last_status_value()), visa_io_error.abbreviation, visa_io_error.description)
-        return result
+        self.log.write('Bytes:    {0}\n'.format(self.bytes_transferred))
+        status = self.bus.status_string()
+        if status:
+            self.log.write('Status:   {0}\n'.format(status))
+        self.log.write('\n')

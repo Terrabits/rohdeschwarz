@@ -3,13 +3,12 @@ import socket
 class TcpBus:
     def __init__(self):
         self.buffer_size = 1024
-        self.delimiter = b'\n' # Writes
+        self.delimiter = '\n' # Writes
         self._socket = None
 
     def __del__(self):
         if self._socket:
-            self._socket.close()
-            self._socket = None
+            self.close()
 
     def open(self, address='127.0.0.1', port=5025):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,15 +28,14 @@ class TcpBus:
     def write(self, buffer):
         if isinstance(buffer, str):
             buffer = buffer.encode()
-        self.write_raw(buffer + self.delimiter)
+        self.write_raw_no_end(buffer + self.delimiter.encode())
 
-    def read_raw(self, bytes=None):
-        if bytes:
-            return self._socket.recv(bytes)
-        else:
-            return self._socket.recv(self.buffer_size)
+    def read_raw_no_end(self, buffer_size=1024):
+        return self._socket.recv(buffer_size)
 
-    def write_raw(self, buffer):
+    def write_raw_no_end(self, buffer):
+        if isinstance(buffer, str):
+            buffer = buffer.encode()
         self._socket.send(buffer)
 
     def _timeout_ms(self):
@@ -46,4 +44,7 @@ class TcpBus:
         return self._socket.gettimeout() * 1000
     def _set_timeout_ms(self, value):
         self._socket.settimeout(value/1000)
-    timeout = property(_timeout_ms, _set_timeout_ms)
+    timeout_ms = property(_timeout_ms, _set_timeout_ms)
+
+    def status_string(self):
+        return None

@@ -97,8 +97,21 @@ class VnaFileSystem:
             self.cd(original_dir)
         raise OSError(2, "Could not find file '{0}'".format(path))
 
+
+    def upload_file(self, local_filename, remote_filename):
+        scpi = ":MMEM:DATA '{0}', "
+        scpi = scpi.format(remote_filename)
+        self._vna.write_raw_no_end(scpi)
+        self._vna.write_block_data_from_file(local_filename, 5120)
+
+    def download_file(self, remote_filename, local_filename):
+        scpi = ":MMEM:DATA? '{0}'"
+        scpi = scpi.format(remote_filename)
+        self._vna.write(scpi)
+        self_vna.read_block_data_to_file(filename, 5120)
+
     def _dir(self):
-        results = self._vna.query(":MMEM:CAT?", 10000).strip();
+        results = self._vna.query(":MMEM:CAT?").strip();
         results = results.split(',')
         if len(results) < 2:
             raise OSError(0, "Invalid directory information returned from 'MMEM:CAT?'")
