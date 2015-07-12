@@ -7,10 +7,10 @@ vna = Vna()
 try:
     vna.open_tcp()
 except VisaIOError:
-    print('Instrument not found!')
+    sys.stderr.write('Instrument not found!')
     sys.exit("Instrument not found!")
 if not vna.connected():
-    print('Instrument not found!')
+    sys.stderr.write('Instrument not found!')
     sys.exit("Instrument not found!")
 
 log_filename = 'Test Log.txt'

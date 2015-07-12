@@ -14,6 +14,7 @@ class GenericInstrument:
     def __init__(self):
         self.log = None
         self.bus = None
+        self.buffer_size = 1024
         self.connection_method = ''
         self.address = ''
         self.bytes_transferred = 0
@@ -47,6 +48,12 @@ class GenericInstrument:
             return False
         # Else
         return True
+
+    def _timeout_ms(self):
+        return self.bus.timeout
+    def _set_timeout_ms(self, time):
+        self.bus.timeout = time
+    timeout_ms = property(_timeout_ms, _set_timeout_ms)
 
     def open_log(self, filename):
         self.log = open(filename, 'w')
@@ -86,10 +93,10 @@ class GenericInstrument:
         self.write('*WAI')
 
     def pause(self, timeout_ms=1000):
-        old_timeout = self.bus.timeout
-        self.bus.timeout = timeout_ms
+        old_timeout = self.timeout_ms
+        self.timeout_ms = timeout_ms
         result = self.query('*OPC?').strip() == "1"
-        self.bus.timeout = old_timeout
+        self.timeout_ms = old_timeout
         return result
 
     def initialize_polling(self):
@@ -122,8 +129,11 @@ class GenericInstrument:
     def last_status_name(self):
         return self.bus.last_status.name
 
-    def read(self):
-        buffer = self.bus.read()
+    def read(self, bytes=None):
+        if bytes:
+            buffer = self.bus.read(bytes)
+        else:
+            buffer = self.bus.read(self.buffer_size)
         self.bytes_transferred = len(buffer)
         self._print_read(buffer)
         return buffer
@@ -133,9 +143,21 @@ class GenericInstrument:
         self.bytes_transferred = len(buffer)
         self._print_write(buffer)
 
-    def query(self, buffer):
+    def query(self, buffer, bytes=None):
         self.write(buffer)
-        return self.read()
+        return self.read(bytes)
+
+
+    def read_raw(self, bytes=None):
+        return b''
+
+    def write_raw(self, buffer):
+        return False
+
+    def query_raw(self, buffer, bytes=None):
+        return False
+
+
 
     def _print_read(self, buffer):
         if not self.log or self.log.closed:

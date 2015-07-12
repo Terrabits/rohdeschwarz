@@ -4,6 +4,7 @@ from rohdeschwarz.instruments.vna.vnadiagram import VnaDiagram
 from rohdeschwarz.instruments.vna.vnatrace import VnaTrace
 from rohdeschwarz.instruments.vna.vnaproperties import VnaProperties
 from rohdeschwarz.instruments.vna.vnasettings import VnaSettings
+from rohdeschwarz.instruments.vna.vnafilesystem import VnaFileSystem
 
 class Vna(GenericInstrument):
 
@@ -11,10 +12,11 @@ class Vna(GenericInstrument):
         GenericInstrument.__init__(self)
         self.properties = VnaProperties(self)
         self.settings = VnaSettings(self)
+        self.file = VnaFileSystem(self)
 
     def is_error(self):
         return bool(self._errors())
-    
+
     def next_error(self):
         code = 0;
         message = '';
@@ -36,11 +38,6 @@ class Vna(GenericInstrument):
         return errors
 
     errors = property(_errors)
-
-
-    ### Properties
-    #set in constructor:
-    #    self.properties = VnaProperties(self)
 
 
     ### Channels
@@ -177,4 +174,3 @@ class Vna(GenericInstrument):
 
     def diagram(self, index=1):
         return VnaDiagram(self, index)
-
