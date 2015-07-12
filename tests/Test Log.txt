@@ -1,1 +1,52 @@
-H
+R&S Application Version 1.0
+(C) 2015 Rohde & Schwarz
+
+Sun 12 Jul 16:42:41 2015
+
+INSTRUMENT INFO
+Connection: 
+Address:    
+Make:       Rohde & Schwarz
+Id string:  Rohde-Schwarz,FSW,123456789,2.0
+
+
+Write:    ":SYST:ERR?"
+Bytes:    10
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Read:     "0,"No error""
+Bytes:    13
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    "*CLS"
+Bytes:    4
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    "*RST"
+Bytes:    4
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    ":MMEM:DATA? 'C:\Users\lalic\Documents\Qt\RsaToolbox\To do.txt'"
+Bytes:    62
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Read:     b'#41309Short term:\r\n- Add about screen accessed through start menu\r\n- Dumb down to VS2010 for Windows...'
+Bytes:    1316
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    b":MMEM:DATA 'C:\\Users\\lalic\\Documents\\Python\\rohdeschwarz\\tests\\test_copy.txt',"
+Bytes:    78
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    b'#3898'
+Bytes:    5
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    b'import sys\r\nfrom pyvisa.errors import VisaIOError\r\nfrom rohdeschwarz import *\r\nfrom rohdeschwarz.ins...'
+Bytes:    898
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+
+Write:    ""
+Bytes:    1
+Status:   0x0 VI_SUCCESS Operation completed successfully.
+

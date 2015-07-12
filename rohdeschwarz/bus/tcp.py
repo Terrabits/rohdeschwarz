@@ -13,7 +13,7 @@ class TcpBus:
     def open(self, address='127.0.0.1', port=5025):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((address, port))
-        self.timeout = 1000
+        self.timeout_ms = 1000
 
     def close(self):
         self._socket.close()

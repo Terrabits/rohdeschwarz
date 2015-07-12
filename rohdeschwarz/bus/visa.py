@@ -62,6 +62,6 @@ class VisaBus:
         result = '{0} {1} {2}'
         value = self._instr.last_status.value
         status = VisaIOError(value)
-        result.format(hex(value), status.abbreviation, status.description)
+        return result.format(hex(value), status.abbreviation, status.description)
 
 
