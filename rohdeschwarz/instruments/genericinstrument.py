@@ -129,11 +129,8 @@ class GenericInstrument:
     def last_status_name(self):
         return self.bus.last_status.name
 
-    def read(self, bytes=None):
-        if bytes:
-            buffer = self.bus.read(bytes)
-        else:
-            buffer = self.bus.read(self.buffer_size)
+    def read(self):
+        buffer = self.bus.read()
         self.bytes_transferred = len(buffer)
         self._print_read(buffer)
         return buffer
@@ -143,10 +140,9 @@ class GenericInstrument:
         self.bytes_transferred = len(buffer)
         self._print_write(buffer)
 
-    def query(self, buffer, bytes=None):
+    def query(self, buffer):
         self.write(buffer)
-        return self.read(bytes)
-
+        return self.read()
 
     def read_raw(self, bytes=None):
         return b''
@@ -156,7 +152,6 @@ class GenericInstrument:
 
     def query_raw(self, buffer, bytes=None):
         return False
-
 
 
     def _print_read(self, buffer):

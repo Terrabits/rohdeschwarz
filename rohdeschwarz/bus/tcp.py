@@ -20,14 +20,16 @@ class TcpBus:
         self._socket.close()
         self._socket = None
 
-    def read(self, bytes=None):
-        if bytes:
-            return self._socket.recv(bytes).decode()
-        else:
-            return self._socket.recv(self.buffer_size).decode()
+    def read(self):
+        result = self._socket.recv(self.buffer_size).decode()
+        while not result.endswith(self.delimiter):
+            result += self._socket.recv(self.buffer_size).decode()
+        return result
 
     def write(self, buffer):
-        self._socket.send(buffer.encode() + self.delimiter)
+        if isinstance(buffer, str):
+            buffer = buffer.encode()
+        self.write_raw(buffer + self.delimiter)
 
     def read_raw(self, bytes=None):
         if bytes:
@@ -36,7 +38,7 @@ class TcpBus:
             return self._socket.recv(self.buffer_size)
 
     def write_raw(self, buffer):
-        return False
+        self._socket.send(buffer)
 
     def _timeout_ms(self):
         if not self._socket.gettimeout():
