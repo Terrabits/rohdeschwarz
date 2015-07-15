@@ -1,5 +1,7 @@
 import datetime
 from enum import Enum
+import cmath
+import math
 
 
 ### Enums
@@ -45,6 +47,7 @@ class SiPrefix(Enum):
         else:
             return ''
 
+
 ### Functions
 def print_header(file, app_name, app_version):
     #R&S <_appName> Version <_version>
@@ -56,3 +59,10 @@ def print_header(file, app_name, app_version):
     file.write("{0} Version {1}\n".format(app_name, app_version))
     file.write("(C) {0} Rohde & Schwarz\n\n".format(today.year))
     file.write(today.strftime('%a %d %b %H:%M:%S %Y\n\n'))
+
+def dB(magnitude):
+    if isinstance(magnitude, (int, float)):
+        return 20.0 * math.log10(abs(magnitude))
+    else:
+        print('Need to handle numpy.array')
+        return None

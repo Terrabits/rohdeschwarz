@@ -133,7 +133,7 @@ class GenericInstrument:
         self.write(buffer)
         return self.read()
 
-    def read_raw_no_end(self, buffer_size=1024):
+    def read_raw_no_end(self, buffer_size=102400):
         buffer = self.bus.read_raw_no_end(buffer_size)
         self.bytes_transferred = len(buffer)
         self._print_read(buffer)
@@ -144,15 +144,16 @@ class GenericInstrument:
         self.bytes_transferred = len(buffer)
         self._print_write(buffer)
 
-    def query_raw_no_end(self, buffer, buffer_size=1024):
+    def query_raw_no_end(self, buffer, buffer_size=102400):
         self.write_raw_no_end(buffer)
         return self.read_raw_no_end(buffer_size)
 
     def read_block_data(self):
         buffer = self.read_raw_no_end()
         size, buffer = self.parse_block_data_header(buffer)
-        while len(buffer) < size:
-            buffer += self.read_raw_no_end
+        while len(buffer) < size+1:
+            buffer += self.read_raw_no_end()
+        buffer = buffer[:size]
         return (size, buffer)
 
     def write_block_data(self, buffer):
@@ -160,7 +161,7 @@ class GenericInstrument:
         buffer = header + buffer
         self.write_raw_no_end(buffer)
 
-    def read_block_data_to_file(self, filename, buffer_size=1024):
+    def read_block_data_to_file(self, filename, buffer_size=102400):
         if buffer_size < 11:
             buffer_size = 11
         data = self.read_raw_no_end(buffer_size)
@@ -177,7 +178,7 @@ class GenericInstrument:
                 file.write(data)
                 size -= len(data)
 
-    def write_block_data_from_file(self, filename, buffer_size=1024):
+    def write_block_data_from_file(self, filename, buffer_size=102400):
         header = self.create_block_data_header(os.path.getsize(filename))
         self.write_raw_no_end(header)
         with open(filename, 'rb') as file:

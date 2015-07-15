@@ -1,4 +1,5 @@
 from enum import Enum
+import numpy
 from rohdeschwarz.general import SiPrefix
 
 class SweepType(Enum):
@@ -14,6 +15,19 @@ class SweepType(Enum):
 
     def __eq__(self, other):
         if type(other) == SweepType:
+            return self.value == other.value
+        else:
+            return self.value == other
+
+class TouchstoneFormat(Enum):
+    db_degress = 'LOGP'
+    magnitude_degrees = 'LINP'
+    real_imaginary = 'COMP'
+
+    def __str__(self):
+        return self.value
+    def __eq__(self, other):
+        if isinstance(other, TouchstoneFormat):
             return self.value == other.value
         else:
             return self.value == other
@@ -55,43 +69,35 @@ class VnaChannel:
         scpi = ':SENS{0}:SWE:COUN?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return int(result)
-
     def _set_sweep_count(self, count):
         scpi = ':SENS{0}:SWE:COUN {1}'
         scpi = scpi.format(self.index, count)
         self._vna.write(scpi)
-
     sweep_count = property(_sweep_count, _set_sweep_count)
 
     def _is_manual_sweep(self):
         return not self._is_continuous_sweep()
-
     def _set_manual_sweep(self, value):
         self._set_continuous_sweep(not value)
-
     manual_sweep = property(_is_manual_sweep, _set_manual_sweep)
 
     def _is_continuous_sweep(self):
         scpi = ':INIT{0}:CONT?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return result == '1'
-
     def _set_continuous_sweep(self, value):
         scpi = ':INIT{0}:CONT {1}'.format(self.index, int(value))
         self._vna.write(scpi)
-
     continuous_sweep = property(_is_continuous_sweep, _set_continuous_sweep)
 
     def _sweep_type(self):
         scpi = ':SENS{0}:SWE:TYPE?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return SweepType(result)
-
     def _set_sweep_type(self, value):
         scpi = ':SENS{0}:SWE:TYPE {1}'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
-
     sweep_type = property(_sweep_type, _set_sweep_type)
 
 
@@ -100,7 +106,6 @@ class VnaChannel:
         scpi = ':SENS{0}:FREQ:STAR?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
-
     def _set_start_frequency(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -111,14 +116,12 @@ class VnaChannel:
         scpi = ':SENS{0}:FREQ:STAR {1} {2}'
         scpi = scpi.format(self.index, value, prefix)
         self._vna.write(scpi)
-
     start_frequency_Hz = property(_start_frequency, _set_start_frequency)
 
     def _stop_frequency(self):
         scpi = ':SENS{0}:FREQ:STOP?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
-
     def _set_stop_frequency(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -129,26 +132,22 @@ class VnaChannel:
         scpi = ':SENS{0}:FREQ:STOP {1} {2}'
         scpi = scpi.format(self.index, value, prefix)
         self._vna.write(scpi)
-
     stop_frequency_Hz = property(_stop_frequency, _set_stop_frequency)
 
     def _frequencies(self):
         scpi = ':CALC{0}:DATA:STIM?'
         scpi = scpi.format(self.index)
         return self._vna.queryVector(scpi)
-
     frequencies_Hz = property(_frequencies)
 
     def _power(self):
         scpi = ':SOUR{0}:POW?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return float(result)
-
     def _set_power(self, value):
         scpi = ':SOUR{0}:POW {1} dBm'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
-
     power_dBm = property(_power, _set_power)
 
 
@@ -157,31 +156,26 @@ class VnaChannel:
         scpi = ':SOUR{0}:POW:STAR?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
-
     def _set_start_power(self, value):
         scpi = ':SOUR{0}:POW:STAR {1} dBm'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
-
     start_power_dBm = property(_start_power, _set_start_power)
 
     def _stop_power(self):
         scpi = ':SOUR{0}:POW:STOP?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
-
     def _set_stop_power(self, value, prefix=SiPrefix.none):
         scpi = ':SOUR{0}:POW:STOP {1} dBm'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
-
     stop_power_dBm = property(_stop_power, _set_stop_power)
 
     def _frequency(self):
         scpi = ':SOUR{0}:FREQ?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return float(result)
-
     def _set_frequency(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -192,7 +186,6 @@ class VnaChannel:
         scpi = ':SOUR{0}:FREQ {1} {2}'
         scpi = scpi.format(self.index, value, prefix)
         self._vna.write(scpi)
-
     frequency_Hz = property(_frequency, _set_frequency)
 
     ### All sweep types
@@ -200,7 +193,6 @@ class VnaChannel:
         scpi = 'SENS{0}:BAND?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return float(result)
-
     def _set_if_bandwidth(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -211,7 +203,6 @@ class VnaChannel:
         scpi = 'SENS{0}:BAND {1} {2}'
         scpi = scpi.format(self.index, value, prefix)
         self._vna.write(scpi)
-
     if_bandwidth_Hz = property(_if_bandwidth, _set_if_bandwidth)
 
     def _sweep_time(self):
@@ -219,12 +210,10 @@ class VnaChannel:
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
         return int(1000.0 * float(result))
-
     def _set_sweep_time(self, time_ms):
         scpi = ':SENS{0}:SWE:TIME {1} ms'
         scpi = scpi.format(self.index, time_ms)
         self._vna.write(scpi)
-
     sweep_time_ms = property(_sweep_time, _set_sweep_time)
 
     def _auto_sweep_time(self):
@@ -232,7 +221,6 @@ class VnaChannel:
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
         return result == "1"
-
     def _set_auto_sweep_time(self, value):
         scpi = ':SENS{0}:SWE:TIME:AUTO {1}'
         if value:
@@ -240,7 +228,69 @@ class VnaChannel:
         else:
             scpi = scpi.format(self.index, 0)
         self._vna.write(scpi)
-
     auto_sweep_time = property(_auto_sweep_time, _set_auto_sweep_time)
 
+    def _s_parameter_group(self):
+        scpi = ':CALC{0}:PAR:DEF:SGR?'
+        scpi = scpi.format(self.index)
+        result = self._vna.query(scpi).strip()
+        if result.upper() == "NONE":
+            return []
+        else:
+            result = result.split(',')
+            return [int(x) for x in result]
 
+    def _set_s_parameter_group(self, ports):
+        if not ports or len(ports) == 0:
+            scpi = ':CALC{0}:PAR:DEL:SGR'
+            scpi = scpi.format(self.index)
+            self._vna.write(scpi)
+        else:
+            scpi = ':CALC{0}:PAR:DEF:SGR {1}'
+            scpi = scpi.format(self.index, ",".join(map(str, ports)))
+            self._vna.write(scpi)
+    s_parameter_group = property(_s_parameter_group, _set_s_parameter_group)
+
+    def read_s_parameter_group(self):
+        ports = len(self.s_parameter_group)
+        is_manual_sweep = self.manual_sweep
+        self.manual_sweep = True
+        self.start_sweep()
+        self._vna.pause(2 * self.sweep_time_ms + 5000)
+        scpi = ':CALC{0}:DATA:SGR? SDAT'
+        scpi = scpi.format(self.index)
+        self._vna.settings.binary_64_bit_data_format = True
+        self._vna.write(scpi)
+        result = self._vna.read_64_bit_complex_vector_block_data()
+        self.manual_sweep = is_manual_sweep
+        self._vna.settings.ascii_data_format = True
+        points = len(result)/(ports * ports)
+        return numpy.reshape(result, (points, ports, ports))
+
+    def measure(self, ports):
+        old_ports = self.s_parameter_group
+        self.s_parameter_group = ports
+        result = self.read_s_parameter_group()
+        self.s_parameter_group = old_ports
+        return result
+
+    def save_measurement(self, filename, ports, format=''):
+        old_ports = self.s_parameter_group
+        is_manual_sweep = self.manual_sweep
+        file_extension = '.s{0}p'.format(len(ports))
+        if not filename.lower().endswith(file_extension):
+            filename += file_extension
+        self.s_parameter_group = ports
+        self.manual_sweep = True
+        self.start_sweep()
+        self._vna.pause(2 * self.sweep_time_ms + 5000)
+        ports_string = ",".join(map(str, ports))
+        scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
+        scpi = scpi.format(self.index, \
+                           filename, \
+                           str(format), \
+                           ports_string)
+        self._vna.write(scpi)
+        self._vna.pause(5000)
+        self.s_parameter_group = old_ports
+        self.manual_sweep = is_manual_sweep

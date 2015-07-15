@@ -22,6 +22,7 @@ vna.is_error()
 vna.clear_status()
 vna.preset()
 
-# vna.file.download_file('C:\\Users\\lalic\\Documents\\Qt\\RsaToolbox\\To do.txt', 'C:\\Users\\lalic\\Documents\\Python\\rohdeschwarz\\tests\\To do.txt')
-# vna.file.upload_file('C:\\Users\\lalic\\Documents\\Python\\rohdeschwarz\\tests\\test.py', 'C:\\Users\\lalic\\Documents\\Python\\rohdeschwarz\\tests\\test_copy.txt')
+vna.channel().save_measurement('C:\\Users\\lalic\\Documents\\Python\\Test', \
+                               [1,2,3,4], \
+                               'LOGP')
 
