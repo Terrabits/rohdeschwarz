@@ -142,10 +142,7 @@ class VnaSettings:
     def _emulation_mode(self):
         # ':SYST:LANG?'
         result = self._vna.query(':SYST:LANG?').strip().strip("'").upper()
-        for mode in EmulationMode:
-            if mode.value == result:
-                return mode
-        return None
+        return EmulationMode(result)
 
     def _set_emulation_mode(self, value):
         if not value:

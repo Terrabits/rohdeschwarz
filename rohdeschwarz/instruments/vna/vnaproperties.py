@@ -95,7 +95,6 @@ class VnaProperties:
     def _physical_ports(self):
         result = self._vna.query(':INST:PORT:COUN?')
         return int(result.strip())
-
     physical_ports = property(_physical_ports)
 
     def _minimum_frequency_Hz(self):
@@ -108,7 +107,7 @@ class VnaProperties:
         result = self._vna.query(':SYST:FREQ? MAX').strip()
         return float(result)
 
-    maximum_frequency_Hz = property(_maximum_frequency_Hz)        
+    maximum_frequency_Hz = property(_maximum_frequency_Hz)
 
     def _minimum_power_dBm(self):
         if self.is_zvx():

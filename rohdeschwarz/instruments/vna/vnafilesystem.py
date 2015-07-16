@@ -5,8 +5,8 @@ class Directory(Enum):
     default = 'DEF'
     embed = '.\\Embedding'
     deembed = '.\\Deembedding'
-    cal_group = '.\\Calibration\\Data'
-    cal_kit = '.\\Calibration\\Kits'
+    cal_groups = '.\\Calibration\\Data'
+    cal_kits = '.\\Calibration\\Kits'
     external_tools = '.\\External Tools'
     recall_sets = '.\\RecallSets'
     traces = '.\\Traces'
@@ -97,6 +97,45 @@ class VnaFileSystem:
             self.cd(original_dir)
         raise OSError(2, "Could not find file '{0}'".format(path))
 
+    def mkdir(self, path):
+        scpi = ":MMEM:MDIR '{0}'"
+        scpi = scpi.format(path)
+        self._vna.write(scpi)
+        self._vna.pause()
+
+    def move(self, source_path, destination_path):
+        scpi = ":MMEM:MOVE '{0}','{1}'"
+        scpi = scpi.format(source_path, destination_path)
+        self._vna.write(scpi)
+        self._vna.pause()
+
+    def copy(self, source_path, destination_path):
+        scpi = ":MMEM:COPY '{0}','{1}'"
+        scpi = scpi.format(source_path, destination_path)
+        self._vna.write(scpi)
+        self._vna.pause()
+
+    def delete(self, filename):
+        scpi = ":MMEM:DEL '{0}',FORC"
+        scpi = scpi.format(filename)
+        self._vna.write(scpi)
+        self._vna.pause()
+
+    def delete_all(self, path):
+        current_dir = self.directory()
+        if self.is_directory(path):
+            self.cd(path)
+            files = self.files()
+            for file in files:
+                self.delete(file)
+            self.cd(current_dir)
+            self._vna.pause()
+
+    def rmdir(self, path):
+        scpi = ":MMEM:RDIR '{0}'"
+        scpi = scpi.format(path)
+        self._vna.write(scpi)
+        self._vna.pause()
 
     def upload_file(self, local_filename, remote_filename):
         scpi = ":MMEM:DATA '{0}',"

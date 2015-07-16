@@ -1,6 +1,8 @@
 from enum import Enum
 import numpy
+import pathlib
 from rohdeschwarz.general import SiPrefix
+from rohdeschwarz.instruments.vna.vnafilesystem import Directory
 
 class SweepType(Enum):
     linear = 'LIN'
@@ -70,10 +72,42 @@ class VnaChannel:
         result = self._vna.query(scpi).strip()
         return int(result)
     def _set_sweep_count(self, count):
+        if not count or count < 0:
+            raise ValueError(0,'sweep_count must be of type int and >= 1')
         scpi = ':SENS{0}:SWE:COUN {1}'
         scpi = scpi.format(self.index, count)
         self._vna.write(scpi)
     sweep_count = property(_sweep_count, _set_sweep_count)
+
+    def _is_averaging(self):
+        scpi = ":SENS{0}:AVER?"
+        scpi = scpi.format(self.index)
+        return self._vna.query(scpi).strip() == "1"
+    def _averaging_on(self):
+        scpi = ":SENS{0}:AVER 1"
+        scpi = scpi.format(self.index)
+        self._vna.write(scpi)
+    def _averaging_off(self):
+        scpi = ":SENS{0}:AVER 0"
+        scpi = scpi.format(self.index)
+        self._vna.write(scpi)
+    def _averages(self):
+        if not self._is_averaging():
+            return None
+        else:
+            scpi = ":SENS{0}:AVER:COUN?"
+            scpi = scpi.format(self.index)
+            result = self._vna.query(scpi).strip()
+            return int(result)
+    def _set_averages(self, count):
+        if not count:
+            self._averaging_off()
+        else:
+            scpi = ":SENS{0}:AVER:COUN {1}"
+            scpi = scpi.format(self.index, count)
+            self._vna.write(scpi)
+            self._averaging_on()
+    averages = property(_averages, _set_averages)
 
     def _is_manual_sweep(self):
         return not self._is_continuous_sweep()
@@ -89,6 +123,20 @@ class VnaChannel:
         scpi = ':INIT{0}:CONT {1}'.format(self.index, int(value))
         self._vna.write(scpi)
     continuous_sweep = property(_is_continuous_sweep, _set_continuous_sweep)
+
+    def is_frequency_sweep(self):
+        sweep_type = self.sweep_type
+        if sweep_type == SweepType.linear:
+            return True
+        if sweep_type == SweepType.log:
+            return True
+        if sweep_type == SweepType.segmented:
+            return True
+        # Else:
+        return False
+    def is_power_sweep(self):
+        return self.sweep_type == SweepType.power
+
 
     def _sweep_type(self):
         scpi = ':SENS{0}:SWE:TYPE?'.format(self.index)
@@ -134,10 +182,25 @@ class VnaChannel:
         self._vna.write(scpi)
     stop_frequency_Hz = property(_stop_frequency, _set_stop_frequency)
 
+    def _points(self):
+        scpi = ':SENS{0}:SWE:POIN?'
+        scpi = scpi.format(self.index)
+        result = self._vna.query(scpi).strip()
+        return int(result)
+    def _set_points(self, value):
+        scpi = ':SENS{0}:SWE:POIN {1}'
+        scpi = scpi.format(self.index, value)
+        self._vna.write(scpi)
+    points = property(_points, _set_points)
+
     def _frequencies(self):
+        self._vna.settings.binary_64_bit_data_format = True
         scpi = ':CALC{0}:DATA:STIM?'
         scpi = scpi.format(self.index)
-        return self._vna.queryVector(scpi)
+        self._vna.write(scpi)
+        result = self._vna.read_64_bit_vector_block_data()
+        self._vna.settings.ascii_data_format = True
+        return result
     frequencies_Hz = property(_frequencies)
 
     def _power(self):
@@ -171,6 +234,16 @@ class VnaChannel:
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
     stop_power_dBm = property(_stop_power, _set_stop_power)
+
+    def _powers_dBm(self):
+        self._vna.settings.binary_64_bit_data_format = True
+        scpi = ':CALC{0}:DATA:STIM?'
+        scpi = scpi.format(self.index)
+        self._vna.write(scpi)
+        result = self._vna.read_64_bit_vector_block_data()
+        self._vna.settings.ascii_data_format = True
+        return result
+    powers_dBm = property(_powers_dBm)
 
     def _frequency(self):
         scpi = ':SOUR{0}:FREQ?'.format(self.index)
@@ -229,6 +302,30 @@ class VnaChannel:
             scpi = scpi.format(self.index, 0)
         self._vna.write(scpi)
     auto_sweep_time = property(_auto_sweep_time, _set_auto_sweep_time)
+
+    def _cal_group(self):
+        scpi = ":MMEM:LOAD:CORR? {0}"
+        scpi = scpi.format(self.index)
+        result = self._vna.query(scpi).strip()
+        result = result.replace("'", "")
+        if not result:
+            return None
+        else:
+            if result.lower().endswith(".cal"):
+                result = result[:-4]
+            return result
+    def _set_cal_group(self, name):
+        if not name:
+            scpi =":MMEM:LOAD:CORR:RES {0}"
+            scpi = scpi.format(self.index)
+            self._vna.write(scpi)
+        else:
+            if not name.lower().endswith('.cal'):
+                name += '.cal'
+            scpi = ":MMEM:LOAD:CORR {0},'{1}'"
+            scpi = scpi.format(self.index, name)
+            self._vna.write(scpi)
+    cal_group = property(_cal_group, _set_cal_group)
 
     def _s_parameter_group(self):
         scpi = ':CALC{0}:PAR:DEF:SGR?'

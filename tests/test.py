@@ -1,12 +1,17 @@
 import sys
+import socket
 from pyvisa.errors import VisaIOError
 from rohdeschwarz import *
 from rohdeschwarz.instruments.vna import *
 
 vna = Vna()
 try:
-    vna.open()
+    # vna.open()
+    vna.open_tcp()
 except VisaIOError:
+    sys.stderr.write('Instrument not found!')
+    sys.exit("Instrument not found!")
+except socket.timeout:
     sys.stderr.write('Instrument not found!')
     sys.exit("Instrument not found!")
 if not vna.connected():
@@ -22,7 +27,4 @@ vna.is_error()
 vna.clear_status()
 vna.preset()
 
-vna.channel().save_measurement('C:\\Users\\lalic\\Documents\\Python\\Test', \
-                               [1,2,3,4], \
-                               'LOGP')
 
