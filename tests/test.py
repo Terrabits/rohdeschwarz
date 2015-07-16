@@ -6,8 +6,8 @@ from rohdeschwarz.instruments.vna import *
 
 vna = Vna()
 try:
-    # vna.open()
-    vna.open_tcp()
+    vna.open()
+    # vna.open_tcp()
 except VisaIOError:
     sys.stderr.write('Instrument not found!')
     sys.exit("Instrument not found!")

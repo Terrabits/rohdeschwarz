@@ -2,6 +2,7 @@ import datetime
 from enum import Enum
 import cmath
 import math
+import numpy
 
 
 ### Enums
@@ -23,10 +24,8 @@ class SiPrefix(Enum):
     mega = 1.0E6
     giga = 1.0E9
     tera = 1.0E12
-
     def __float__(self):
         return self.value
-
     def __str__(self):
         if self == SiPrefix.pico:
             return 'p'
@@ -61,8 +60,20 @@ def print_header(file, app_name, app_version):
     file.write(today.strftime('%a %d %b %H:%M:%S %Y\n\n'))
 
 def dB(magnitude):
-    if isinstance(magnitude, (int, float)):
+    """
+    Convert linear magnitude to dB
+    Args:
+        magnitude (int, float, numpy.float32, numpy, float64, numpy.ndarray)
+    Returns:
+        Same type as 'magnitude', but converted to dB
+    """
+    if isinstance(magnitude, (int, float, numpy.float32, numpy.float64)):
         return 20.0 * math.log10(abs(magnitude))
-    else:
-        print('Need to handle numpy.array')
-        return None
+    elif isinstance(magnitude, numpy.ndarray):
+        if isinstance(magnitude[0], (numpy.complex64, numpy.complex128)):
+            raise ValueError(0, 'Cannot convert complex to dB')
+        else:
+            for i in range(0, len(magnitude)):
+                magnitude[i] = dB(magnitude[i])
+            return magnitude
+
