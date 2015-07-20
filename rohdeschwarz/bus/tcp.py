@@ -1,5 +1,33 @@
 import socket
 
+"""
+@class rohdeschwarz.bus.tcp.TcpBus
+TcpBus provides a VISA-like interface for an instrument
+connection using TCP sockets.
+
+Example:
+    address = '192.168.35.5'
+    port    =  5025
+
+    TcpBus bus()
+    bus.open(address, port)
+
+    # Optional parameters
+    # These are the default values:
+    bus.buffer_size = 1024
+    bus.delimiter = '\n'
+
+    # Read/write strings
+    # (delimiter is sent)
+    bus.write('*IDN?')
+    print('ID: ' + bus.read())
+
+    # Read/write binary data
+    # (delimiter not used)
+    bus.write(b'#3256...')
+
+"""
+
 class TcpBus:
     """
     TcpBus provides a VISA-like interface for an instrument
@@ -29,7 +57,9 @@ class TcpBus:
     """
 
     def __init__(self):
-        """ Initialize new TcpBus (no arguments) """
+        """
+        Initialize new TcpBus.
+        """
         self.buffer_size = 1024
         self.delimiter = '\n' # Writes
         self._socket = None
@@ -41,10 +71,13 @@ class TcpBus:
     def open(self, address='127.0.0.1', port=5025):
         """
         Open TCP socket connection.
-        Raises socket.timeout if instrument not found
+
         Args:
-            address (str)
-            port (int)
+            address (str): address of instrument
+            port (int): TCP port of instrument
+
+        Raises:
+            socket.timeout: if instrument not found
 
         """
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,12 +86,22 @@ class TcpBus:
 
 
     def close(self):
-        """ Close connection """
+        """
+        Close connection
+        """
         self._socket.close()
         self._socket = None
 
     def read(self):
-        """ Read until delimter is received """
+        """
+        Read until delimter is received
+
+        Returns:
+            str: read string
+
+        Raises:
+            socket.timeout: if instrument not found
+        """
         result = self._socket.recv(self.buffer_size).decode()
         while not result.endswith(self.delimiter):
             result += self._socket.recv(self.buffer_size).decode()
@@ -67,8 +110,12 @@ class TcpBus:
     def write(self, buffer):
         """
         Write 'buffer' + delimiter
+
         Args:
-            buffer (bytes: b'...')
+            buffer (str): string to write
+
+        Raises:
+            socket.timeout: if instrument not found
         """
         if isinstance(buffer, str):
             buffer = buffer.encode()
@@ -77,23 +124,43 @@ class TcpBus:
     def read_raw_no_end(self, buffer_size=1024):
         """
         Read up to 'buffer_size' bytes
+
         Args:
             buffer_size (int): buffer size in bytes
+
+        Returns:
+            bytes (b'...'): read result
+
+
+        Raises:
+            socket.timeout: If instrument not found
         """
         return self._socket.recv(buffer_size)
 
     def write_raw_no_end(self, buffer):
         """
         Write 'buffer' without delimiter
+
         Args:
-            buffer (bytes, b'...')
+            buffer (bytes): Raw data to write
+
+        Raises:
+            socket.timeout: if instrument not found
         """
         if isinstance(buffer, str):
             buffer = buffer.encode()
         self._socket.send(buffer)
 
     def _timeout_ms(self):
-        """ Timeout value, in milliseconds """
+        """
+        Timeout
+
+        Args:
+            timeout (int): milliseconds
+
+        Returns:
+            timeout (int): milliseconds
+        """
         if not self._socket.gettimeout():
             return 0
         return self._socket.gettimeout() * 1000
@@ -103,5 +170,10 @@ class TcpBus:
 
 
     def status_string(self):
-        """ Included for compatibility purposes (returns None) """
+        """
+        Included for compatibility purposes
+
+        Returns:
+            None
+        """
         return None

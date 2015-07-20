@@ -35,7 +35,9 @@ class VisaBus:
         # 
     """
     def __init__(self):
-        """ Constructor (no arguments) """
+        """
+        Constructor
+        """
         self._instr = None
         self._session = None
         self._visa_lib = None
@@ -46,11 +48,12 @@ class VisaBus:
 
     def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
         """
-        Open instrument connection. Raises VisaIOError if
-        instrument not found.
+        Open instrument connection.
         Args:
             connection_method (ConnectionMethod(Enum) or str)
             address (str)
+        Raises:
+            VisaIOError: if instrument not found
         """
         resource_string = "{0}::{1}::INSTR".format(connection_method, address)
         rm = visa.ResourceManager()
@@ -59,33 +62,48 @@ class VisaBus:
         self._visa_lib = rm.visalib
 
     def close(self):
-        """ Close instrument connection """
+        """
+        Close instrument connection
+        """
         self._instr.close()
         self._instr = None
 
     def read(self):
         """
         Read until send_end '\n' is reached
+
         Returns:
             str
+
+        Raises:
+            VisaIOError: if instrument not found
         """
         return self._instr.read()
 
     def write(self, buffer):
         """
         Write 'buffer' to instrument, followed by send_end '\n'
+
         Args:
-            buffer (str)
+            buffer (str): to be written
+
+        Raises:
+            VisaIOError: if instrument not found
         """
         self._instr.write(buffer)
 
     def read_raw_no_end(self, buffer_size=1024):
         """
         Read up to 'buffer_size' binary bytes
+
         Args:
             buffer_size (int): bytes
+
         Returns:
             bytes (b'...')
+
+        Raises:
+            VisaIOError: if instrument not found
         """
         send_end = self._instr.send_end
         read_term = self._instr.read_termination
@@ -101,8 +119,12 @@ class VisaBus:
     def write_raw_no_end(self, buffer):
         """
         Writes binary data in 'buffer' to instrument
+
         Args:
-            buffer (bytes, b'...')
+            buffer (bytes, b'...'): to be written
+
+        Raises:
+            VisaIOError: if instrument not found
         """
         send_end = self._instr.send_end
         write_term = self._instr.write_termination
@@ -113,7 +135,16 @@ class VisaBus:
         self._instr.write_termination = write_term
 
     def _timeout_ms(self):
-        """ Sets the timeout value """
+        """
+        timeout
+
+        Args:
+            timeout (int): milliseconds
+
+        Returns:
+            timeout (int): milliseconds
+
+        """
         return self._instr.timeout
     def _set_timeout_ms(self, time_ms):
         self._instr.timeout = time_ms
@@ -121,7 +152,12 @@ class VisaBus:
 
     def status_string(self):
         """
-        Returns bus status
+        Status code and human-readable status string
+        for the VISA bus
+
+        Returns:
+            str: Status string
+
         Example:
             '0x0 VI_SUCCESS Operation completed successfully.'
         """
