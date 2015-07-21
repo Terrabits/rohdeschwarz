@@ -33,7 +33,6 @@ class PortPowerLimits:
             result = self._vna.query(scpi).strip()
             return float(result)
         def __setitem__(self, index, value):
-            print('Set item: {0} = {1}'.format(index, value))
             if isinstance(value, bool) and value == False:
                 value = None
             if isinstance(value, (int, float)):
@@ -44,7 +43,6 @@ class PortPowerLimits:
                 scpi = scpi.format(index, value)
                 self._vna.write(scpi)
             elif not value:
-                print('Shit it down...')
                 scpi = ':SOUR:POW{0}:LLIM 0'
                 scpi = scpi.format(index)
                 self._vna.write(scpi)
