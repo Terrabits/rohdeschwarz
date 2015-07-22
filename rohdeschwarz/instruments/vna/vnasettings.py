@@ -92,74 +92,60 @@ class VnaSettings:
     def _ascii_data_format(self):
         result = self._vna.query(':FORM?').strip()
         return result == 'ASC,0'
-
     def _set_ascii_data_format(self, value):
         if value:
             self._vna.write(':FORM ASC')
-
     ascii_data_format = property(_ascii_data_format, _set_ascii_data_format)
 
     def _binary_32_bit_data_format(self):
         result = self._vna.query(':FORM?').strip()
         return result == 'REAL,32'
-
     def _set_binary_32_bit_data_format(self, value):
         if value:
             self._vna.write(':FORM REAL,32')
-
     binary_32_bit_data_format = property(_binary_32_bit_data_format, _set_binary_32_bit_data_format)
 
     def _binary_64_bit_data_format(self):
         result = self._vna.query(':FORM?').strip()
         return result == 'REAL,64'
-
     def _set_binary_64_bit_data_format(self, value):
         if value:
             self._vna.write(':FORM REAL,64')
-
     binary_64_bit_data_format = property(_binary_64_bit_data_format, _set_binary_64_bit_data_format)
 
     def _big_endian(self):
         # ':FORM:BORD NORM'
         return False
-
     def _set_big_endian(self, value):
         return False
-
     big_endian = property(_big_endian, _set_big_endian)
 
     def _little_endian(self):
         # ':FORM:BORD SWAP'
         return True
-
     def _set_little_endian(self, value):
         return False
-
     little_endian = property(_little_endian, _set_little_endian)
 
     def _emulation_mode(self):
         # ':SYST:LANG?'
         result = self._vna.query(':SYST:LANG?').strip().strip("'").upper()
         return EmulationMode(result)
-
     def _set_emulation_mode(self, value):
         if not value:
             value = EmulationMode.off
         scpi = ":SYST:LANG '{0}'"
         scpi = scpi.format(value)
         self._vna.write(scpi)
-
     emulation_mode = property(_emulation_mode, _set_emulation_mode)
 
     def _display(self):
         return True
-
     def _set_display(self, value):
         if value:
             self._vna.write(':SYST:DISP:UPD ON')
         else:
             self._vna.write(':SYST:DISP:UPD OFF')
-
     display = property(_display, _set_display)
 
     def update_display(self):
@@ -169,13 +155,11 @@ class VnaSettings:
         scpi = ':SYST:ERR:DISP?'
         result = self._vna.query(scpi).strip()
         return result == "1"
-
     def _set_display_errors(self, value):
         if value:
             self._vna.write(':SYST:ERR:DISP 1')
         else:
             self._vna.write(':SYST:ERR:DISP 0')
-
     display_errors = property(_display_errors, _set_display_errors)
 
     def _user_preset(self):
@@ -187,7 +171,6 @@ class VnaSettings:
             result = self._vna.query(':SYST:PRES:USER:NAME?')
             result = result.strip().strip("'")
             return result
-
     def _set_user_preset(self, value):
         if not value:
             self._vna.write(':SYST:PRES:USER 0')
@@ -196,18 +179,15 @@ class VnaSettings:
             scpi = scpi.format(value)
             self._vna.write(scpi)
             self._vna.write(':SYST:PRES:USER 1')
-
     user_preset = property(_user_preset, _set_user_preset)
 
     def _user_preset_remotely(self):
         return self._vna.query(':SYST:PRES:REM?').strip() == "1"
-
     def _set_user_preset_remotely(self, value):
         if value:
             self._vna.write(':SYST:PRES:REM 1')
         else:
             self._vna.write(':SYST:PRES:REM 0')
-
     user_preset_remotely = property(_user_preset_remotely, _set_user_preset_remotely)
 
     def _use_cal_group_on_preset(self):
@@ -224,7 +204,6 @@ class VnaSettings:
             return None
         else:
             return result
-
     def _set_use_cal_group_on_preset(self, value):
         if self._vna.properties.is_zvx():
             message = 'ZVx does not support cal group on preset!\n'
@@ -238,20 +217,17 @@ class VnaSettings:
         scpi = ":SYST:PRES:USER:CAL '{0}'"
         scpi = scpi.format(value)
         self._vna.write(scpi)
-
     use_cal_group_on_preset = property(_use_cal_group_on_preset, _set_use_cal_group_on_preset)
 
     def _output_power_on(self):
         result = self._vna.query(':OUTP?')
         result = result.strip()
         return result == "1"
-
     def _set_output_power_on(self, value):
         if value:
             self._vna.write(':OUTP 1')
         else:
             self._vna.write(':OUTP 0')
-
     output_power_on = property(_output_power_on, _set_output_power_on)
 
     def _dynamic_if_bandwidth(self):
@@ -265,7 +241,6 @@ class VnaSettings:
         result = self._vna.query(':BAND:DRED?')
         result = result.strip()
         return result == "1"
-
     def _set_dynamic_if_bandwidth(self, value):
         if self._vna.properties.is_znx():
             message = 'ZNx does not support dynamic if bandwidth!\n'
@@ -278,42 +253,35 @@ class VnaSettings:
             self._vna.write(':BAND:DRED 1')
         else:
             self._vna.write(':BAND:DRED 0')
-
     dynamic_if_bandwidth = property(_dynamic_if_bandwidth, _set_dynamic_if_bandwidth)
 
     def _reduce_cal_unit_power(self):
         scpi = ':SYST:COMM:RDEV:AKAL:PRED'
         result = self._vna.query(scpi)
         return result.strip() == "1"
-
     def _set_reduce_cal_unit_power(self, value):
         if value:
             self._vna.write(':SYST:COMM:RDEV:AKAL:PRED 1')
         else:
             self._vna.write(':SYST:COMM:RDEV:AKAL:PRED 0')
-
     reduce_cal_unit_power = property(_reduce_cal_unit_power, _set_reduce_cal_unit_power)
 
     def _log_scpi_commands(self):
         scpi = ':SYST:LOGG:REM?'
         result = self._vna.query(scpi)
         return result.strip() == "1"
-
     def _set_log_scpi_commands(self, value):
         if value:
             self._vna.write(':SYST:LOGG:REM 1')
         else:
             self._vna.write(':SYST:LOGG:REM 0')
-
     log_scpi_commands = property(_log_scpi_commands, _set_log_scpi_commands)
 
     def _port_power_limit_class(self):
         return PortPowerLimits(self._vna)
-
     def _set_port_power_limit(self, power):
         limits = PortPowerLimits(self._vna)
         ports = len(limits)
         for i in range(1,ports+1):
             limits[i] = power
-
     port_power_limit_dBm = property(_port_power_limit_class, _set_port_power_limit)

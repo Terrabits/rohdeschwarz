@@ -28,7 +28,7 @@ class GenericInstrument:
 
     def open_tcp(self, ip_address='127.0.0.1', socket=5025):
         self.connection_method = ConnectionMethod.tcpip
-        self.address = ip_address + " :{0}".format(socket)
+        self.address = "{0}:{1}".format(ip_address, socket)
         self.bus = TcpBus()
         self.bus.open(ip_address, socket)
 

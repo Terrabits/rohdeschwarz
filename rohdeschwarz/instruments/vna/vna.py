@@ -1,5 +1,6 @@
 import uuid
 import pathlib
+from rohdeschwarz.general import SiPrefix
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
 from rohdeschwarz.instruments.vna.vnachannel import VnaChannel
 from rohdeschwarz.instruments.vna.vnadiagram import VnaDiagram
@@ -16,6 +17,37 @@ class Vna(GenericInstrument):
         self.properties = VnaProperties(self)
         self.settings = VnaSettings(self)
         self.file = VnaFileSystem(self)
+
+    def print_info(self):
+        _log = self.log
+        self.log = None
+        _log.write('VNA INSTRUMENT INFO\n')
+        if self.connected() and self.properties.is_known_model():
+            _log.write('Connection:       {0}\n'.format(self.connection_method))
+            _log.write('Address:          {0}\n'.format(self.address))
+            _log.write('Make:             Rohde & Schwarz\n')
+            _log.write('Model:            {0}\n'.format(self.properties.model))
+            _log.write('Serial No:        {0}\n'.format(self.properties.serial_number))
+            _log.write('Firmware Version: {0}\n'.format(self.properties.firmware_version))
+            value, prefix = SiPrefix.convert(self.properties.minimum_frequency_Hz)
+            _log.write('Min Frequency:    {0} {1}Hz\n'.format(value, prefix))
+            value, prefix = SiPrefix.convert(self.properties.maximum_frequency_Hz)
+            _log.write('Max Frequency:    {0} {1}Hz\n'.format(value, prefix))
+            _log.write('Number of Ports:  {0}\n'.format(self.properties.physical_ports))
+            options = self.properties.options_list
+            if options:
+                _log.write('Options:          ')
+                _log.write('\n                  '.join(options))
+                _log.write('\n')
+        elif self.connected():
+            _log.write('Make: Unknown\n')
+            _log.write('*IDN?\n  {0}\n'.format(self.id_string()))
+        else:
+            _log.write('Instrument not found!\n')
+            _log.write('Connection:       {0}\n'.format(self.connection_method))
+            _log.write('Address:          {0}\n'.format(self.address))
+        _log.write('\n\n')
+        self.log = _log
 
     def is_error(self):
         return bool(self._errors())
@@ -300,7 +332,6 @@ class Vna(GenericInstrument):
         for i in channels:
             sweep_time_ms += self.channel(i).sweep_time_ms
         return sweep_time_ms
-
     sweep_time_ms = property(_sweep_time_ms)
 
     def start_sweeps(self):
@@ -314,3 +345,4 @@ class Vna(GenericInstrument):
             scpi = ':INST:TPORT:COUN?'
             result = self.query(scpi)
             return int(result.strip())
+    test_ports = property(_test_ports)

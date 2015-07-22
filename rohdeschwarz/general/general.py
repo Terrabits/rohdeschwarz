@@ -15,6 +15,7 @@ class ConnectionMethod(Enum):
         return self.value
 
 class SiPrefix(Enum):
+    femto = 1.0E-15
     pico = 1.0E-12
     nano = 1.0E-9
     micro = 1.0E-6
@@ -27,7 +28,9 @@ class SiPrefix(Enum):
     def __float__(self):
         return self.value
     def __str__(self):
-        if self == SiPrefix.pico:
+        if self == SiPrefix.femto:
+            return 'f'
+        elif self == SiPrefix.pico:
             return 'p'
         elif self == SiPrefix.nano:
             return 'n'
@@ -45,7 +48,28 @@ class SiPrefix(Enum):
             return 'T'
         else:
             return ''
-
+    def convert(value):
+        abs_value = abs(value)
+        if abs_value >= 1.0E12:
+            return (value * 1.0E-12, SiPrefix.tera)
+        elif abs_value >= 1.0E9:
+            return (value * 1.0E-9, SiPrefix.giga)
+        elif abs_value >= 1.0E6:
+            return (value * 1.0E-6, SiPrefix.mega)
+        elif abs_value >= 1.0E3:
+            return (value * 1.0E-3, SiPrefix.kilo)
+        elif abs_value >= 1.0:
+            return (value, SiPrefix.none)
+        elif abs_value >= 1.0E-3:
+            return (value * 1.0E3, SiPrefix.milli)
+        elif abs_value >= 1.0E-6:
+            return (value * 1.0E6, SiPrefix.micro)
+        elif abs_value >= 1.0E-9:
+            return (value * 1.0E9, SiPrefix.nano)
+        elif abs_value >= 1.0E-12:
+            return (value * 1.0E12, SiPrefix.pico)
+        else:
+            return (value * 1.0E15, SiPrefix.femto)
 
 ### Functions
 def print_header(file, app_name, app_version):
@@ -61,19 +85,22 @@ def print_header(file, app_name, app_version):
 
 def dB(magnitude):
     """
-    Convert linear magnitude to dB
+    Convert complex values or linear magnitude to dB
     Args:
         magnitude (int, float, numpy.float32, numpy, float64, numpy.ndarray)
     Returns:
-        Same type as 'magnitude', but converted to dB
+        Similar type with the value converted to dB
     """
     if isinstance(magnitude, (int, float, numpy.float32, numpy.float64)):
         return 20.0 * math.log10(abs(magnitude))
     elif isinstance(magnitude, numpy.ndarray):
+        result = None
         if isinstance(magnitude[0], (numpy.complex64, numpy.complex128)):
-            raise ValueError(0, 'Cannot convert complex to dB')
+            result = numpy.array(abs(magnitude))
         else:
-            for i in range(0, len(magnitude)):
-                magnitude[i] = dB(magnitude[i])
-            return magnitude
-
+            result = numpy.array(magnitude)
+        for i in range(0, len(magnitude)):
+            result[i] = dB(result[i])
+        return result
+    else:
+        raise ValueError(0, 'Cannot convert type {0} to dB'.format(type(magnitude)))
