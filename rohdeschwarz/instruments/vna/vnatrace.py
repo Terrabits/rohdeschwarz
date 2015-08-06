@@ -30,7 +30,7 @@ class SaveDataFormat(Enum):
         return self.value
 
 
-class VnaTrace:
+class VnaTrace(object):
     def __init__(self, vna, name='Trc1'):
         self._vna = vna
         self.name = name

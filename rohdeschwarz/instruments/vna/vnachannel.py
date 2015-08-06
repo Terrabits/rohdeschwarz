@@ -35,7 +35,7 @@ class TouchstoneFormat(Enum):
             return self.value == other
 
 
-class VnaChannel:
+class VnaChannel(object):
     def __init__(self, vna, index):
         self._vna = vna
         self.index = index

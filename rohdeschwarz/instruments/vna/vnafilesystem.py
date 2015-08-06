@@ -15,7 +15,7 @@ class Directory(Enum):
         return self.value
 
 
-class VnaFileSystem():
+class VnaFileSystem(object):
     def __init__(self, vna):
         self._vna = vna
 

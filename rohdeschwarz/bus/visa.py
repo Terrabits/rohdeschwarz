@@ -4,7 +4,7 @@ from pyvisa.errors import VisaIOError
 import pyvisa.ctwrapper.functions as vi
 import warnings
 
-class VisaBus:
+class VisaBus(object):
     """
     VisaBus is a wrapper for pyvisa for compatibility with
     the rohdeschwarz.instruments.genericinstrument genericinstrument

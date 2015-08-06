@@ -28,7 +28,7 @@ Example:
 
 """
 
-class TcpBus:
+class TcpBus(object):
     """
     TcpBus provides a VISA-like interface for an instrument
     connection using TCP sockets.

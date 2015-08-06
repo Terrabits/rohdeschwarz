@@ -1,6 +1,6 @@
 
 
-class VnaDiagram:
+class VnaDiagram(object):
     def __init__(self, vna, index=1):
         self._vna = vna
         self.index = index

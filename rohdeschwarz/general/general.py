@@ -48,6 +48,7 @@ class SiPrefix(Enum):
             return 'T'
         else:
             return ''
+    @staticmethod
     def convert(value):
         abs_value = abs(value)
         if abs_value >= 1.0E12:

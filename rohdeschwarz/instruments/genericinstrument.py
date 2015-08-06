@@ -7,7 +7,7 @@ from rohdeschwarz.bus.tcp import TcpBus
 from rohdeschwarz.bus.visa import VisaBus
 
 
-class GenericInstrument:
+class GenericInstrument(object):
     _MAX_PRINT = 100
 
     def __init__(self):

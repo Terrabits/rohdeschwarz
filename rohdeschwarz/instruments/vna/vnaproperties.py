@@ -23,7 +23,7 @@ class Model(Enum):
             return string.upper().find(self.value) != -1
 
 
-class VnaProperties:
+class VnaProperties(object):
     def __init__(self, vna):
         self._vna = vna
 
