@@ -23,13 +23,13 @@ class PortPowerLimits:
 
         def __getitem__(self, index):
             scpi = ':SOUR:POW{0}:LLIM?'
-            scpi = scpi.format(index)
+            scpi = scpi.format(index+1)
             limit = self._vna.query(scpi).strip()
             limit = limit == "1"
             if not limit:
                 return None
             scpi = ':SOUR:POW{0}:LLIM:VAL?'
-            scpi = scpi.format(index)
+            scpi = scpi.format(index+1)
             result = self._vna.query(scpi).strip()
             return float(result)
         def __setitem__(self, index, value):
@@ -37,30 +37,30 @@ class PortPowerLimits:
                 value = None
             if isinstance(value, (int, float)):
                 scpi = ':SOUR:POW{0}:LLIM 1'
-                scpi = scpi.format(index)
+                scpi = scpi.format(index+1)
                 self._vna.write(scpi)
                 scpi = ':SOUR:POW{0}:LLIM:VAL {1}'
-                scpi = scpi.format(index, value)
+                scpi = scpi.format(index+1, value)
                 self._vna.write(scpi)
             elif not value:
                 scpi = ':SOUR:POW{0}:LLIM 0'
-                scpi = scpi.format(index)
+                scpi = scpi.format(index+1)
                 self._vna.write(scpi)
         def __len__(self):
             return self._vna.properties.physical_ports
         def __bool__(self):
-            value = isinstance(self.__getitem__(1), float)
+            value = isinstance(self.__getitem__(0), float)
             ports = self.__len__()
-            for i in range(2, ports+1):
+            for i in range(1, ports):
                 if value != isinstance(self.__getitem__(i), float):
                     raise ValueError
             return value
         def __float__(self):
-            value = self.__getitem__(1)
+            value = self.__getitem__(0)
             if not isinstance(value, float):
                 raise ValueError
             ports = self.__len__()
-            for i in range(2, ports+1):
+            for i in range(1, ports):
                 next_value = self.__getitem__(i)
                 if not isinstance(next_value, float):
                     raise ValueError
@@ -81,9 +81,11 @@ class PortPowerLimits:
                 pass
             values = []
             ports = self.__len__()
-            for i in range(1, ports+1):
+            for i in range(0, ports):
                 values.append(self.__getitem__(i))
             return str(values)
+        def __repr__(self):
+            return self.__str__()
 
 class VnaSettings:
     def __init__(self, vna):
@@ -114,17 +116,25 @@ class VnaSettings:
     binary_64_bit_data_format = property(_binary_64_bit_data_format, _set_binary_64_bit_data_format)
 
     def _big_endian(self):
-        # ':FORM:BORD NORM'
-        return False
+        scpi = ':FORM:BORD?'
+        result = self._vna.query(scpi).strip().upper()
+        return result == 'NORM'
     def _set_big_endian(self, value):
-        return False
+        if value:
+            self._vna.write(':FORM:BORD NORM')
+        else:
+            self._vna.write(':FORM:BORD SWAP')
     big_endian = property(_big_endian, _set_big_endian)
 
     def _little_endian(self):
-        # ':FORM:BORD SWAP'
-        return True
+        scpi = ':FORM:BORD?'
+        result = self._vna.query(scpi).strip().upper()
+        return result == 'SWAP'
     def _set_little_endian(self, value):
-        return False
+        if value:
+            self._vna.write(':FORM:BORD SWAP')
+        else:
+            self._vna.write(':FORM:BORD NORM')
     little_endian = property(_little_endian, _set_little_endian)
 
     def _emulation_mode(self):
@@ -140,7 +150,9 @@ class VnaSettings:
     emulation_mode = property(_emulation_mode, _set_emulation_mode)
 
     def _display(self):
-        return True
+        scpi = ':SYST:DISP:UPD?'
+        result = self._vna.query(scpi).strip()
+        return result == "1"
     def _set_display(self, value):
         if value:
             self._vna.write(':SYST:DISP:UPD ON')
@@ -282,6 +294,6 @@ class VnaSettings:
     def _set_port_power_limit(self, power):
         limits = PortPowerLimits(self._vna)
         ports = len(limits)
-        for i in range(1,ports+1):
+        for i in range(0, ports):
             limits[i] = power
     port_power_limit_dBm = property(_port_power_limit_class, _set_port_power_limit)
