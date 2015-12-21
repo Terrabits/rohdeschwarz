@@ -144,10 +144,12 @@ class VnaFileSystem(object):
         self._vna.write_block_data_from_file(local_filename, 1024*1024)
 
     def download_file(self, remote_filename, local_filename):
+        size_B = self.file_size(remote_filename)
+
         scpi = ":MMEM:DATA? '{0}'"
         scpi = scpi.format(remote_filename)
         self._vna.write(scpi)
-        self._vna.read_block_data_to_file(local_filename, 1024*1024)
+        self._vna.read_block_data_to_file(local_filename, size_B + 20)
 
     def _dir(self):
         results = self._vna.query(":MMEM:CAT?").strip();

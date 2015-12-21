@@ -1,13 +1,31 @@
 R&S Application Version 1.0
 (C) 2015 Rohde & Schwarz
 
-Wed 15 Jul 23:29:15 2015
+Thu 05 Nov 11:26:19 2015
 
-INSTRUMENT INFO
-Connection: 
-Address:    
-Make:       Rohde & Schwarz
-Id string:  Rohde-Schwarz,FSW,123456789,2.0
+VNA INSTRUMENT INFO
+Connection:       
+Address:          
+Make:             Rohde & Schwarz
+Model:            ZNB
+Serial No:        1311601044100104
+Firmware Version: 2.60.1.226
+Min Frequency:    9.0 KHz
+Max Frequency:    8.5 GHz
+Number of Ports:  4
+Options:          ZNB-K2
+                  ZNB-K4
+                  ZNB-K14
+                  ZNB-K17
+                  ZNB-K19
+                  ZNB8-B24
+                  ZNB8-B31
+                  ZNB8-B32
+                  ZNB8-B33
+                  ZNB8-B34
+                  ZNB-B81
+                  ZNB-B2
+                  ZN-B15
 
 
 Write:    ":SYST:ERR?"

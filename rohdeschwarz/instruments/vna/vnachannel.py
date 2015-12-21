@@ -371,7 +371,7 @@ class VnaChannel(object):
         self.s_parameter_group = old_ports
         return result
 
-    def save_measurement(self, filename, ports, format=''):
+    def save_measurement(self, filename, ports, format='COMP'):
         old_ports = self.s_parameter_group
         is_manual_sweep = self.manual_sweep
         file_extension = '.s{0}p'.format(len(ports))
