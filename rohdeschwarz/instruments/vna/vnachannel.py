@@ -1,7 +1,9 @@
 from enum import Enum
 import numpy
+import math
 import pathlib
 from rohdeschwarz.general import SiPrefix
+from rohdeschwarz.general import number_of_thrus
 from rohdeschwarz.instruments.vna.vnafilesystem import Directory
 
 class SweepType(Enum):
@@ -62,6 +64,22 @@ class VnaChannel(object):
     def traces(self):
         # Unfinished
         return []
+
+    def auto_calibrate(self, ports, characterization=''):
+        scpi = ""
+        if type(ports) == dict:
+            scpi = ":SENS{0}:CORR:COLL:AUTO:PORT '{1}',{2}"
+            ports_string = ",".join("{!r},{!r}".format(k,v) for (k,v) in ports.items())
+            scpi = scpi.format(self.index, characterization, ports_string)
+        else:
+            scpi = ":SENS{0}:CORR:COLL:AUTO '{1}',{2}"
+            ports_string = ",".join(map(str, ports))
+            scpi = scpi.format(self.index, characterization, ports_string)
+        port_count = len(ports)
+        number_of_sweeps = 3 * port_count + number_of_thrus(port_count)
+        timeout_ms = number_of_sweeps * (10 * self.sweep_time_ms + 1000) + 5000
+        self._vna.write(scpi)
+        self._vna.pause(timeout_ms)
 
     def start_sweep(self):
         scpi = ':INIT{0}'.format(self.index)
@@ -352,8 +370,9 @@ class VnaChannel(object):
         ports = len(self.s_parameter_group)
         is_manual_sweep = self.manual_sweep
         self.manual_sweep = True
+        timeout_ms = 2 * self.sweep_time_ms + 5000
         self.start_sweep()
-        self._vna.pause(2 * self.sweep_time_ms + 5000)
+        self._vna.pause(timeout_ms)
         scpi = ':CALC{0}:DATA:SGR? SDAT'
         scpi = scpi.format(self.index)
         self._vna.settings.binary_64_bit_data_format = True
@@ -379,8 +398,9 @@ class VnaChannel(object):
             filename += file_extension
         self.s_parameter_group = ports
         self.manual_sweep = True
+        timeout_ms = 2 * self.sweep_time_ms + 5000
         self.start_sweep()
-        self._vna.pause(2 * self.sweep_time_ms + 5000)
+        self._vna.pause(timeout_ms)
         ports_string = ",".join(map(str, ports))
         scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
         scpi = scpi.format(self.index, \

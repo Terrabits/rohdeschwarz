@@ -105,3 +105,12 @@ def dB(magnitude):
         return result
     else:
         raise ValueError(0, 'Cannot convert type {0} to dB'.format(type(magnitude)))
+
+def number_of_thrus(port_count):
+    f = math.factorial
+    if port_count <= 0:
+        raise ValueError("number_of_thrus() not defined for port count less than 1")
+    elif port_count == 1:
+        return 0
+    else:
+        return f(port_count) / (2*f(port_count-2))
