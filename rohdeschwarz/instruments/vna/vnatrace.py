@@ -158,3 +158,22 @@ class VnaTrace(object):
         scpi = scpi.format(self.name, filename, format)
         self._vna.write(scpi)
         self._vna.pause()
+
+    def isMarker(self, index):
+        self.select()
+        scpi = ":CALC{0}:MARK{1}?"
+        scpi.format(self.channel, index)
+        result = self._vna.query(scpi).strip()
+        return result == "1"
+
+    def _markers(self):
+        markers = []
+        for i in range(1,10):
+            if self.isMarker(i):
+                markers.append(i)
+        return markers
+    def _set_markers(self, markers):
+        return
+    markers = property(_markers, _set_markers)
+
+
