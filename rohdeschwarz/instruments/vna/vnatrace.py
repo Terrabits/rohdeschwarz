@@ -1,6 +1,9 @@
 import sys
 from enum import Enum
 import numpy
+from rohdeschwarz.general import unique_alphanumeric_string
+from rohdeschwarz.instruments.vna.vnamarker import VnaMarker
+from rohdeschwarz.instruments.vna.vnalimits import VnaLimits
 
 class TraceFormat(Enum):
     magnitude_dB = 'MLOG'
@@ -151,6 +154,15 @@ class VnaTrace(object):
         scpi = scpi.format(self.name, filename, format)
         self._vna.write(scpi)
         self._vna.pause()
+    def save_data_locally(self, filename):
+        extension = ".csv"
+        unique_filename = unique_alphanumeric_string() + extension
+        if not filename.lower().endswith(extension):
+            filename += extension
+        self.save_data(unique_filename)
+        self._vna.file.download_file(unique_filename, "COMP")
+        self._vna.file.delete(unique_filename)
+
     def save_complex_data(self, filename, format = SaveDataFormat.real_imaginary):
         if not filename.lower().endswith('.csv'):
             filename += '.csv'
@@ -158,22 +170,56 @@ class VnaTrace(object):
         scpi = scpi.format(self.name, filename, format)
         self._vna.write(scpi)
         self._vna.pause()
+    def save_complex_data_locally(self, filename, format = SaveDataFormat.real_imaginary):
+        extension = ".csv"
+        unique_filename = unique_alphanumeric_string() + extension
+        if not filename.lower().endswith(extension):
+            filename += extension
 
-    def isMarker(self, index):
+        self.save_complex_data(unique_filename, format)
+        self._vna.file.download_file(unique_filename, filename)
+        self._vna.file.delete(unique_filename)
+
+    def is_marker(self, index):
         self.select()
         scpi = ":CALC{0}:MARK{1}?"
         scpi.format(self.channel, index)
         result = self._vna.query(scpi).strip()
         return result == "1"
+    def create_marker(self, index):
+        scpi = ":CALC{0}:MARK{1} 1"
+        scpi = scpi.format(self.channel, index)
+        self.select()
+        self._vna.write(scpi)
+    def delete_marker(self, index):
+        scpi = ":CALC{0}:MARK{1} 0"
+        scpi = scpi.format(self.channel, index)
+        self._vna.write(scpi)
+    def delete_markers(self):
+        for marker in self.markers:
+            self.delete_marker(marker)
 
     def _markers(self):
         markers = []
-        for i in range(1,10):
-            if self.isMarker(i):
+        for i in range(1,11):
+            if self.is_marker(i):
                 markers.append(i)
         return markers
     def _set_markers(self, markers):
-        return
+        old_markers = self.markers
+        for marker in markers:
+            if marker not in old_markers:
+                self.create_marker(marker)
+        for marker in old_markers:
+            if marker not in markers:
+                self.delete_marker(marker)
     markers = property(_markers, _set_markers)
+
+    def marker(self, index=1):
+        return VnaMarker(self._vna, self, index)
+
+    def _limits(self):
+        return VnaLimits(self._vna, self)
+    limits = property(_limits)
 
 

@@ -1,6 +1,6 @@
 import sys
 import os
-import struct
+#import struct
 import numpy
 from rohdeschwarz.general import ConnectionMethod
 from rohdeschwarz.bus.tcp import TcpBus
@@ -67,10 +67,10 @@ class GenericInstrument(object):
             self.log = None
 
     def id_string(self):
-        return self.query('*IDN?')
+        return self.query('*IDN?').strip()
 
     def options_string(self):
-        return self.query("*OPT?")
+        return self.query("*OPT?").strip()
 
     def clear_status(self):
         self.write("*CLS")

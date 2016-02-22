@@ -1,8 +1,7 @@
 from enum import Enum
 import numpy
-import math
-import pathlib
 from rohdeschwarz.general import SiPrefix
+from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.general import number_of_thrus
 from rohdeschwarz.instruments.vna.vnafilesystem import Directory
 
@@ -411,3 +410,14 @@ class VnaChannel(object):
         self._vna.pause(5000)
         self.s_parameter_group = old_ports
         self.manual_sweep = is_manual_sweep
+
+    def save_measurement_locally(self, filename, ports, format='COMP'):
+        extension = ".s{0}p".format(len(ports))
+        unique_filename = unique_alphanumeric_string() + extension
+        if not filename.lower().endswith(extension):
+            filename += extension
+        self.save_measurement(unique_filename, ports, format)
+        self._vna.file.download_file(unique_filename, filename)
+        self._vna.file.delete(unique_filename)
+
+

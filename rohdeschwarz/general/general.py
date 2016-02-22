@@ -1,8 +1,8 @@
 import datetime
 from enum import Enum
-import cmath
 import math
 import numpy
+import uuid
 
 
 ### Enums
@@ -114,3 +114,8 @@ def number_of_thrus(port_count):
         return 0
     else:
         return f(port_count) / (2*f(port_count-2))
+
+def unique_alphanumeric_string():
+    unique_string = str(uuid.uuid4())
+    unique_string = unique_string.replace('-', '')
+    return unique_string

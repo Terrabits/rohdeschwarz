@@ -1,6 +1,7 @@
-import uuid
 import pathlib
+from enum import Enum
 from rohdeschwarz.general import SiPrefix
+from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
 from rohdeschwarz.instruments.vna.vnachannel import VnaChannel
 from rohdeschwarz.instruments.vna.vnadiagram import VnaDiagram
@@ -10,8 +11,18 @@ from rohdeschwarz.instruments.vna.vnasettings import VnaSettings
 from rohdeschwarz.instruments.vna.vnafilesystem import VnaFileSystem
 from rohdeschwarz.instruments.vna.vnafilesystem import Directory
 
-class Vna(GenericInstrument):
 
+class ImageFormat(Enum):
+    bmp = 'BMP'
+    png = 'PNG'
+    jpg = 'JPG'
+    pdf = 'PDF'
+    svg = 'SVG'
+    def __str__(self):
+        return self.value
+
+
+class Vna(GenericInstrument):
     def __init__(self):
         GenericInstrument.__init__(self)
         self.properties = VnaProperties(self)
@@ -274,9 +285,7 @@ class Vna(GenericInstrument):
             return sets[0]
 
         # create unique trace name
-        unique_trace_name = str(uuid.uuid4())
-        unique_trace_name = unique_trace_name.replace('-', '')
-        unique_trace_name = 'Trc' + unique_trace_name
+        unique_trace_name = 'Trc' + unique_alphanumeric_string()
         self.create_trace(unique_trace_name, self.channels[0])
         for set in sets:
             self.active_set = set
@@ -287,11 +296,16 @@ class Vna(GenericInstrument):
     active_set = property(_active_set, _set_active_set)
 
     def save_active_set(self, path):
-        if self.properties.is_zvx() and not path.lower().endswith('.zvx'):
-            path += '.zvx'
-        elif self.properties.is_znx() and not path.lower().endswith('.znx'):
-            path += '.znx'
-        current_dir = ''
+        extension = None
+        if self.properties.is_zvx():
+            extension = ".zvx"
+        elif self.properties.is_znx():
+            extension = ".znx"
+
+        if not path.lower().endswith(extension):
+            path += extension
+
+        current_dir = None
         if str(pathlib.PureWindowsPath(path).parent) ==  '.':
             current_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
@@ -301,6 +315,23 @@ class Vna(GenericInstrument):
         self.pause()
         if current_dir:
             self.file.cd(current_dir)
+    def save_active_set_locally(self, filename):
+        extension = None
+        if self.properties.is_zvx():
+            extension = ".zvx"
+        elif self.properties.is_znx():
+            extension = ".znx"
+
+        unique_filename = unique_alphanumeric_string() + extension
+        if not filename.lower().endswith(extension):
+            filename += extension
+
+        self.save_active_set(unique_filename)
+        current_directory = self.file.directory()
+        self.file.cd(Directory.recall_sets)
+        self.file.download_file(unique_filename, filename)
+        self.file.delete(unique_filename)
+        self.file.cd(current_directory)
 
     def close_set(self, name):
         scpi = ":MEM:DEL '{0}'"
@@ -334,6 +365,27 @@ class Vna(GenericInstrument):
         return sweep_time_ms
     sweep_time_ms = property(_sweep_time_ms)
 
+    def _is_manual_sweep(self):
+        for c in self.channels:
+            if not self.channel(c).manual_sweep:
+                return False
+        return True
+    def _set_manual_sweep(self, value):
+        for c in self.channels:
+            self.channel(c).manual_sweep = value
+    manual_sweep = property(_is_manual_sweep, _set_manual_sweep)
+
+    def _is_continuous_sweep(self):
+        for c in self.channels:
+            if not self.channel(c).continuous_sweep:
+                return False
+        return True
+    def _set_continuous_sweep(self, value):
+        for c in self.channels:
+            self.channel(c).continuous_sweep = value
+    continuous_sweep = property(_is_continuous_sweep, _set_continuous_sweep)
+
+
     def start_sweeps(self):
         self.write(":INIT:SCOP ALL")
         self.write(":INIT")
@@ -346,3 +398,28 @@ class Vna(GenericInstrument):
             result = self.query(scpi)
             return int(result.strip())
     test_ports = property(_test_ports)
+
+    def save_screenshot(self, filename, image_format='JPG'):
+        extension = ".{0}".format(image_format).lower()
+        if not filename.lower().endswith(extension):
+            filename += extension
+        scpi = ":MMEM:NAME '{0}'"
+        scpi = scpi.format(filename)
+        self.write(scpi)
+        scpi = ":HCOP:DEV:LANG {0}"
+        scpi = scpi.format(image_format)
+        self.write(scpi)
+        self.write(":HCOP:PAGE:WIND HARD")
+        self.write("HCOP:DEST 'MMEM'")
+        self.write(":HCOP")
+        self.pause()
+    def save_screenshot_locally(self, filename, image_format='JPG'):
+        extension = "." + str(image_format).lower()
+        unique_filename = unique_alphanumeric_string() + extension
+        if not filename.lower().endswith(extension):
+            filename += extension
+
+        self.save_screenshot(unique_filename, image_format)
+        self.file.download_file(unique_filename, filename)
+        self.file.delete(unique_filename)
+
