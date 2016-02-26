@@ -1,4 +1,5 @@
 from enum import Enum
+from rohdeschwarz.general import unique_alphanumeric_string
 
 
 class VnaDiagram(object):
@@ -59,7 +60,7 @@ class VnaDiagram(object):
         scpi = scpi.format(self._index)
         self._vna.write(scpi)
 
-    def save_screenshot(self, filename, image_format="JPG"):
+    def save_screenshot(self, filename, image_format='JPG'):
         self.select()
         extension = ".{0}".format(image_format).lower()
         if not filename.lower().endswith(extension):
@@ -74,3 +75,12 @@ class VnaDiagram(object):
         self._vna.write(":HCOP:DEST 'MMEM'")
         self._vna.write(":HCOP")
         self._vna.pause()
+
+    def save_screenshot_locally(self, filename, image_format='JPG'):
+        extension = ".{0}".format(image_format).lower()
+        unique_filename = unique_alphanumeric_string() + extension
+        if not filename.lower().endswith(extension):
+            filename += extension
+        self.save_screenshot(unique_filename, image_format)
+        self._vna.file.download_file(unique_filename, filename)
+        self._vna.file.delete(unique_filename)

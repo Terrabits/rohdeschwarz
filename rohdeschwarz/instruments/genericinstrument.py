@@ -19,8 +19,7 @@ class GenericInstrument(object):
         self.bytes_transferred = 0
 
     def __del__(self):
-        if self.bus:
-            self.close()
+        self.close()
 
     def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
         self.bus = VisaBus()

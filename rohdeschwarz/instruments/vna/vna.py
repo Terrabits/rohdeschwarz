@@ -399,6 +399,11 @@ class Vna(GenericInstrument):
             return int(result.strip())
     test_ports = property(_test_ports)
 
+    def _passed(self):
+        scpi = ":CALC:CLIM:FAIL?"
+        return self.query(scpi).strip() == "0"
+    passed = property(_passed)
+
     def save_screenshot(self, filename, image_format='JPG'):
         extension = ".{0}".format(image_format).lower()
         if not filename.lower().endswith(extension):

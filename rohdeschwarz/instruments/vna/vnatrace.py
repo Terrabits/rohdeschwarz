@@ -151,16 +151,17 @@ class VnaTrace(object):
         if not filename.lower().endswith('.csv'):
             filename += '.csv'
         scpi = ":MMEM:STOR:TRAC '{0}', '{1}', FORM, {2}, POIN, COMM"
-        scpi = scpi.format(self.name, filename, format)
+        scpi = scpi.format(self.name, filename, SaveDataFormat.real_imaginary)
         self._vna.write(scpi)
         self._vna.pause()
+
     def save_data_locally(self, filename):
         extension = ".csv"
         unique_filename = unique_alphanumeric_string() + extension
         if not filename.lower().endswith(extension):
             filename += extension
         self.save_data(unique_filename)
-        self._vna.file.download_file(unique_filename, "COMP")
+        self._vna.file.download_file(unique_filename, filename)
         self._vna.file.delete(unique_filename)
 
     def save_complex_data(self, filename, format = SaveDataFormat.real_imaginary):
@@ -170,12 +171,12 @@ class VnaTrace(object):
         scpi = scpi.format(self.name, filename, format)
         self._vna.write(scpi)
         self._vna.pause()
+
     def save_complex_data_locally(self, filename, format = SaveDataFormat.real_imaginary):
         extension = ".csv"
         unique_filename = unique_alphanumeric_string() + extension
         if not filename.lower().endswith(extension):
             filename += extension
-
         self.save_complex_data(unique_filename, format)
         self._vna.file.download_file(unique_filename, filename)
         self._vna.file.delete(unique_filename)
@@ -186,11 +187,13 @@ class VnaTrace(object):
         scpi.format(self.channel, index)
         result = self._vna.query(scpi).strip()
         return result == "1"
+
     def create_marker(self, index):
         scpi = ":CALC{0}:MARK{1} 1"
         scpi = scpi.format(self.channel, index)
         self.select()
         self._vna.write(scpi)
+        
     def delete_marker(self, index):
         scpi = ":CALC{0}:MARK{1} 0"
         scpi = scpi.format(self.channel, index)
