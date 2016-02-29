@@ -84,7 +84,6 @@ class TcpBus(object):
         self.timeout_ms = 1000
         self._socket.connect((address, port))
 
-
     def close(self):
         """
         Close connection
