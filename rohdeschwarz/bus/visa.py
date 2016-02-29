@@ -57,7 +57,8 @@ class VisaBus(object):
         """
         resource_string = "{0}::{1}::INSTR".format(connection_method, address)
         rm = visa.ResourceManager()
-        self._instr = rm.open_resource(resource_string)
+        instr = rm.open_resource(resource_string)
+        self._instr = instr
         self._session = self._instr.session
         self._visa_lib = rm.visalib
 
@@ -65,8 +66,9 @@ class VisaBus(object):
         """
         Close instrument connection
         """
-        self._instr.close()
-        self._instr = None
+        if self._instr:
+            self._instr.close()
+            self._instr = None
 
     def read(self):
         """

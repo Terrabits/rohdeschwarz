@@ -29,9 +29,9 @@ class VnaProperties(object):
 
     def is_znx(self):
         id = self._vna.id_string()
-        if Model.znb.is_in(id):
+        if Model.znbt.is_in(id):
             return True
-        elif Model.znbt.is_in(id):
+        elif Model.znb.is_in(id):
             return True
         elif Model.znc.is_in(id):
             return True

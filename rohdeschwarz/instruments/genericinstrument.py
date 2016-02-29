@@ -1,6 +1,6 @@
 import sys
 import os
-import struct
+#import struct
 import numpy
 from rohdeschwarz.general import ConnectionMethod
 from rohdeschwarz.bus.tcp import TcpBus
@@ -19,8 +19,7 @@ class GenericInstrument(object):
         self.bytes_transferred = 0
 
     def __del__(self):
-        if self.bus:
-            self.close()
+        self.close()
 
     def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
         self.bus = VisaBus()
@@ -67,10 +66,10 @@ class GenericInstrument(object):
             self.log = None
 
     def id_string(self):
-        return self.query('*IDN?')
+        return self.query('*IDN?').strip()
 
     def options_string(self):
-        return self.query("*OPT?")
+        return self.query("*OPT?").strip()
 
     def clear_status(self):
         self.write("*CLS")
