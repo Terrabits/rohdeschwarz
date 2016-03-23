@@ -177,7 +177,7 @@ class GenericInstrument(object):
                 file.write(data)
                 size -= len(data)
 
-    def write_block_data_from_file(self, filename, buffer_size=102400):
+    def write_block_data_from_file(self, filename, buffer_size=1024*1024):
         header = self.create_block_data_header(os.path.getsize(filename))
         self.write_raw_no_end(header)
         with open(filename, 'rb') as file:

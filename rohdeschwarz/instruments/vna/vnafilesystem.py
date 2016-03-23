@@ -1,5 +1,7 @@
 from enum import Enum
 import pathlib
+import os
+
 
 class Directory(Enum):
     default = 'DEF'
@@ -141,7 +143,7 @@ class VnaFileSystem(object):
         scpi = ":MMEM:DATA '{0}',"
         scpi = scpi.format(remote_filename)
         self._vna.write_raw_no_end(scpi.encode())
-        self._vna.write_block_data_from_file(local_filename, 1024*1024)
+        self._vna.write_block_data_from_file(local_filename, os.path.getsize(local_filename) + 20)
 
     def download_file(self, remote_filename, local_filename):
         size_B = self.file_size(remote_filename)

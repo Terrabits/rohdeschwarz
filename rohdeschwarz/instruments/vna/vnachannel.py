@@ -76,7 +76,7 @@ class VnaChannel(object):
             scpi = scpi.format(self.index, characterization, ports_string)
         port_count = len(ports)
         number_of_sweeps = 3 * port_count + number_of_thrus(port_count)
-        timeout_ms = number_of_sweeps * (10 * self.sweep_time_ms + 1000) + 5000
+        timeout_ms = number_of_sweeps * (10 * self.sweep_time_ms + 10000) + 5000
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
 
