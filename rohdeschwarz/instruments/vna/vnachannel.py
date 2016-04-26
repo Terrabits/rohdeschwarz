@@ -23,7 +23,7 @@ class SweepType(Enum):
             return self.value == other
 
 class TouchstoneFormat(Enum):
-    db_degress = 'LOGP'
+    db_degrees = 'LOGP'
     magnitude_degrees = 'LINP'
     real_imaginary = 'COMP'
 
@@ -419,5 +419,3 @@ class VnaChannel(object):
         self.save_measurement(unique_filename, ports, format)
         self._vna.file.download_file(unique_filename, filename)
         self._vna.file.delete(unique_filename)
-
-
