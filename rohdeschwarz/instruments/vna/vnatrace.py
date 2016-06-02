@@ -32,7 +32,6 @@ class SaveDataFormat(Enum):
     def __str__(self):
         return self.value
 
-
 class VnaTrace(object):
     def __init__(self, vna, name='Trc1'):
         self._vna = vna
@@ -100,12 +99,20 @@ class VnaTrace(object):
         scpi = scpi.format(self.name)
         self._vna.write(scpi)
 
+    def _x(self):
+        self.select();
+        scpi = ":CALC{0}:DATA:STIM?"
+        scpi = scpi.format(self.channel)
+        data_format = self._vna.settings.data_format
+        self._vna.settings.binary_64_bit_data_format = True
+        self._vna.write(scpi)
+        stimulus_data = self._vna.read_64_bit_vector_block_data()
+        self._vna.settings.data_format = data_format
+        return stimulus_data
+    x = property(_x)
+
     def measure_formatted_data(self):
         channel = self._vna.channel(self.channel)
-        if channel.is_frequency_sweep():
-            x = channel.frequencies_Hz
-        elif channel.is_power_sweep():
-            x = channel.powers_dBm
         if self._vna.properties.is_zvx():
             self.select()
             scpi = ':CALC{0}:DATA? FDAT'
@@ -117,18 +124,17 @@ class VnaTrace(object):
         channel.manual_sweep = True
         channel.start_sweep()
         self._vna.pause(2 * channel.sweep_time_ms * channel.sweep_count + 5000)
+        data_format = self._vna.settings.data_format
         self._vna.settings.binary_64_bit_data_format = True
         self._vna.write(scpi)
         y = self._vna.read_64_bit_vector_block_data()
+        self._vna.settings.data_format = data_format
         channel.manual_sweep = is_manual
-        self._vna.settings.ascii_data_format = True
-        return (x,y)
+        self._vna.settings.data_format = data_format
+        return (self.x, y)
+
     def measure_complex_data(self):
         channel = self._vna.channel(self.channel)
-        if channel.is_frequency_sweep():
-            x = channel.frequencies_Hz
-        elif channel.is_power_sweep():
-            x = channel.powers_dBm
         if self._vna.properties.is_zvx():
             self.select()
             scpi = ':CALC{0}:DATA? SDAT'
@@ -140,12 +146,13 @@ class VnaTrace(object):
         channel.manual_sweep = True
         channel.start_sweep()
         self._vna.pause(2 * channel.sweep_time_ms * channel.sweep_count + 5000)
+        data_format = self._vna.settings.data_format
         self._vna.settings.binary_64_bit_data_format = True
         self._vna.write(scpi)
         y = self._vna.read_64_bit_complex_vector_block_data()
         channel.manual_sweep = is_manual
-        self._vna.settings.ascii_data_format = True
-        return (x,y)
+        self._vna.settings.data_format = data_format
+        return (self.x, y)
 
     def save_data(self, filename):
         if not filename.lower().endswith('.csv'):
@@ -154,7 +161,6 @@ class VnaTrace(object):
         scpi = scpi.format(self.name, filename, SaveDataFormat.real_imaginary)
         self._vna.write(scpi)
         self._vna.pause()
-
     def save_data_locally(self, filename):
         extension = ".csv"
         unique_filename = unique_alphanumeric_string() + extension
@@ -171,7 +177,6 @@ class VnaTrace(object):
         scpi = scpi.format(self.name, filename, format)
         self._vna.write(scpi)
         self._vna.pause()
-
     def save_complex_data_locally(self, filename, format = SaveDataFormat.real_imaginary):
         extension = ".csv"
         unique_filename = unique_alphanumeric_string() + extension
@@ -193,7 +198,7 @@ class VnaTrace(object):
         scpi = scpi.format(self.channel, index)
         self.select()
         self._vna.write(scpi)
-        
+
     def delete_marker(self, index):
         scpi = ":CALC{0}:MARK{1} 0"
         scpi = scpi.format(self.channel, index)
@@ -224,5 +229,3 @@ class VnaTrace(object):
     def _limits(self):
         return VnaLimits(self._vna, self)
     limits = property(_limits)
-
-

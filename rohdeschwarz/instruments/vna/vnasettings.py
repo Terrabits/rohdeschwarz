@@ -91,6 +91,14 @@ class VnaSettings(object):
     def __init__(self, vna):
         self._vna = vna
 
+    def _data_format(self):
+            return self._vna.query(':FORM?').strip()
+    def _set_data_format(self, data_format):
+            scpi = ":FORM {0}"
+            scpi = scpi.format(data_format)
+            self._vna.write(scpi)
+    data_format = property(_data_format, _set_data_format)
+
     def _ascii_data_format(self):
         result = self._vna.query(':FORM?').strip()
         return result == 'ASC,0'
