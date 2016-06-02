@@ -218,7 +218,26 @@ class VnaChannel(object):
         result = self._vna.read_64_bit_vector_block_data()
         self._vna.settings.ascii_data_format = True
         return result
-    frequencies_Hz = property(_frequencies)
+    def _set_frequencies(self, x, prefix=SiPrefix.none):
+        if isinstance(x, (tuple, list, set)) and len(x) == 2:
+            prefix = x[-1]
+            x      = x[0]
+        prefix = str(prefix)
+        # Delete segments
+        self._vna.write(":SENS{0}:SEGM:DEL:ALL".format(self.index))
+        for i in range(0, len(x)):
+            segment = ":SENS{0}:SEGM{1}:"
+            segment = segment.format(self.index, i+1)
+            # Create segment i
+            self._vna.write(segment + "ADD")
+            # Set segment[i].points = 1
+            self._vna.write(segment + "SWE:POIN 1")
+            # Set (stop) frequency
+            set_stop_freq = "FREQ:STOP {0}{1}"
+            set_stop_freq = set_stop_freq.format(x[i], prefix)
+            self._vna.write(segment + set_stop_freq)
+        self.sweep_type = SweepType.segmented
+    frequencies_Hz = property(_frequencies, _set_frequencies)
 
     def _power(self):
         scpi = ':SOUR{0}:POW?'.format(self.index)

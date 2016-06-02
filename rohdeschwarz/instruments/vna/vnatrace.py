@@ -111,29 +111,7 @@ class VnaTrace(object):
         return stimulus_data
     x = property(_x)
 
-    def measure_formatted_data(self):
-        channel = self._vna.channel(self.channel)
-        if self._vna.properties.is_zvx():
-            self.select()
-            scpi = ':CALC{0}:DATA? FDAT'
-            scpi = scpi.format(channel.index)
-        else:
-            scpi = ":CALC:DATA:TRAC? '{0}', FDAT"
-            scpi = scpi.format(self.name)
-        is_manual = channel.manual_sweep
-        channel.manual_sweep = True
-        channel.start_sweep()
-        self._vna.pause(2 * channel.sweep_time_ms * channel.sweep_count + 5000)
-        data_format = self._vna.settings.data_format
-        self._vna.settings.binary_64_bit_data_format = True
-        self._vna.write(scpi)
-        y = self._vna.read_64_bit_vector_block_data()
-        self._vna.settings.data_format = data_format
-        channel.manual_sweep = is_manual
-        self._vna.settings.data_format = data_format
-        return (self.x, y)
-
-    def measure_complex_data(self):
+    def _y_complex(self):
         channel = self._vna.channel(self.channel)
         if self._vna.properties.is_zvx():
             self.select()
@@ -142,16 +120,51 @@ class VnaTrace(object):
         else:
             scpi = ":CALC:DATA:TRAC? '{0}', SDAT"
             scpi = scpi.format(self.name)
-        is_manual = channel.manual_sweep
-        channel.manual_sweep = True
-        channel.start_sweep()
         self._vna.pause(2 * channel.sweep_time_ms * channel.sweep_count + 5000)
         data_format = self._vna.settings.data_format
         self._vna.settings.binary_64_bit_data_format = True
         self._vna.write(scpi)
-        y = self._vna.read_64_bit_complex_vector_block_data()
-        channel.manual_sweep = is_manual
+        result = self._vna.read_64_bit_complex_vector_block_data()
         self._vna.settings.data_format = data_format
+        return result
+    y_complex = property(_y_complex)
+
+    def _y_formatted(self):
+        channel = self._vna.channel(self.channel)
+        if self._vna.properties.is_zvx():
+            self.select()
+            scpi = ':CALC{0}:DATA? FDAT'
+            scpi = scpi.format(channel.index)
+        else:
+            scpi = ":CALC:DATA:TRAC? '{0}', FDAT"
+            scpi = scpi.format(self.name)
+        data_format = self._vna.settings.data_format
+        self._vna.settings.binary_64_bit_data_format = True
+        self._vna.write(scpi)
+        result = self._vna.read_64_bit_vector_block_data()
+        self._vna.settings.data_format = data_format
+        self._vna.settings.data_format = data_format
+        return result
+    y_formatted = property(_y_formatted)
+
+    def measure_formatted_data(self):
+        channel = self._vna.channel(self.channel)
+        is_manual = channel.manual_sweep
+        channel.manual_sweep = True
+        channel.start_sweep()
+        self._vna.pause(2 * channel.sweep_time_ms * channel.sweep_count + 5000)
+        y = self.y_formatted
+        channel.manual_sweep = is_manual
+        return (self.x, y)
+
+    def measure_complex_data(self):
+        channel = self._vna.channel(self.channel)
+        is_manual = channel.manual_sweep
+        channel.manual_sweep = True
+        channel.start_sweep()
+        self._vna.pause(2 * channel.sweep_time_ms * channel.sweep_count + 5000)
+        y = self.y_complex
+        channel.manual_sweep = is_manual
         return (self.x, y)
 
     def save_data(self, filename):
