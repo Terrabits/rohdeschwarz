@@ -361,7 +361,7 @@ class Vna(GenericInstrument):
         sweep_time_ms = 0
         channels = self.channels
         for i in channels:
-            sweep_time_ms += self.channel(i).sweep_time_ms
+            sweep_time_ms += self.channel(i).total_sweep_time_ms
         return sweep_time_ms
     sweep_time_ms = property(_sweep_time_ms)
 
@@ -427,4 +427,3 @@ class Vna(GenericInstrument):
         self.save_screenshot(unique_filename, image_format)
         self.file.download_file(unique_filename, filename)
         self.file.delete(unique_filename)
-

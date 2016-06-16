@@ -76,7 +76,7 @@ class VnaChannel(object):
             scpi = scpi.format(self.index, characterization, ports_string)
         port_count = len(ports)
         number_of_sweeps = 3 * port_count + number_of_thrus(port_count)
-        timeout_ms = number_of_sweeps * (10 * self.sweep_time_ms + 10000) + 5000
+        timeout_ms = number_of_sweeps * (10 * self.total_sweep_time_ms + 10000) + 5000
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
 
@@ -315,11 +315,17 @@ class VnaChannel(object):
     if_bandwidth_Hz = property(_if_bandwidth, _set_if_bandwidth)
 
     def _sweep_time(self):
-        scpi = ':SENS{0}:SWE:TIME?'
+        scpi = ""
+        if self.sweep_type == SweepType.segmented:
+            scpi = ":SENS{0}:SEGM:SWE:TIME:SUM?"
+        else:
+            scpi = ':SENS{0}:SWE:TIME?'
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
         return int(1000.0 * float(result))
     def _set_sweep_time(self, time_ms):
+        if self.sweep_type == SweepType.segmented:
+            raise ValueError('Cannot set sweep time of segmented sweep as a whole. Set the sweep time per each segment.')
         scpi = ':SENS{0}:SWE:TIME {1} ms'
         scpi = scpi.format(self.index, time_ms)
         self._vna.write(scpi)
@@ -338,6 +344,10 @@ class VnaChannel(object):
             scpi = scpi.format(self.index, 0)
         self._vna.write(scpi)
     auto_sweep_time = property(_auto_sweep_time, _set_auto_sweep_time)
+
+    def _total_sweep_time_ms(self):
+        return self.sweep_count * self.sweep_time_ms
+    total_sweep_time_ms = property(_total_sweep_time_ms)
 
     def _cal_group(self):
         scpi = ":MMEM:LOAD:CORR? {0}"
@@ -388,7 +398,7 @@ class VnaChannel(object):
         ports = len(self.s_parameter_group)
         is_manual_sweep = self.manual_sweep
         self.manual_sweep = True
-        timeout_ms = 2 * self.sweep_time_ms + 5000
+        timeout_ms = 2 * self.total_sweep_time_ms + 5000
         self.start_sweep()
         self._vna.pause(timeout_ms)
         scpi = ':CALC{0}:DATA:SGR? SDAT'
@@ -416,7 +426,7 @@ class VnaChannel(object):
             filename += file_extension
         self.s_parameter_group = ports
         self.manual_sweep = True
-        timeout_ms = 2 * self.sweep_time_ms + 5000
+        timeout_ms = 2 * self.total_sweep_time_ms + 5000
         self.start_sweep()
         self._vna.pause(timeout_ms)
         ports_string = ",".join(map(str, ports))
