@@ -373,6 +373,13 @@ class VnaChannel(object):
             self._vna.write(scpi)
     cal_group = property(_cal_group, _set_cal_group)
 
+    def save_cal(self, name):
+        if not name.lower().endswith(".cal"):
+            name += ".cal"
+        scpi = ":MMEM:STOR:CORR {0},'{1}'"
+        scpi = scpi.format(self.index, name)
+        self._vna.write(scpi)
+
     def _s_parameter_group(self):
         scpi = ':CALC{0}:PAR:DEF:SGR?'
         scpi = scpi.format(self.index)
