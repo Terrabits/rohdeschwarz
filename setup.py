@@ -23,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.5.7.dev1',
+    version='0.6.0.dev1',
 
     description='Rohde & Schwarz general purpose instrument control toolbox',
     long_description=long_description,
@@ -99,5 +99,10 @@ setup(
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-    entry_points={},
+    entry_points={
+        'console_scripts': [
+            'vna=rohdeschwarz.bin.vna:main',
+            'instr=rohdeschwarz.bin.instr:main'
+        ]
+    },
 )
