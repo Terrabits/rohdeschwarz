@@ -146,8 +146,8 @@ class TcpBus(object):
         Raises:
             socket.timeout: if instrument not found
         """
-        if isinstance(buffer, str):
-            buffer = buffer.encode()
+        if not isinstance(buffer, bytes):
+            buffer = bytes(buffer, 'utf-8')
         self._socket.send(buffer)
 
     def _timeout_ms(self):

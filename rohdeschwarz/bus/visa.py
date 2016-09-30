@@ -128,6 +128,8 @@ class VisaBus(object):
         Raises:
             VisaIOError: if instrument not found
         """
+        if not isinstance(buffer, bytes):
+            buffer = bytes(buffer, 'utf-8')
         send_end = self._instr.send_end
         write_term = self._instr.write_termination
         self._instr.send_end = None
