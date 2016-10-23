@@ -148,7 +148,7 @@ class TcpBus(object):
         """
         if not isinstance(buffer, bytes):
             buffer = bytes(buffer, 'utf-8')
-        self._socket.send(buffer)
+        self._socket.sendall(buffer)
 
     def _timeout_ms(self):
         """
