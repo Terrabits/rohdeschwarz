@@ -9,7 +9,7 @@ Example:
     address = '192.168.35.5'
     port    =  5025
 
-    TcpBus bus()
+    bus = TcpBus()
     bus.open(address, port)
 
     # Optional parameters

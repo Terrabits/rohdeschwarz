@@ -1,6 +1,6 @@
 from rohdeschwarz.general import ConnectionMethod
-import visa
-from pyvisa.errors import VisaIOError
+import pyvisa
+from   pyvisa.errors import VisaIOError
 import pyvisa.ctwrapper.functions as vi
 import warnings
 
@@ -15,7 +15,7 @@ class VisaBus(object):
         connection_method = ConnectionMethod.gpib
         address = '17'
 
-        VisaBus bus()
+        bus = VisaBus()
         bus.open(connection_method, address)
 
         # Optional parameters
@@ -56,7 +56,7 @@ class VisaBus(object):
             VisaIOError: if instrument not found
         """
         resource_string = "{0}::{1}::INSTR".format(connection_method, address)
-        rm = visa.ResourceManager()
+        rm = pyvisa.ResourceManager()
         instr = rm.open_resource(resource_string)
         self._instr = instr
         self._session = self._instr.session
