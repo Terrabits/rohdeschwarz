@@ -414,7 +414,7 @@ class Vna(GenericInstrument):
         scpi = ":HCOP:DEV:LANG {0}"
         scpi = scpi.format(image_format)
         self.write(scpi)
-        self.write(":HCOP:PAGE:WIND HARD")
+        self.write(":HCOP:PAGE:WIND ALL")
         self.write("HCOP:DEST 'MMEM'")
         self.write(":HCOP")
         self.pause()

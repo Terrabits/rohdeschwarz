@@ -389,7 +389,6 @@ class VnaChannel(object):
         else:
             result = result.split(',')
             return [int(x) for x in result]
-
     def _set_s_parameter_group(self, ports):
         if not ports or len(ports) == 0:
             scpi = ':CALC{0}:PAR:DEL:SGR'

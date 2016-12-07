@@ -62,6 +62,7 @@ class GenericInstrument(object):
 
     def close_log(self):
         if self.log:
+            self.log.flush()
             self.log.close()
             self.log = None
 
