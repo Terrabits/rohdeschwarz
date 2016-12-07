@@ -202,7 +202,7 @@ class VnaTrace(object):
     def is_marker(self, index):
         self.select()
         scpi = ":CALC{0}:MARK{1}?"
-        scpi.format(self.channel, index)
+        scpi = scpi.format(self.channel, index)
         result = self._vna.query(scpi).strip()
         return result == "1"
 
