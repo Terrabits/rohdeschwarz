@@ -380,6 +380,30 @@ class VnaChannel(object):
         scpi = scpi.format(self.index, name)
         self._vna.write(scpi)
 
+    def to_test_ports(self, logical_ports):
+        if type(logical_ports) == int:
+            scpi = ":SOUR{0}:LPOR{1}?"
+            scpi = scpi.format(self.index, logical_ports)
+            result = self._vna.query(scpi).strip().split(",")
+            return [int(i) for i in result]
+        if type(logical_ports) == list:
+            result = []
+            for port in logical_ports:
+                result += self.to_test_ports(port)
+            result.sort()
+            return result
+        raise TypeError, "logical_ports must be int or list[int]"
+    def test_to_logical_port_map(self):
+        result = {}
+        for i in range(1, self._vna.test_ports+1):
+            result[i] = 
+        return result
+
+
+    def to_logical_ports(self, test_ports):
+        return []
+
+
     def _s_parameter_group(self):
         scpi = ':CALC{0}:PAR:DEF:SGR?'
         scpi = scpi.format(self.index)
