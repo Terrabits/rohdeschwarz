@@ -392,7 +392,7 @@ class VnaChannel(object):
                 result += self.to_test_ports(port)
             result.sort()
             return result
-        raise TypeError, "logical_ports must be int or list[int]"
+        raise TypeError("logical_ports must be int or list[int]")
 
     def test_to_logical_port_map(self):
         result = {}
