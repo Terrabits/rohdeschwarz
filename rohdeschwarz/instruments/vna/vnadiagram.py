@@ -74,13 +74,17 @@ class VnaDiagram(object):
         self._vna.write(":HCOP:PAGE:WIND ACT")
         self._vna.write(":HCOP:DEST 'MMEM'")
         self._vna.write(":HCOP")
-        self._vna.pause()
+        self._vna.pause(5000)
+        return self._vna.file.is_file(filename)
 
     def save_screenshot_locally(self, filename, image_format='JPG'):
         extension = ".{0}".format(image_format).lower()
         unique_filename = unique_alphanumeric_string() + extension
         if not filename.lower().endswith(extension):
             filename += extension
-        self.save_screenshot(unique_filename, image_format)
-        self._vna.file.download_file(unique_filename, filename)
-        self._vna.file.delete(unique_filename)
+        if self.save_screenshot(unique_filename, image_format):
+            self._vna.file.download_file(unique_filename, filename)
+            self._vna.file.delete(unique_filename)
+            return True
+        else:
+            return False

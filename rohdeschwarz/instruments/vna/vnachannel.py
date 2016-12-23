@@ -393,16 +393,47 @@ class VnaChannel(object):
             result.sort()
             return result
         raise TypeError, "logical_ports must be int or list[int]"
+
     def test_to_logical_port_map(self):
         result = {}
-        for i in range(1, self._vna.test_ports+1):
-            result[i] = 
+        for i in range(1, self.number_of_logical_ports()+1):
+            test_ports = self.to_test_ports(i)
+            for test_port in test_ports:
+                result[test_port] = i
         return result
 
+    def is_balanced_port(self, logical_port):
+        return len(self.to_test_ports(logical_port)) == 2
+
+    def number_of_logical_ports(self):
+        test_ports = self._vna.test_ports
+        count = 0
+        i     = 0
+        while count < test_ports:
+            i += 1
+            if self.is_balanced_port(i):
+                count += 2
+            else:
+                count += 1
+        # Query could cause SCPI error
+        # if test port is unused
+        if self._vna.is_error():
+            self._vna.clear_status()
+        return i
+
+    def to_logical_port(self, test_port):
+        port_map = self.test_to_logical_port_map()
+        return port_map[test_port]
 
     def to_logical_ports(self, test_ports):
-        return []
-
+        result = []
+        port_map = self.test_to_logical_port_map()
+        for test_port in test_ports:
+            logical_port = port_map[test_port]
+            if not logical_port in result:
+                result.append(logical_port)
+        result.sort()
+        return result
 
     def _s_parameter_group(self):
         scpi = ':CALC{0}:PAR:DEF:SGR?'
@@ -413,6 +444,7 @@ class VnaChannel(object):
         else:
             result = result.split(',')
             return [int(x) for x in result]
+
     def _set_s_parameter_group(self, ports):
         if not ports or len(ports) == 0:
             scpi = ':CALC{0}:PAR:DEL:SGR'
@@ -441,25 +473,25 @@ class VnaChannel(object):
         points = len(result)/(ports * ports)
         return numpy.reshape(result, (points, ports, ports))
 
-    def measure(self, ports):
+    def measure(self, test_ports):
         old_ports = self.s_parameter_group
-        self.s_parameter_group = ports
+        self.s_parameter_group = self.to_logical_ports(test_ports)
         result = self.read_s_parameter_group()
         self.s_parameter_group = old_ports
         return result
 
-    def save_measurement(self, filename, ports, format='COMP'):
+    def save_measurement(self, filename, test_ports, format='COMP'):
         old_ports = self.s_parameter_group
         is_manual_sweep = self.manual_sweep
-        file_extension = '.s{0}p'.format(len(ports))
+        file_extension = '.s{0}p'.format(len(test_ports))
         if not filename.lower().endswith(file_extension):
             filename += file_extension
-        self.s_parameter_group = ports
+        self.s_parameter_group = self.to_logical_ports(test_ports)
         self.manual_sweep = True
         timeout_ms = 2 * self.total_sweep_time_ms + 5000
         self.start_sweep()
         self._vna.pause(timeout_ms)
-        ports_string = ",".join(map(str, ports))
+        ports_string = ",".join(map(str, test_ports))
         scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
         scpi = scpi.format(self.index, \
                            filename, \
@@ -469,12 +501,16 @@ class VnaChannel(object):
         self._vna.pause(5000)
         self.s_parameter_group = old_ports
         self.manual_sweep = is_manual_sweep
+        return self._vna.file.is_file(filename)
 
-    def save_measurement_locally(self, filename, ports, format='COMP'):
-        extension = ".s{0}p".format(len(ports))
+    def save_measurement_locally(self, filename, test_ports, format='COMP'):
+        extension = ".s{0}p".format(len(test_ports))
         unique_filename = unique_alphanumeric_string() + extension
         if not filename.lower().endswith(extension):
             filename += extension
-        self.save_measurement(unique_filename, ports, format)
-        self._vna.file.download_file(unique_filename, filename)
-        self._vna.file.delete(unique_filename)
+        if self.save_measurement(unique_filename, test_ports, format):
+            self._vna.file.download_file(unique_filename, filename)
+            self._vna.file.delete(unique_filename)
+            return True
+        else:
+            return False

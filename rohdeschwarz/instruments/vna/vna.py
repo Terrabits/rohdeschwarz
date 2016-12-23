@@ -417,13 +417,16 @@ class Vna(GenericInstrument):
         self.write(":HCOP:PAGE:WIND ALL")
         self.write("HCOP:DEST 'MMEM'")
         self.write(":HCOP")
-        self.pause()
+        self.pause(5000)
+        return self.file.is_file(filename)
     def save_screenshot_locally(self, filename, image_format='JPG'):
         extension = "." + str(image_format).lower()
         unique_filename = unique_alphanumeric_string() + extension
         if not filename.lower().endswith(extension):
             filename += extension
-
-        self.save_screenshot(unique_filename, image_format)
-        self.file.download_file(unique_filename, filename)
-        self.file.delete(unique_filename)
+        if self.save_screenshot(unique_filename, image_format):
+            self.file.download_file(unique_filename, filename)
+            self.file.delete(unique_filename)
+            return True
+        else:
+            return False
