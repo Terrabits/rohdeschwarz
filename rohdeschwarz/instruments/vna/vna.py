@@ -3,11 +3,11 @@ from enum import Enum
 from rohdeschwarz.general import SiPrefix
 from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
-from rohdeschwarz.instruments.vna.vnachannel import VnaChannel
-from rohdeschwarz.instruments.vna.vnadiagram import VnaDiagram
-from rohdeschwarz.instruments.vna.vnatrace import VnaTrace
+from rohdeschwarz.instruments.vna.vnachannel    import VnaChannel
+from rohdeschwarz.instruments.vna.vnadiagram    import VnaDiagram
+from rohdeschwarz.instruments.vna.vnatrace      import VnaTrace
 from rohdeschwarz.instruments.vna.vnaproperties import VnaProperties
-from rohdeschwarz.instruments.vna.vnasettings import VnaSettings
+from rohdeschwarz.instruments.vna.vnasettings   import VnaSettings
 from rohdeschwarz.instruments.vna.vnafilesystem import VnaFileSystem
 from rohdeschwarz.instruments.vna.vnafilesystem import Directory
 
@@ -398,6 +398,14 @@ class Vna(GenericInstrument):
             result = self.query(scpi)
             return int(result.strip())
     test_ports = property(_test_ports)
+
+    def is_limits(self):
+        for i in self.traces:
+            t = self.trace(i)
+            if t.limits.on:
+                return True
+        # else
+        return False
 
     def _passed(self):
         scpi = ":CALC:CLIM:FAIL?"

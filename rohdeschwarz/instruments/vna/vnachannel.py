@@ -41,16 +41,18 @@ class VnaChannel(object):
         self._vna = vna
         self.index = index
 
-    def name(self):
+    def _name(self):
         scpi = ':CONF:CHAN{0}:NAME?'
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi)
         return result.strip().strip("'")
-
-    def set_name(self, name):
+    def _set_name(self, name):
         scpi = ":CONF:CHAN{0}:NAME '{1}'"
         scpi = scpi.format(self.index, name)
         self._vna.write(scpi)
+    name = property(_name, _set_name)
+
+    
 
     def select(self):
         # same command as create channel

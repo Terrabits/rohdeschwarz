@@ -2,8 +2,9 @@ import sys
 from enum import Enum
 import numpy
 from rohdeschwarz.general import unique_alphanumeric_string
-from rohdeschwarz.instruments.vna.vnamarker import VnaMarker
-from rohdeschwarz.instruments.vna.vnalimits import VnaLimits
+from rohdeschwarz.instruments.vna.vnamarker     import VnaMarker
+from rohdeschwarz.instruments.vna.vnalimits     import VnaLimits
+from rohdeschwarz.instruments.vna.vnatimedomain import VnaTimeDomain
 
 class TraceFormat(Enum):
     magnitude_dB = 'MLOG'
@@ -242,3 +243,7 @@ class VnaTrace(object):
     def _limits(self):
         return VnaLimits(self._vna, self)
     limits = property(_limits)
+
+    def _time_domain(self):
+        return VnaTimeDomain(self._vna, self)
+    time_domain = property(_time_domain)
