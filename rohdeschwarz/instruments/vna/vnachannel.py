@@ -2,16 +2,17 @@ from enum import Enum
 import numpy
 from rohdeschwarz.general import SiPrefix
 from rohdeschwarz.general import unique_alphanumeric_string
+from rohdeschwarz.general import Units
 from rohdeschwarz.general import number_of_thrus
 from rohdeschwarz.instruments.vna.vnafilesystem import Directory
 
 class SweepType(Enum):
-    linear = 'LIN'
-    log = 'LOG'
+    linear    = 'LIN'
+    log       = 'LOG'
     segmented = 'SEGM'
-    power = 'POW'
-    cw = 'CW'
-    time = 'POIN'
+    power     = 'POW'
+    cw        = 'CW'
+    time      = 'POIN'
 
     def __str__(self):
         return self.value
@@ -51,8 +52,6 @@ class VnaChannel(object):
         scpi = scpi.format(self.index, name)
         self._vna.write(scpi)
     name = property(_name, _set_name)
-
-    
 
     def select(self):
         # same command as create channel
@@ -155,6 +154,14 @@ class VnaChannel(object):
         return False
     def is_power_sweep(self):
         return self.sweep_type == SweepType.power
+    def is_time_sweep(self):
+        sweep_type = self.sweep_type
+        if sweep_type == SweepType.time:
+            return True
+        if sweep_type == SweepType.cw:
+            return True
+        # else
+        return False
 
 
     def _sweep_type(self):
@@ -167,6 +174,13 @@ class VnaChannel(object):
         self._vna.write(scpi)
     sweep_type = property(_sweep_type, _set_sweep_type)
 
+    def x_units(self):
+        if self.is_power_sweep():
+            return Units.dBm
+        if self.is_time_sweep():
+            return Units.seconds
+        # else
+        return Units.Hz
 
     ### Linear, Log frequency sweeps:
     def _start_frequency(self):

@@ -8,23 +8,22 @@ import uuid
 ### Enums
 class ConnectionMethod(Enum):
     tcpip = 'TCPIP'
-    gpib = 'GPIB'
-    usb = 'USB'
-
+    gpib  = 'GPIB'
+    usb   = 'USB'
     def __str__(self):
         return self.value
 
 class SiPrefix(Enum):
-    femto = 1.0E-15
-    pico = 1.0E-12
-    nano = 1.0E-9
+    femto  = 1.0E-15
+    pico  = 1.0E-12
+    nano  = 1.0E-9
     micro = 1.0E-6
     milli = 1.0E-3
-    none = 1
-    kilo = 1.0E3
-    mega = 1.0E6
-    giga = 1.0E9
-    tera = 1.0E12
+    none  = 1
+    kilo  = 1.0E3
+    mega  = 1.0E6
+    giga  = 1.0E9
+    tera  = 1.0E12
     def __float__(self):
         return self.value
     def __str__(self):
@@ -51,26 +50,55 @@ class SiPrefix(Enum):
     @staticmethod
     def convert(value):
         abs_value = abs(value)
-        if abs_value >= 1.0E12:
+        if abs_value     >= 1.0E12:
             return (value * 1.0E-12, SiPrefix.tera)
-        elif abs_value >= 1.0E9:
-            return (value * 1.0E-9, SiPrefix.giga)
-        elif abs_value >= 1.0E6:
-            return (value * 1.0E-6, SiPrefix.mega)
-        elif abs_value >= 1.0E3:
-            return (value * 1.0E-3, SiPrefix.kilo)
-        elif abs_value >= 1.0:
-            return (value, SiPrefix.none)
-        elif abs_value >= 1.0E-3:
-            return (value * 1.0E3, SiPrefix.milli)
-        elif abs_value >= 1.0E-6:
-            return (value * 1.0E6, SiPrefix.micro)
-        elif abs_value >= 1.0E-9:
-            return (value * 1.0E9, SiPrefix.nano)
-        elif abs_value >= 1.0E-12:
-            return (value * 1.0E12, SiPrefix.pico)
+        elif abs_value   >= 1.0E9:
+            return (value * 1.0E-9,  SiPrefix.giga)
+        elif abs_value   >= 1.0E6:
+            return (value * 1.0E-6,  SiPrefix.mega)
+        elif abs_value   >= 1.0E3:
+            return (value * 1.0E-3,  SiPrefix.kilo)
+        elif abs_value   >= 1.0:
+            return (value,           SiPrefix.none)
+        elif abs_value   >= 1.0E-3:
+            return (value * 1.0E3,   SiPrefix.milli)
+        elif abs_value   >= 1.0E-6:
+            return (value * 1.0E6,   SiPrefix.micro)
+        elif abs_value   >= 1.0E-9:
+            return (value * 1.0E9,   SiPrefix.nano)
+        elif abs_value   >= 1.0E-12:
+            return (value * 1.0E12,  SiPrefix.pico)
         else:
-            return (value * 1.0E15, SiPrefix.femto)
+            return (value * 1.0E15,  SiPrefix.femto)
+
+class Units(Enum):
+    dB      = 'dB'
+    deg     = 'deg'
+    ohms    = 'ohms'
+    siemens = 'S'
+    watts   = 'W'
+    dBm     = 'dBm'
+    mW      = 'mW'
+    dBuV    = 'dBuV'
+    v       = 'V'
+    seconds = 's'
+    Hz      = 'Hz'
+    none    = 'U'
+    def __str__(self):
+        return self.value
+    def __eql__(self, other):
+        return self.value == str(other)
+
+def format_value(value, units = Units.none):
+    if units == Units.dB:
+        return "{0} {1}".format(value, units)
+
+    conv_value, prefix = SiPrefix.convert(value)
+    if prefix == SiPrefix.none:
+        return "{0} {1}".format(conv_value, units)
+    else:
+        return "{0} {1}{2}".format(conv_value, prefix, units)
+
 
 ### Functions
 def print_header(file, app_name, app_version):

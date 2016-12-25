@@ -2,29 +2,41 @@ import sys
 from enum import Enum
 import numpy
 from rohdeschwarz.general import unique_alphanumeric_string
+from rohdeschwarz.general import Units
 from rohdeschwarz.instruments.vna.vnamarker     import VnaMarker
 from rohdeschwarz.instruments.vna.vnalimits     import VnaLimits
 from rohdeschwarz.instruments.vna.vnatimedomain import VnaTimeDomain
 
 class TraceFormat(Enum):
     magnitude_dB = 'MLOG'
-    phase_deg = 'PHAS'
-    smith_chart = 'SMIT'
-    polar = 'POL'
-    vswr = 'SWR'
+    phase_deg    = 'PHAS'
+    smith_chart  = 'SMIT'
+    polar        = 'POL'
+    vswr         = 'SWR'
     unwrapped_phase_deg = 'UPH'
-    magnitude = 'MLIN'
+    magnitude    = 'MLIN'
     inverse_smith_chart = 'ISM'
-    real = 'REAL'
-    imaginary = 'IMAG'
-    group_delay = 'GDEL'
+    real         = 'REAL'
+    imaginary    = 'IMAG'
+    group_delay  = 'GDEL'
+    def units(self):
+        return {
+            self.magnitude_dB.value:        Units.dB,
+            self.phase_deg.value:           Units.deg,
+            self.smith_chart.value:         Units.ohms,
+            self.polar.value:               Units.none,
+            self.vswr.value:                Units.none,
+            self.unwrapped_phase_deg.value: Units.deg,
+            self.magnitude.value:           Units.none,
+            self.inverse_smith_chart.value: Units.siemens,
+            self.real.value:                Units.none,
+            self.imaginary.value:           Units.none,
+            self.group_delay.value:         Units.seconds
+        }.get(self.value, self.magnitude_dB.value)
     def __str__(self):
         return self.value
     def __eq__(self, other):
-        if isinstance(other, TraceFormat):
-            return self.value == other.value
-        else:
-            return self.value == other
+        return self.value.lower() == str(other).lower()
 
 class SaveDataFormat(Enum):
     real_imaginary = 'COMP'
@@ -94,6 +106,40 @@ class VnaTrace(object):
         scpi = scpi.format(self.channel, value)
         self._vna.write(scpi)
     format = property(_format, _set_format)
+
+    def y_units(self):
+        print("Entering trace.y_units")
+        param = self.parameter.lower()
+        fmt   = self.format
+        if fmt == TraceFormat.magnitude:
+            if param[0] == 'z':
+                return Units.ohms
+            if param[0] == 'y':
+                return Units.siemens
+        if param[0:2] == 'dc':
+            if fmt  == TraceFormat.magnitude:
+                return Units.v
+            if fmt == TraceFormat.magnitude_dB:
+                return Units.dBuV
+            if fmt == TraceFormat.polar:
+                return Units.v
+        if param[0] == 'a' or param[0] == 'b' and not '/' in param:
+            if fmt == TraceFormat.magnitude_dB:
+                return Units.dBm
+            if fmt == TraceFormat.magnitude:
+                return Units.mW
+            if fmt == TraceFormat.polar:
+                return Units.mW
+            if fmt == TraceFormat.real or fmt == TraceFormat.imaginary:
+                return Units.mW
+        # else
+        return fmt.units()
+    def x_units(self):
+        if self.time_domain.on:
+            return Units.seconds
+        # else
+        ch = self._vna.channel(self.channel)
+        return ch.x_units()
 
     def autoscale(self):
         scpi = ":DISP:TRAC:Y:AUTO ONCE, '{0}'"
