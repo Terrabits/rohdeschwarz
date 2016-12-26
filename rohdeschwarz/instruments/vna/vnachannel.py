@@ -412,7 +412,7 @@ class VnaChannel(object):
 
     def test_to_logical_port_map(self):
         result = {}
-        for i in range(1, self.number_of_logical_ports()+1):
+        for i in self.logical_ports():
             test_ports = self.to_test_ports(i)
             for test_port in test_ports:
                 result[test_port] = i
@@ -421,21 +421,22 @@ class VnaChannel(object):
     def is_balanced_port(self, logical_port):
         return len(self.to_test_ports(logical_port)) == 2
 
-    def number_of_logical_ports(self):
-        test_ports = self._vna.test_ports
-        count = 0
-        i     = 0
-        while count < test_ports:
-            i += 1
-            if self.is_balanced_port(i):
-                count += 2
-            else:
-                count += 1
-        # Query could cause SCPI error
-        # if test port is unused
-        if self._vna.is_error():
-            self._vna.clear_status()
-        return i
+    def logical_ports(self):
+        scpi   = "SOUR{0}:GRO:COUN?"
+        scpi   = scpi.format(self.index)
+        groups = int(self._vna.query(scpi).strip())
+
+        result  = []
+        for i in range(1, groups+1):
+            scpi  = "SOUR{0}:GRO{1}:PORT?"
+            scpi  = scpi.format(self.index, i)
+            ports = self._vna.query(scpi)
+            ports = ports.strip().split(",")
+            ports = [int(i) for i in ports]
+            result += ports
+        return result
+
+
 
     def to_logical_port(self, test_port):
         port_map = self.test_to_logical_port_map()

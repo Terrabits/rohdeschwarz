@@ -51,6 +51,17 @@ class VnaDiagram(object):
         # else
         return False
 
+    def _passed(self):
+        for t in self.traces:
+            if self._vna.trace(t).limits.failed:
+                return False
+        # else
+        return True
+    def _failed(self):
+        return not self.passed
+    passed = property(_passed)
+    failed = property(_failed)
+
     def autoscale(self):
         raise NotImplementedError(0, 'No SCPI command for autoscaling')
 
