@@ -74,7 +74,7 @@ class SiPrefix(Enum):
 class Units(Enum):
     dB      = 'dB'
     deg     = 'deg'
-    ohms    = 'ohms'
+    ohms    = 'Ohms'
     siemens = 'S'
     watts   = 'W'
     dBm     = 'dBm'

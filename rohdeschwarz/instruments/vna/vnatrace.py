@@ -108,7 +108,6 @@ class VnaTrace(object):
     format = property(_format, _set_format)
 
     def y_units(self):
-        print("Entering trace.y_units")
         param = self.parameter.lower()
         fmt   = self.format
         if fmt == TraceFormat.magnitude:
