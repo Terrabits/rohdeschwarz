@@ -411,6 +411,9 @@ class Vna(GenericInstrument):
         scpi = ":CALC:CLIM:FAIL?"
         return self.query(scpi).strip() == "0"
     passed = property(_passed)
+    def _failed(self):
+        return not self.passed
+    failed = property(_failed)
 
     def save_screenshot(self, filename, image_format='JPG'):
         extension = ".{0}".format(image_format).lower()

@@ -96,15 +96,15 @@ class VnaTrace(object):
     parameter = property(_parameter, _set_parameter)
 
     def _format(self):
-        self.select()
         scpi = ':CALC{0}:FORM?'
         scpi = scpi.format(self.channel)
+        self.select()
         result = self._vna.query(scpi).strip()
         return TraceFormat(result)
     def _set_format(self, value):
-        self.select()
         scpi = ':CALC{0}:FORM {1}'
         scpi = scpi.format(self.channel, value)
+        self.select()
         self._vna.write(scpi)
     format = property(_format, _set_format)
 
