@@ -1,6 +1,7 @@
 import sys
-from enum import Enum
+from   enum import Enum
 import numpy
+import re
 from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.general import Units
 from rohdeschwarz.instruments.vna.vnamarker     import VnaMarker
@@ -292,3 +293,159 @@ class VnaTrace(object):
     def _time_domain(self):
         return VnaTimeDomain(self._vna, self)
     time_domain = property(_time_domain)
+
+    def test_ports(self):
+        param = self.parameter
+        # parameters that refer to
+        # test ports:
+        if self._is_wave(param):
+            return [self._parse_wave_port(param)]
+        if self._is_wave_ratio(param):
+            return self._parse_wave_ratio_ports(param)
+        if self._is_regular_single_param(param):
+            return self._parse_regular_param_ports(param)
+        # parameters that use logical
+        # port notation:
+        ch = self._vna.channel(self.channel)
+        convert = ch.to_test_ports
+        if self._is_impedance(param):
+            return convert(self._parse_impedance_ports(param))
+        if self._is_admittance(param):
+            return convert(self._parse_admittance_ports(param))
+        if self._is_regular_balanced_param(param):
+            return convert(self._parse_regular_param_ports(param))
+        # else
+        return []
+
+    # Private static methods for parsing
+    # VnaTrace.parameter.
+    # Note: Not complete, but covers the
+    # most common parameter types:
+    #   wave
+    #   wave ratio
+    #   impedance
+    #   admittance
+    #   regular parameter (S, Y, Z)
+
+    # Parameter: wave
+    # ex: 'A1D1SAM'
+    @staticmethod
+    def _is_wave(param):
+        if '/' in param:
+            return False
+        param = param.lower()
+        if 'a' in param or 'b' in param:
+            return True
+        # else
+        return False
+
+    @staticmethod
+    def _parse_wave_port(param):
+        param = param[1:-3].lower()
+        param = re.split('[dg]', param)
+        return int(param[0])
+
+    # Parameter: wave ratio
+    # ex: 'A1D1/B2D1SAM'
+    @staticmethod
+    def _is_wave_ratio(param):
+        if '/' in param:
+            return True
+        # else
+        return False
+
+    @staticmethod
+    def _parse_wave_ratio_ports(param):
+        waves = param.split('/')
+        port1 = VnaTrace._parse_wave_port(waves[0] + '   ')
+        port2 = VnaTrace._parse_wave_port(waves[1])
+        if port1 != port2:
+            return sorted([port1, port2])
+        # else
+        return [port1]
+
+    # Parameter: impedance, admittance
+    # ex: 'Z-S11' or 'Y-Sdd11'
+    @staticmethod
+    def _is_impedance(param):
+        param = param.lower()
+        if param[0:2] == 'z-':
+            return True
+        # else
+        return False
+
+    @staticmethod
+    def _is_admittance(param):
+        param = param.lower()
+        if param[0:2] == 'y-':
+            return True
+        # else
+        return False
+
+    @staticmethod
+    def _parse_impedance_ports(param):
+        param = param.split('-')[-1]
+        return VnaTrace._parse_regular_param_ports(param)
+
+    @staticmethod
+    def _parse_admittance_ports(param):
+        return VnaTrace._parse_impedance_ports(param)
+
+    # Parameter: Regular
+    # single-ended or balanced
+    # ex: 'S11' or 'Ydd21'
+    @staticmethod
+    def _is_regular_param(param):
+        if '/' in param:
+            return False
+        if '-' in param:
+            return False
+        param = param.lower()
+        if param[0] in ('s', 'y', 'z'):
+            return True
+        # else
+        return False
+
+    @staticmethod
+    def _is_s_param(param):
+        param = param.lower()
+        return VnaTrace._is_regular_param(param) and param[0] == 's'
+
+    @staticmethod
+    def _is_y_param(param):
+        return VnaTrace._is_regular_param(param) and param[0] == 'y'
+
+    @staticmethod
+    def _is_z_param(param):
+        return VnaTrace._is_regular_param(param) and param[0] == 'z'
+
+    @staticmethod
+    def _is_regular_single_param(param):
+        if not VnaTrace._is_regular_param(param):
+            return False
+        param = param.lower()
+        if param[1].isdigit():
+            return True
+        # else
+        return False
+
+    @staticmethod
+    def _is_regular_balanced_param(param):
+        return VnaTrace._is_regular_param(param) and not VnaTrace._is_regular_single_param(param)
+
+    @staticmethod
+    def _parse_regular_param_ports(param):
+        digits = ''.join(c for c in param if c.isdigit())
+        return VnaTrace._parse_two_digits(digits)
+
+    # Parse ij port notation
+    # eg S12, S0102
+    @staticmethod
+    def _parse_two_digits(s):
+        x = len(s) // 2
+        port1 = int(s[0:x])
+        port2 = int(s[x:])
+        if port1 != port2:
+            return sorted([port1, port2])
+        # else
+        return [port1]

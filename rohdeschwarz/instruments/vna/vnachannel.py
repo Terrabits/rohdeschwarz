@@ -436,8 +436,6 @@ class VnaChannel(object):
             result += ports
         return result
 
-
-
     def to_logical_port(self, test_port):
         port_map = self.test_to_logical_port_map()
         return port_map[test_port]
