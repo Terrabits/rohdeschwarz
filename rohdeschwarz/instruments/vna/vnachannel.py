@@ -57,13 +57,14 @@ class VnaChannel(object):
         # same command as create channel
         self._vna.create_channel(self.index)
 
-    def diagrams(self):
-        # Unfinished
-        return []
+    # diagrams property?
 
-    def traces(self):
-        # Unfinished
-        return []
+    def _traces(self):
+        scpi = "CALC{0}:PAR:CAT?"
+        scpi = scpi.format(self.index)
+        response = self._vna.query(scpi)
+        return response.strip("'").split(",")[::2]
+    traces = property(_traces)
 
     def auto_calibrate(self, ports, characterization=''):
         scpi = ""
