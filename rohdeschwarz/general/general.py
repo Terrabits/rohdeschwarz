@@ -86,18 +86,18 @@ class Units(Enum):
     none    = 'U'
     def __str__(self):
         return self.value
-    def __eql__(self, other):
+    def __eq__(self, other):
         return self.value == str(other)
 
 def format_value(value, units = Units.none):
     if units == Units.dB:
-        return "{0} {1}".format(value, units)
+        return "{0:.2f} {1}".format(value, units)
 
     conv_value, prefix = SiPrefix.convert(value)
     if prefix == SiPrefix.none:
-        return "{0} {1}".format(conv_value, units)
+        return "{0:.3f} {1}".format(conv_value, units)
     else:
-        return "{0} {1}{2}".format(conv_value, prefix, units)
+        return "{0:.3f} {1}{2}".format(conv_value, prefix, units)
 
 
 ### Functions
