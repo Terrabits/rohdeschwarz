@@ -91,6 +91,9 @@ class GenericInstrument(object):
         self.write('*WAI')
 
     def pause(self, timeout_ms=1000):
+        # Take greater of timeout amounts
+        timeout_ms = self.timeout_ms if self.timeout_ms > timeout_ms else timeout_ms
+        
         old_timeout = self.timeout_ms
         self.timeout_ms = timeout_ms
         result = self.query('*OPC?').strip() == "1"
