@@ -50,3 +50,15 @@ class VnaMarker(object):
         scpi = scpi.format(self._trace.channel, self._index)
         self._trace.select()
         self._vna.write(scpi)
+    def _set_find_value(self, value):
+        scpi = "CALC{0}:MARK{1}:TARG {2}"
+        scpi = scpi.format(self._trace.channel, self._index, value)
+        self._trace.select()
+        self._vna.write(scpi)
+    def find(self, value):
+        self._set_find_value(value)
+        scpi = ":CALC{0}:MARK{1}:FUNC:EXEC TARG"
+        scpi = scpi.format(self._trace.channel, self._index)
+        self._trace.select()
+        self._vna.write(scpi)
+
