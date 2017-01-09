@@ -21,6 +21,10 @@ class TraceFormat(Enum):
     imaginary    = 'IMAG'
     group_delay  = 'GDEL'
     def units(self):
+        # These references to TraceFormat.enum
+        # do not work in python 3-3.4 for some
+        # reason. I can't find a way to reference
+        # the enums inside a member method!
         return {
             self.magnitude_dB.value:        Units.dB,
             self.phase_deg.value:           Units.deg,

@@ -7,6 +7,8 @@ from rohdeschwarz.instruments.vna import VnaTrace
 
 @ddt
 class TestVnaTrace(unittest.TestCase):
+    # These enum tests fail on python 3-3.4.
+    # See note in TraceFormat.units method
     @data({'enum': TraceFormat.magnitude_dB,        'units': Units.dB},
           {'enum': TraceFormat.phase_deg,           'units': Units.deg},
           {'enum': TraceFormat.smith_chart,         'units': Units.ohms},
