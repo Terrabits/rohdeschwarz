@@ -187,7 +187,6 @@ class GenericInstrument(object):
         with open(filename, 'rb') as file:
             data = file.read(buffer_size)
             while data:
-                print('Writing: {0}'.format(len(data)))
                 self.write_raw_no_end(data)
                 data = file.read(buffer_size)
         self.write_raw_no_end('\n') # Firmware won't move until to confirm end somehow
