@@ -85,6 +85,11 @@ class VnaChannel(object):
     def start_sweep(self):
         scpi = ':INIT{0}'.format(self.index)
         self._vna.write(scpi)
+    def sweep(self):
+        self.manual_sweep = True
+        timeout_ms = 2 * self.total_sweep_time_ms + 5000
+        self.start_sweep()
+        self._vna.pause(timeout_ms)
 
     def _sweep_count(self):
         scpi = ':SENS{0}:SWE:COUN?'.format(self.index)
@@ -475,10 +480,7 @@ class VnaChannel(object):
     def read_s_parameter_group(self):
         ports = len(self.s_parameter_group)
         is_manual_sweep = self.manual_sweep
-        self.manual_sweep = True
-        timeout_ms = 2 * self.total_sweep_time_ms + 5000
-        self.start_sweep()
-        self._vna.pause(timeout_ms)
+        self.sweep()
         scpi = ':CALC{0}:DATA:SGR? SDAT'
         scpi = scpi.format(self.index)
         self._vna.settings.binary_64_bit_data_format = True
@@ -503,10 +505,7 @@ class VnaChannel(object):
         if not filename.lower().endswith(file_extension):
             filename += file_extension
         self.s_parameter_group = self.to_logical_ports(test_ports)
-        self.manual_sweep = True
-        timeout_ms = 2 * self.total_sweep_time_ms + 5000
-        self.start_sweep()
-        self._vna.pause(timeout_ms)
+        self.sweep()
         ports_string = ",".join(map(str, test_ports))
         scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
         scpi = scpi.format(self.index, \
