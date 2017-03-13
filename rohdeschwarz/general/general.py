@@ -1,9 +1,11 @@
-import datetime
-from enum import Enum
-import math
 import numpy
-import uuid
 
+import datetime
+from   enum     import Enum
+import math
+from   numbers  import Number
+import re
+import uuid
 
 ### Enums
 class ConnectionMethod(Enum):
@@ -15,15 +17,15 @@ class ConnectionMethod(Enum):
 
 class SiPrefix(Enum):
     femto  = 1.0E-15
-    pico  = 1.0E-12
-    nano  = 1.0E-9
-    micro = 1.0E-6
-    milli = 1.0E-3
-    none  = 1
-    kilo  = 1.0E3
-    mega  = 1.0E6
-    giga  = 1.0E9
-    tera  = 1.0E12
+    pico   = 1.0E-12
+    nano   = 1.0E-9
+    micro  = 1.0E-6
+    milli  = 1.0E-3
+    none   = 1.0
+    kilo   = 1.0E3
+    mega   = 1.0E6
+    giga   = 1.0E9
+    tera   = 1.0E12
     def __float__(self):
         return self.value
     def __str__(self):
@@ -49,6 +51,14 @@ class SiPrefix(Enum):
             return ''
     @staticmethod
     def convert(value):
+        if isinstance(value, Number):
+            return SiPrefix.__convert_from_number(value)
+        if isinstance(value, str):
+            return SiPrefix.__convert_from_str(value)
+        msg = "Cannot convert {0} to (float, SiPrefix)".format(type(value))
+        raise TypeError(msg)
+    @staticmethod
+    def __convert_from_number(value):
         abs_value = abs(value)
         if abs_value     >= 1.0E12:
             return (value * 1.0E-12, SiPrefix.tera)
@@ -70,6 +80,34 @@ class SiPrefix(Enum):
             return (value * 1.0E12,  SiPrefix.pico)
         else:
             return (value * 1.0E15,  SiPrefix.femto)
+    @staticmethod
+    def __convert_from_str(value):
+        value = value.strip()
+        suffix_re = re.compile('([a-zA-Z]+)$')
+        suffix    = suffix_re.findall(value)
+        if not suffix:
+            return SiPrefix.__convert_from_number(float(value))
+        suffix = suffix[0][0]
+        num    = float(value[:len(suffix)+1])
+        if suffix == 'f':
+            return (num, SiPrefix.femto)
+        if suffix == 'p':
+            return (num, SiPrefix.pico)
+        if suffix == 'n':
+            return (num, SiPrefix.nano)
+        if suffix == 'u':
+            return (num, SiPrefix.micro)
+        if suffix == 'm':
+            return (num, SiPrefix.milli)
+        if suffix.lower() == 'K':
+            return (num, SiPrefix.kilo)
+        if suffix == 'M':
+            return (num, SiPrefix.mega)
+        if suffix == 'G':
+            return (num, SiPrefix.giga)
+        if suffix == 'T':
+            return (num, SiPrefix.tera)
+        return SiPrefix.none
 
 class Units(Enum):
     dB      = 'dB'
@@ -99,6 +137,21 @@ def format_value(value, units = Units.none):
     else:
         return "{0:.3f} {1}{2}".format(conv_value, prefix, units)
 
+def to_float(*args):
+    argc = len(args)
+    if argc == 0 or argc > 2:
+        raise SyntaxError("to_float requires 1-2 arguments. You provided {0}".format(argc))
+    if len(args) == 1:
+        arg = args[0]
+        if isinstance(arg, tuple):
+            return to_float(*arg)
+        if isinstance(arg, str):
+            return to_float(*SiPrefix.convert(arg))
+        return float(arg)
+    # Two args
+    num    = args[0]
+    prefix = args[1]
+    return float(num) * float(prefix)
 
 ### Functions
 def print_header(file, app_name, app_version):
