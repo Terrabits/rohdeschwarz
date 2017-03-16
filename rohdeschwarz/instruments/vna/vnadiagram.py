@@ -11,10 +11,8 @@ class VnaDiagram(object):
         # No select command...
         is_max = self.is_maximized()
         if is_max:
-            self.normal_size()
             self.maximize()
         else:
-            self.maximize()
             self.normal_size()
 
     def _title(self):
