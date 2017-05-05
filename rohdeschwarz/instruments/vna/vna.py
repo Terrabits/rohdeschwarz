@@ -1,5 +1,5 @@
-import pathlib
-from enum import Enum
+from pathlib import Path, PureWindowsPath
+from enum    import Enum
 from rohdeschwarz.general import SiPrefix
 from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
@@ -20,7 +20,6 @@ class ImageFormat(Enum):
     svg = 'SVG'
     def __str__(self):
         return self.value
-
 
 class Vna(GenericInstrument):
     def __init__(self):
@@ -232,6 +231,13 @@ class Vna(GenericInstrument):
 
 
     ### Sets
+    def __add_set_suffix(self, name):
+        if self.properties.is_zvx() and not name.lower().endswith('.zvx'):
+            name += '.zvx'
+        elif self.properties.is_znx() and not name.lower().endswith('.znx'):
+            name += '.znx'
+        return name
+
     def create_set(self, name=None):
         if name:
             scpi = ":MEM:DEF '{0}'"
@@ -250,12 +256,9 @@ class Vna(GenericInstrument):
             return name
 
     def open_set(self, name):
-        if self.properties.is_zvx() and not name.lower().endswith('.zvx'):
-            name += '.zvx'
-        elif self.properties.is_znx() and not name.lower().endswith('.znx'):
-            name += '.znx'
+        name = self.__add_set_suffix(name)
         current_dir = ''
-        if str(pathlib.PureWindowsPath(name).parent) == '.':
+        if str(PureWindowsPath(name).parent) == '.':
             current_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
         scpi = ":MMEM:LOAD:STAT 1,'{0}'"
@@ -263,6 +266,16 @@ class Vna(GenericInstrument):
         self.write(scpi)
         if current_dir:
             self.file.cd(current_dir)
+
+    def open_set_locally(self, name):
+        name = self.__add_set_suffix(name)
+        filename = Path(name).name
+        current_dir = self.file.directory()
+        self.file.cd(Directory.recall_sets)
+        self.file.upload_file(name, filename)
+        self.pause(10000)
+        self.open_set(filename)
+        self.file.cd(current_dir)
 
     def _sets(self):
         result = self.query(":MEM:CAT?")
@@ -306,7 +319,7 @@ class Vna(GenericInstrument):
             path += extension
 
         current_dir = None
-        if str(pathlib.PureWindowsPath(path).parent) ==  '.':
+        if str(PureWindowsPath(path).parent) ==  '.':
             current_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
         scpi = ":MMEM:STOR:STAT 1,'{0}'"
@@ -349,7 +362,7 @@ class Vna(GenericInstrument):
         elif self.properties.is_znx() and not name.lower().endswith('.znx'):
             name += '.znx'
         current_dir = ''
-        if str(pathlib.PureWindowsPath(name).parent) ==  '.':
+        if str(PureWindowsPath(name).parent) ==  '.':
             current_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
         self.file.delete(name)

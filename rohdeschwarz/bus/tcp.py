@@ -62,10 +62,10 @@ class TcpBus(object):
         """
         self.buffer_size = 1024
         self.delimiter = '\n' # Writes
-        self._socket = None
+        self.__socket = None
 
     def __del__(self):
-        if self._socket:
+        if self.__socket:
             self.close()
 
     def open(self, address='127.0.0.1', port=5025):
@@ -80,16 +80,16 @@ class TcpBus(object):
             socket.timeout: if instrument not found
 
         """
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.timeout_ms = 1000
-        self._socket.connect((address, port))
+        self.__socket.connect((address, port))
 
     def close(self):
         """
         Close connection
         """
-        self._socket.close()
-        self._socket = None
+        self.__socket.close()
+        self.__socket = None
 
     def read(self):
         """
@@ -101,9 +101,9 @@ class TcpBus(object):
         Raises:
             socket.timeout: if instrument not found
         """
-        result = self._socket.recv(self.buffer_size).decode()
+        result = self.__socket.recv(self.buffer_size).decode()
         while not result.endswith(self.delimiter):
-            result += self._socket.recv(self.buffer_size).decode()
+            result += self.__socket.recv(self.buffer_size).decode()
         return result
 
     def write(self, buffer):
@@ -134,7 +134,7 @@ class TcpBus(object):
         Raises:
             socket.timeout: If instrument not found
         """
-        return self._socket.recv(buffer_size)
+        return self.__socket.recv(buffer_size)
 
     def write_raw_no_end(self, buffer):
         """
@@ -148,7 +148,7 @@ class TcpBus(object):
         """
         if not isinstance(buffer, bytes):
             buffer = bytes(buffer, 'utf-8')
-        self._socket.sendall(buffer)
+        self.__socket.sendall(buffer)
 
     def _timeout_ms(self):
         """
@@ -160,11 +160,11 @@ class TcpBus(object):
         Returns:
             timeout (int): milliseconds
         """
-        if not self._socket.gettimeout():
+        if not self.__socket.gettimeout():
             return 0
-        return self._socket.gettimeout() * 1000
+        return self.__socket.gettimeout() * 1000
     def _set_timeout_ms(self, value):
-        self._socket.settimeout(value/1000)
+        self.__socket.settimeout(value/1000)
     timeout_ms = property(_timeout_ms, _set_timeout_ms)
 
 
