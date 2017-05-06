@@ -34,8 +34,8 @@ class MockBus(object):
 		return status
 
 	def reset(self, reads=[]):
-		self.reads  = reads
-		self.writes = []
+		self.reads       = reads
+		self.writes      = []
 		self.buffer_size = 1024
 		self.delimiter   = '\n'
 		self.timeout_ms  = 1000
