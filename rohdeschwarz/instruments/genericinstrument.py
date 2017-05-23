@@ -72,6 +72,30 @@ class GenericInstrument(object):
     def options_string(self):
         return self.query("*OPT?").strip()
 
+    def is_error(self):
+        return bool(self._errors())
+
+    def next_error(self):
+        code = 0;
+        message = '';
+        result = self.query(':SYST:ERR?').strip()
+        comma_index = result.find(',')
+        code = int(result[:comma_index])
+        message = result[comma_index+2:-1]
+        if (code != 0):
+            return(code, message)
+        else:
+            return None
+
+    def _errors(self):
+        errors = []
+        error = self.next_error()
+        while error:
+            errors.append(error)
+            error = self.next_error()
+        return errors
+    errors = property(_errors)
+
     def clear_status(self):
         self.write("*CLS")
 
@@ -93,7 +117,7 @@ class GenericInstrument(object):
     def pause(self, timeout_ms=1000):
         # Take greater of timeout amounts
         timeout_ms = self.timeout_ms if self.timeout_ms > timeout_ms else timeout_ms
-        
+
         old_timeout = self.timeout_ms
         self.timeout_ms = timeout_ms
         result = self.query('*OPC?').strip() == "1"
