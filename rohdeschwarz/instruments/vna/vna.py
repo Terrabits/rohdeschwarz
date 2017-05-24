@@ -343,6 +343,19 @@ class Vna(GenericInstrument):
         if current_dir:
             self.file.cd(current_dir)
 
+    ### Cal groups
+    def _cal_groups(self):
+        current_dir = self.file.directory()
+        self.file.cd(Directory.cal_groups)
+        cal_groups = self.file.files()
+        def is_cal(filename):
+            return filename.lower().endswith('.cal')
+        cal_groups = list(filter(is_cal, cal_groups))
+        cal_groups = [name[:-4] for name in cal_groups]
+        self.file.cd(current_dir)
+        return cal_groups
+    cal_groups = property(_cal_groups)
+
     ### General
     def _sweep_time_ms(self):
         sweep_time_ms = 0

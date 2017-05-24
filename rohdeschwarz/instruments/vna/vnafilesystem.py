@@ -19,19 +19,19 @@ class Directory(Enum):
 
 class VnaFileSystem(object):
     def __init__(self, vna):
-        self._vna = vna
+        self.__vna = vna
 
     def cd(self, path):
         if isinstance(path, Directory):
             if path == Directory.default:
-                self._vna.write(":MMEM:CDIR DEF")
+                self.__vna.write(":MMEM:CDIR DEF")
             else:
                 self.cd(Directory.default)
                 scpi = ":MMEM:CDIR '{0}'"
-                self._vna.write(scpi.format(path))
+                self.__vna.write(scpi.format(path))
         else:
             scpi = ":MMEM:CDIR '{0}'"
-            self._vna.write(scpi.format(path))
+            self.__vna.write(scpi.format(path))
 
     def is_file(self, path):
         path = pathlib.PureWindowsPath(path)
@@ -71,14 +71,13 @@ class VnaFileSystem(object):
 
     def directory(self):
         scpi = ':MMEM:CDIR?'
-        return self._vna.query(scpi).strip().strip("'")
+        return self.__vna.query(scpi).strip().strip("'")
 
     def files(self):
-        (size, free_space, files, directories) = self._dir()
-        return files
+        return [i[0] for i in self.__files_and_sizes()]
 
     def directories(self):
-        (size, free_space, files, directories) = self._dir()
+        (size, free_space, files, directories) = self.__dir()
         return directories
 
     def file_size(self, path):
@@ -102,26 +101,26 @@ class VnaFileSystem(object):
     def mkdir(self, path):
         scpi = ":MMEM:MDIR '{0}'"
         scpi = scpi.format(path)
-        self._vna.write(scpi)
-        self._vna.pause()
+        self.__vna.write(scpi)
+        self.__vna.pause()
 
     def move(self, source_path, destination_path):
         scpi = ":MMEM:MOVE '{0}','{1}'"
         scpi = scpi.format(source_path, destination_path)
-        self._vna.write(scpi)
-        self._vna.pause()
+        self.__vna.write(scpi)
+        self.__vna.pause()
 
     def copy(self, source_path, destination_path):
         scpi = ":MMEM:COPY '{0}','{1}'"
         scpi = scpi.format(source_path, destination_path)
-        self._vna.write(scpi)
-        self._vna.pause()
+        self.__vna.write(scpi)
+        self.__vna.pause()
 
     def delete(self, filename):
         scpi = ":MMEM:DEL '{0}',FORC"
         scpi = scpi.format(filename)
-        self._vna.write(scpi)
-        self._vna.pause()
+        self.__vna.write(scpi)
+        self.__vna.pause()
 
     def delete_all(self, path):
         current_dir = self.directory()
@@ -131,30 +130,30 @@ class VnaFileSystem(object):
             for file in files:
                 self.delete(file)
             self.cd(current_dir)
-            self._vna.pause()
+            self.__vna.pause()
 
     def rmdir(self, path):
         scpi = ":MMEM:RDIR '{0}'"
         scpi = scpi.format(path)
-        self._vna.write(scpi)
-        self._vna.pause()
+        self.__vna.write(scpi)
+        self.__vna.pause()
 
     def upload_file(self, local_filename, remote_filename):
         scpi = ":MMEM:DATA '{0}',"
         scpi = scpi.format(remote_filename)
-        self._vna.write_raw_no_end(scpi.encode())
-        self._vna.write_block_data_from_file(local_filename, os.path.getsize(local_filename) + 20)
+        self.__vna.write_raw_no_end(scpi.encode())
+        self.__vna.write_block_data_from_file(local_filename, os.path.getsize(local_filename) + 20)
 
     def download_file(self, remote_filename, local_filename):
         size_B = self.file_size(remote_filename)
 
         scpi = ":MMEM:DATA? '{0}'"
         scpi = scpi.format(remote_filename)
-        self._vna.write(scpi)
-        self._vna.read_block_data_to_file(local_filename, size_B + 20)
+        self.__vna.write(scpi)
+        self.__vna.read_block_data_to_file(local_filename, size_B + 20)
 
-    def _dir(self):
-        results = self._vna.query(":MMEM:CAT?").strip();
+    def __dir(self):
+        results = self.__vna.query(":MMEM:CAT?").strip();
         results = results.split(',')
         if len(results) < 2:
             raise OSError(0, "Invalid directory information returned from 'MMEM:CAT?'")
@@ -172,9 +171,13 @@ class VnaFileSystem(object):
                 files.append((name, size))
             else:
                 # Error
-                if self._vna.log:
-                    self._vna.log.write("This MMEM:DIR? call may have failed because one of the files\n")
-                    self._vna.log.write("in the directory contains a ',' in the file name. This is a\n")
-                    self._vna.log.write("limitation of the SCPI command, which happens to use comma separators.\n\n")
+                if self.__vna.log:
+                    self.__vna.log.write("This MMEM:DIR? call may have failed because one of the files\n")
+                    self.__vna.log.write("in the directory contains a ',' in the file name. This is a\n")
+                    self.__vna.log.write("limitation of the SCPI command, which happens to use comma separators.\n\n")
                     raise OSError(0, "Invalid directory information returned from 'MMEM:CAT?'")
         return (total_file_size, free_space, files, directories)
+
+    def __files_and_sizes(self):
+        (size, free_space, files, directories) = self.__dir()
+        return files
