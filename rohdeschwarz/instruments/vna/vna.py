@@ -59,32 +59,6 @@ class Vna(GenericInstrument):
         _log.write('\n\n')
         self.log = _log
 
-    def is_error(self):
-        return bool(self._errors())
-
-    def next_error(self):
-        code = 0;
-        message = '';
-        result = self.query(':SYST:ERR?').strip()
-        comma_index = result.find(',')
-        code = int(result[:comma_index])
-        message = result[comma_index+2:-1]
-        if (code != 0):
-            return(code, message)
-        else:
-            return None
-
-    def _errors(self):
-        errors = []
-        error = self.next_error()
-        while error:
-            errors.append(error)
-            error = self.next_error()
-        return errors
-
-    errors = property(_errors)
-
-
     ### Channels
     def is_channel(self, index):
         return index in self._channels()
