@@ -344,6 +344,10 @@ class Vna(GenericInstrument):
             self.file.cd(current_dir)
 
     ### Cal groups
+    def is_cal_group(self, name):
+        cal_groups = [i.lower() for i in self.cal_groups]
+        return name.lower() in cal_groups
+
     def _cal_groups(self):
         current_dir = self.file.directory()
         self.file.cd(Directory.cal_groups)

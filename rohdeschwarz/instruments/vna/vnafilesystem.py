@@ -42,7 +42,7 @@ class VnaFileSystem(object):
             self.cd(location)
         files = self.files()
         for f in files:
-            if f[0].upper() == name.upper():
+            if f.upper() == name.upper():
                 if location != ".":
                     self.cd(original_dir)
                 return True
@@ -87,7 +87,7 @@ class VnaFileSystem(object):
         original_dir = self.directory()
         if location != ".":
             self.cd(location)
-        files = self.files()
+        files = self.__files_and_sizes()
         for f in files:
             if f[0].upper() == name.upper():
                 if location != ".":
