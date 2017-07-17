@@ -397,7 +397,7 @@ class VnaChannel(object):
 
     def dissolve_cal_group_link(self):
         scpi = 'MMEM:LOAD:CORR:RES {0}'
-        self.vna.write(scpi.format(self.index))
+        self._vna.write(scpi.format(self.index))
 
     def save_cal(self, name):
         if not name.lower().endswith(".cal"):
