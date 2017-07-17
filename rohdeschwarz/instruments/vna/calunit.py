@@ -46,9 +46,12 @@ class CalUnit:
             self.vna.clear_status()
             port = 1
             while not self.vna.is_error():
-                self.setOpen(port)
+                try:
+                    self.setOpen(port)
+                except:
+                    return port-1
                 port += 1
-            return int(port-1)
+            return port-1
         else:
             # znx
             self.select()
