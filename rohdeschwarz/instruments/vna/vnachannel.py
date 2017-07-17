@@ -4,7 +4,8 @@ from rohdeschwarz.general import SiPrefix
 from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.general import Units
 from rohdeschwarz.general import number_of_thrus
-from rohdeschwarz.instruments.vna.vnafilesystem import Directory
+from rohdeschwarz.instruments.vna.multistep_autocal import MultistepAutocal
+from rohdeschwarz.instruments.vna.vnafilesystem     import Directory
 
 class SweepType(Enum):
     linear    = 'LIN'
@@ -81,6 +82,9 @@ class VnaChannel(object):
         timeout_ms = number_of_sweeps * (10 * self.total_sweep_time_ms + 10000) + 5000
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
+
+    def multistep_autocal(self, cal_unit):
+        return MultistepAutocal(self.vna, self, cal_unit)
 
     def start_sweep(self):
         scpi = ':INIT{0}'.format(self.index)
