@@ -29,6 +29,11 @@ class Vna(GenericInstrument):
         self.settings = VnaSettings(self)
         self.file = VnaFileSystem(self)
 
+    def __del__(self):
+        if self.connected():
+            self.local()
+            self.close()
+
     def print_info(self):
         _log = self.log
         self.log = None

@@ -83,8 +83,8 @@ class VnaChannel(object):
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
 
-    def multistep_autocal(self, cal_unit=''):
-        return MultistepAutocal(self._vna, self, cal_unit)
+    def multistep_autocal(self, cal_unit='', timeout_ms=None):
+        return MultistepAutocal(self._vna, self, cal_unit, timeout_ms)
 
     def start_sweep(self):
         scpi = ':INIT{0}'.format(self.index)

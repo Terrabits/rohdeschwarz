@@ -1,13 +1,19 @@
 from rohdeschwarz.general import number_of_thrus
 
 class MultistepAutocal:
-    def __init__(self, vna, channel, cal_unit=''):
+    def __init__(self, vna, channel, cal_unit='', timeout_ms=None):
         self.vna      = vna
         self.channel  = channel
         self.ports = []
         if not cal_unit:
             cal_unit  = vna.cal_units[0]
         self.cal_unit = vna.cal_unit(cal_unit)
+        if timeout_ms:
+            self.timeout_ms = timeout_ms
+        else:
+            port_count = self.cal_unit.ports
+            number_of_sweeps = 3 * port_count + number_of_thrus(port_count)
+            self.timeout_ms = number_of_sweeps * (10 * self.channel.total_sweep_time_ms + 10000) + 5000
 
     def start(self, ports):
         self.ports = ports
@@ -17,7 +23,7 @@ class MultistepAutocal:
         scpi = scpi.format(self.channel.index)
         self.vna.write(scpi)
         # set ports
-        scpi = "SENS{0}:CORR:COLL:AUTO:ASS:DEF:TPOR:DEF"
+        scpi = "SENS{0}:CORR:COLL:AUTO:ASS:DEF:TPOR:DEF {1}"
         scpi = scpi.format(self.channel.index, ",".join(map(str, ports)))
         self.vna.write(scpi)
 
@@ -36,15 +42,10 @@ class MultistepAutocal:
     steps = property(_steps)
 
     def perform_step(self, i):
-        scpi = 'SENS{0}:]CORR:COLL:AUTO:ASS{1}:ACQ'
+        scpi = 'SENS{0}:CORR:COLL:AUTO:ASS{1}:ACQ'
         scpi = scpi.format(self.channel.index, i)
-
-        port_count = len(self.steps[i])
-        number_of_sweeps = 3 * port_count + number_of_thrus(port_count)
-        timeout_ms = number_of_sweeps * (10 * self.channel.total_sweep_time_ms + 10000) + 5000
-
         self.vna.write(scpi)
-        self.vna.pause(timeout_ms)
+        self.vna.pause(self.timeout_ms)
 
     def apply(self):
         scpi = 'SENS{0}:CORR:COLL:AUTO:SAVE'
