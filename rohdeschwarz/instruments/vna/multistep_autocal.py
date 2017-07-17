@@ -18,7 +18,7 @@ class MultistepAutocal:
         self.vna.write(scpi)
         # set ports
         scpi = "SENS{0}:CORR:COLL:AUTO:ASS:DEF:TPOR:DEF"
-        scpi = scpi.format(self.channel.index, ",".join(ports))
+        scpi = scpi.format(self.channel.index, ",".join(map(str, ports)))
         self.vna.write(scpi)
 
     def _steps(self):
