@@ -41,17 +41,17 @@ class CalUnit:
             raise LookupError("No cal unit with id '{0}'".format(self.id))
         if self.vna.properties.is_zvx():
             # TODO: Make faster?
-            # return self.__difficult_ports()
-            self.vna.is_error()
-            self.vna.clear_status()
-            port = 1
-            while not self.vna.is_error():
-                try:
-                    self.setOpen(port)
-                except:
-                    return port-1
-                port += 1
-            return port-1
+            return self.__difficult_ports()
+            # # This code should be faster theoretically,
+            # # but there is a timing bug that requires sleep.... :-(
+            # self.vna.is_error()
+            # self.vna.clear_status()
+            # port = 0
+            # while not self.vna.is_error():
+            #     port += 1
+            #     self.setOpen(port)
+            #     time.sleep(5)
+            # return port-1
         else:
             # znx
             self.select()
