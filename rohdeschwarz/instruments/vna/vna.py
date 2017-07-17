@@ -3,6 +3,7 @@ from enum    import Enum
 from rohdeschwarz.general import SiPrefix
 from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
+from rohdeschwarz.instruments.vna.calunit       import CalUnit
 from rohdeschwarz.instruments.vna.vnachannel    import VnaChannel
 from rohdeschwarz.instruments.vna.vnadiagram    import VnaDiagram
 from rohdeschwarz.instruments.vna.vnatrace      import VnaTrace
@@ -362,6 +363,14 @@ class Vna(GenericInstrument):
         self.file.cd(current_dir)
         return cal_groups
     cal_groups = property(_cal_groups)
+
+    # cal units
+    def _cal_units(self):
+        results = self.query(':SYST:COMM:RDEV:AKAL:ADDR:ALL?')
+        return [unit.strip("'") for unit in results.strip().split(',')]
+    cal_units = property(_cal_units)
+    def cal_unit(self, id=None):
+        return CalUnit(self, id)
 
     ### General
     def _sweep_time_ms(self):
