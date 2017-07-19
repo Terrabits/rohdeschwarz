@@ -372,7 +372,11 @@ class Vna(GenericInstrument):
     # cal units
     def _cal_units(self):
         results = self.query(':SYST:COMM:RDEV:AKAL:ADDR:ALL?')
-        return [unit.strip("'") for unit in results.strip().split(',')]
+        results = results.strip().strip("'")
+        if not results:
+            return []
+        else:
+            return [unit.strip("'") for unit in results.split(',')]
     cal_units = property(_cal_units)
     def cal_unit(self, id=None):
         return CalUnit(self, id)
