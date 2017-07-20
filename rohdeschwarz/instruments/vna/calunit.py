@@ -14,44 +14,21 @@ class CalUnit:
         scpi = scpi.format(self.id)
         self.vna.write(scpi)
 
-    def __difficult_ports(self):
-        self.select()
-        current_dir = self.vna.file.directory()
-        self.vna.file.cd(Directory.default)
-        if not self.vna.file.is_directory('__TEMP__'):
-            self.vna.file.mkdir('__TEMP__')
-            self.vna.pause()
-        self.vna.file.cd('__TEMP__')
-        self.vna.file.delete_all('.')
-        self.vna.pause()
-        self.export_factory_cal(self.vna.file.directory())
-        self.vna.pause(10000)
-        filenames = self.vna.file.files()
-        regex = re.compile(r'CalibrationUnit Open \(P(?P<port>\d+)\)\.s1p', re.IGNORECASE)
-        ports = [int(regex.match(f).group('port')) for f in filenames if regex.match(f)]
-        self.vna.file.delete_all(self.vna.file.directory())
-        self.vna.pause()
-        self.vna.file.cd(Directory.default)
-        self.vna.file.rmdir('__TEMP__')
-        self.vna.pause()
-        self.vna.file.cd(current_dir)
-        return max(ports)
     def _ports(self):
         if not self.id in self.vna.cal_units:
             raise LookupError("No cal unit with id '{0}'".format(self.id))
         if self.vna.properties.is_zvx():
-            # TODO: Make faster?
-            return self.__difficult_ports()
-            # # This code should be faster theoretically,
-            # # but there is a timing bug that requires sleep.... :-(
-            # self.vna.is_error()
-            # self.vna.clear_status()
-            # port = 0
-            # while not self.vna.is_error():
-            #     port += 1
-            #     self.setOpen(port)
-            #     time.sleep(5)
-            # return port-1
+            # TODO: faster work-around?
+            self.vna.is_error()
+            self.vna.clear_status()
+            port = 0
+            while not self.vna.is_error():
+                port += 1
+                self.setOpen(port)
+                self.vna.pause(5000)
+            self.vna.is_error()
+            self.vna.clear_status()
+            return port-1
         else:
             # znx
             self.select()
