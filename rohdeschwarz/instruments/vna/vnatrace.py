@@ -71,11 +71,12 @@ class VnaTrace(object):
 
     def _diagram(self):
         if self._vna.properties.is_zvx():
-            _diagrams = self._vna.diagrams
-            for d in _diagrams:
-                _traces = self._vna.diagram(d).traces
-                if _traces.index(self.name) != -1:
+            diagrams = self._vna.diagrams
+            for d in diagrams:
+                traces = self._vna.diagram(d).traces
+                if self.name in traces:
                     return d
+            return None
         else:
             scpi = ":CONF:TRAC:WIND? '{0}'"
             scpi = scpi.format(self.name)
