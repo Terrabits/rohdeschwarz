@@ -502,7 +502,7 @@ class VnaChannel(object):
         self.s_parameter_group = old_ports
         return result
 
-    def save_measurement(self, filename, test_ports, format='COMP'):
+    def save_measurement(self, filename, test_ports, data_format='COMP'):
         old_ports = self.s_parameter_group
         is_manual_sweep = self.manual_sweep
         file_extension = '.s{0}p'.format(len(test_ports))
@@ -514,7 +514,7 @@ class VnaChannel(object):
         scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
         scpi = scpi.format(self.index, \
                            filename, \
-                           str(format), \
+                           str(data_format), \
                            ports_string)
         self._vna.write(scpi)
         self._vna.pause(5000)
