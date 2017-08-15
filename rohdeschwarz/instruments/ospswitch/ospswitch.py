@@ -17,7 +17,7 @@ class OspSwitch(GenericInstrument):
             address = self.switches[name.lower()]
             return self.switch_state(address)
         else:
-            return super().__getattribute__(name)
+            return GenericInstrument.__getattribute__(self, name)
 
     def __setattr__(self, name, value):
         if _is_switch_name(name):
@@ -29,7 +29,7 @@ class OspSwitch(GenericInstrument):
                 return
             self.close_switch(address, value)
         else:
-            super().__setattr__(name, value)
+            GenericInstrument.__setattr__(self, name, value)
 
     def close_switch(self, address, state):
         instr   = address['instrument']
