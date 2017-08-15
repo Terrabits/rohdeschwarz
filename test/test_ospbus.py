@@ -21,11 +21,17 @@ class TestOspBus(unittest.TestCase):
           {'scpi': [r'ROUT:CLOS? (@F02A11(0001))'], 'result': 1},
           {'scpi': [r'ROUT:CLOS? (@F01A12(0001))'], 'result': 1},
           {'scpi': [r'ROUT:CLOS? (@F02A12(0101))'], 'result': 0},
-          {'scpi': [r'ROUT:CLOS? (@F02A12(0111))'], 'result': 0})
+          {'scpi': [r'ROUT:CLOS? (@F02A12(0111))'], 'result': 0},
+          {'scpi': [r'ROUT:CLOS (@F02A12(0511))', r'ROUT:CLOS? (@F02A12(0511))'], 'result': 1},
+          {'scpi': [r'ROUT:CLOS (@F02A12(0511))', r'ROUT:CLOS? (@F02A12(0111))'], 'result': 0})
     def test_query(self, data):
         for i in data['scpi']:
             self.bus.write(i)
         self.assertEqual(int(self.bus.read()), data['result'])
+
+    def test_timeout_ms(self):
+        x = self.bus.timeout_ms + 1000
+        self.bus.timeout_ms = x
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,10 +1,13 @@
+from rohdeschwarz.test.mock.bus.base import MockBus
+
 import re
 
 write_regex = r'^ROUT:CLOS \(@F(?P<instr>\d{2,2})A(?P<module>\d{2,2})\((?P<state>\d{2,2})(?P<switch>\d{2,2})\)\)$'
 read_regex  = r'^ROUT:CLOS\? \(@F(?P<instr>\d{2,2})A(?P<module>\d{2,2})\((?P<state>\d{2,2})(?P<switch>\d{2,2})\)\)$'
 
-class OspBus:
+class OspBus(MockBus):
     def __init__(self):
+        MockBus.__init__(self)
         self.switches = {}
         self.reads  = []
         self.writes = []
@@ -63,4 +66,7 @@ class OspBus:
                 return '1'
             else:
                 return '0'
-        return module[switch]
+        if module[switch] == state:
+            return '1'
+        else:
+            return '0'

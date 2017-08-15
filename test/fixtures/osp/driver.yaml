@@ -1,0 +1,24 @@
+k10:
+  instrument:  1
+  module:     11
+  switch:      7
+k11:
+  instrument:  1
+  module:     11
+  switch:      8
+k20:
+  instrument:  1
+  module:     11
+  switch:      9
+k21:
+  instrument:  1
+  module:     11
+  switch:     10
+k30:
+  instrument:  1
+  module:     12
+  switch:     22
+k40:
+  instrument:  1
+  module:     13
+  switch:     99

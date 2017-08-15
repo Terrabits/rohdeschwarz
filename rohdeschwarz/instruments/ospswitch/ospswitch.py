@@ -1,4 +1,5 @@
 from   rohdeschwarz.instruments.genericinstrument import GenericInstrument
+from   rohdeschwarz.instruments.ospswitch.enums   import Spdt
 
 import re
 from   ruamel import yaml
@@ -10,6 +11,9 @@ class OspSwitch(GenericInstrument):
 
     def __getattr__(self, name):
         if _is_switch_name(name):
+            name = name.lower()
+            if not name in self.switches:
+                raise AttributeError("Switch '{0}' not found in switch_dict".format(name))
             address = self.switches[name.lower()]
             return self.switch_state(address)
         else:
@@ -17,7 +21,10 @@ class OspSwitch(GenericInstrument):
 
     def __setattr__(self, name, value):
         if _is_switch_name(name):
-            address = self.switches[name.lower()]
+            name = name.lower()
+            if not name in self.switches:
+                raise AttributeError("Switch '{0}' not found in switch_dict".format(name))
+            address = self.switches[name]
             if self.is_switch_state(address, value):
                 return
             self.close_switch(address, value)
