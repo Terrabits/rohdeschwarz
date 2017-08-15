@@ -32,7 +32,7 @@ class TestOspSwitch(unittest.TestCase):
                 value = 0
             elif value == 'no':
                 value = 1
-            self.assertEqual(getattr(self.osp, key.lower(), value))
+            self.assertEqual(getattr(self.osp, key.lower()), value)
 
 
 if __name__ == '__main__':

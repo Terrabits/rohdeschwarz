@@ -21,15 +21,17 @@ class OspBus(MockBus):
         return self.reads[-1]
 
     def write(self, scpi):
-        self.writes.append(scpi)
         write_match = re.match(write_regex, scpi)
         if write_match:
+            self.writes.append(scpi)
             self.process_write(write_match)
             return
         read_match  = re.match(read_regex, scpi)
         if read_match:
+            self.writes.append(scpi)
             self.buffer = self.process_read(read_match)
             return
+        MockBus.write(self, scpi)
 
     def process_write(self, match):
         instr  = int(match.group('instr'))
