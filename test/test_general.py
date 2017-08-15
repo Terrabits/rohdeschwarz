@@ -9,13 +9,11 @@ from   ddt      import ddt, data
 
 import unittest
 
-
-
 @ddt
 class TestGeneral(unittest.TestCase):
 	@data({'value': 0.5,    'units': Units.dB,      'result': '0.5 dB'},
-		  {'value': 5.0e-9, 'units': Units.seconds, 'result': '5.0 ns'},
-		  {'value': 10.0,   'units': Units.none,    'result': '10.0 U'})
+		  {'value': 5.0e-9, 'units': Units.seconds, 'result': '5 ns'},
+		  {'value': 10.0,   'units': Units.none,    'result': '10 U'})
 	def test_trace_format_units(self, data):
 		self.assertEqual(format_value(data['value'], data['units']), data['result'])
 
@@ -27,6 +25,7 @@ class TestGeneral(unittest.TestCase):
 		num, prefix = SiPrefix.convert(data['value'])
 		self.assertEqual(data['num'], num)
 		self.assertEqual(data['prefix'], prefix)
+
 	@data({'args': (10.0),              'value': 10.0},
 		  {'args': ('10.0'),            'value': 10.0},
 		  {'args': ('10 MHz'),          'value': 10e6},

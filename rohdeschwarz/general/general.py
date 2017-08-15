@@ -129,13 +129,16 @@ class Units(Enum):
 
 def format_value(value, units = Units.none):
     if units == Units.dB:
-        return "{0:.2f} {1}".format(value, units)
-
+        value = "{0:.2f}".format(value)
+        value = value.rstrip('0').rstrip('.')
+        return "{0} {1}".format(value, units)
     conv_value, prefix = SiPrefix.convert(value)
+    conv_value = "{0:.3f}".format(conv_value)
+    conv_value = conv_value.rstrip('0').rstrip('.')
     if prefix == SiPrefix.none:
-        return "{0:.3f} {1}".format(conv_value, units)
+        return "{0} {1}".format(conv_value, units)
     else:
-        return "{0:.3f} {1}{2}".format(conv_value, prefix, units)
+        return "{0} {1}{2}".format(conv_value, prefix, units)
 
 def to_float(*args):
     argc = len(args)
