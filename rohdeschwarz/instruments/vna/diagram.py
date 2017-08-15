@@ -1,8 +1,8 @@
-from enum import Enum
+from enum                 import Enum
 from rohdeschwarz.general import unique_alphanumeric_string
 
 
-class VnaDiagram(object):
+class Diagram(object):
     def __init__(self, vna, index=1):
         self._vna = vna
         self.index = index

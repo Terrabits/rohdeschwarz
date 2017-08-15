@@ -1,16 +1,15 @@
 from pathlib import Path, PureWindowsPath
 from enum    import Enum
-from rohdeschwarz.general import SiPrefix
-from rohdeschwarz.general import unique_alphanumeric_string
+from rohdeschwarz.general                       import SiPrefix
+from rohdeschwarz.general                       import unique_alphanumeric_string
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
 from rohdeschwarz.instruments.vna.calunit       import CalUnit
-from rohdeschwarz.instruments.vna.vnachannel    import VnaChannel
-from rohdeschwarz.instruments.vna.vnadiagram    import VnaDiagram
-from rohdeschwarz.instruments.vna.vnatrace      import VnaTrace
-from rohdeschwarz.instruments.vna.vnaproperties import VnaProperties
-from rohdeschwarz.instruments.vna.vnasettings   import VnaSettings
-from rohdeschwarz.instruments.vna.vnafilesystem import VnaFileSystem
-from rohdeschwarz.instruments.vna.vnafilesystem import Directory
+from rohdeschwarz.instruments.vna.channel       import Channel
+from rohdeschwarz.instruments.vna.diagram       import Diagram
+from rohdeschwarz.instruments.vna.trace         import Trace
+from rohdeschwarz.instruments.vna.properties    import Properties
+from rohdeschwarz.instruments.vna.settings      import Settings
+from rohdeschwarz.instruments.vna.filesystem    import FileSystem, Directory
 
 
 class ImageFormat(Enum):
@@ -25,9 +24,9 @@ class ImageFormat(Enum):
 class Vna(GenericInstrument):
     def __init__(self):
         GenericInstrument.__init__(self)
-        self.properties = VnaProperties(self)
-        self.settings = VnaSettings(self)
-        self.file = VnaFileSystem(self)
+        self.properties = Properties(self)
+        self.settings = Settings(self)
+        self.file = FileSystem(self)
 
     def __del__(self):
         if self.connected():
@@ -112,7 +111,7 @@ class Vna(GenericInstrument):
             self.delete_channel(i)
 
     def channel(self, index=1):
-        return VnaChannel(self, index)
+        return Channel(self, index)
 
 
     ### Traces
@@ -163,7 +162,7 @@ class Vna(GenericInstrument):
             self.delete_trace(t)
 
     def trace(self, name='Trc1'):
-        return VnaTrace(self, name)
+        return Trace(self, name)
 
     ### Diagrams
     def is_diagram(self, index):
@@ -207,7 +206,7 @@ class Vna(GenericInstrument):
             _diagrams = self._diagrams()
 
     def diagram(self, index=1):
-        return VnaDiagram(self, index)
+        return Diagram(self, index)
 
 
     ### Sets

@@ -1,8 +1,10 @@
+from   rohdeschwarz.instruments.vna import Vna
+
 import argparse
-import datetime
 import code
+import datetime
 import os
-from rohdeschwarz.instruments.vna import Vna
+import sys
 
 def main():
     parser = argparse.ArgumentParser(description='Connect to a Rohde & Schwarz VNA')
@@ -29,9 +31,9 @@ def main():
                 vna.log.write('--------------------------\n\n')
                 vna.print_info()
             code.interact('', local=locals())
+            sys.exit(0)
         else:
-            print('Could not connect to instrument\n')
-            parser.print_help()
+            raise Exception('Could not connect to instrument')
     except SystemExit:
         pass
     except:
@@ -45,3 +47,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sys.exit(0)

@@ -1,6 +1,6 @@
 
 
-class VnaMarker(object):
+class Marker(object):
     def __init__(self, vna, trace, index=1):
         self._vna = vna
         self._trace = trace
@@ -61,4 +61,3 @@ class VnaMarker(object):
         scpi = scpi.format(self._trace.channel, self._index)
         self._trace.select()
         self._vna.write(scpi)
-

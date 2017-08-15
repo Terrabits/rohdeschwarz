@@ -4,9 +4,9 @@ import numpy
 import re
 from rohdeschwarz.general import unique_alphanumeric_string
 from rohdeschwarz.general import Units
-from rohdeschwarz.instruments.vna.vnamarker     import VnaMarker
-from rohdeschwarz.instruments.vna.vnalimits     import VnaLimits
-from rohdeschwarz.instruments.vna.vnatimedomain import VnaTimeDomain
+from rohdeschwarz.instruments.vna.marker     import Marker
+from rohdeschwarz.instruments.vna.limits     import Limits
+from rohdeschwarz.instruments.vna.timedomain import TimeDomain
 
 class TraceFormat(Enum):
     magnitude_dB = 'MLOG'
@@ -50,7 +50,7 @@ class SaveDataFormat(Enum):
     def __str__(self):
         return self.value
 
-class VnaTrace(object):
+class Trace(object):
     def __init__(self, vna, name='Trc1'):
         self._vna = vna
         self.name = name
@@ -289,14 +289,14 @@ class VnaTrace(object):
     markers = property(_markers, _set_markers)
 
     def marker(self, index=1):
-        return VnaMarker(self._vna, self, index)
+        return Marker(self._vna, self, index)
 
     def _limits(self):
-        return VnaLimits(self._vna, self)
+        return Limits(self._vna, self)
     limits = property(_limits)
 
     def _time_domain(self):
-        return VnaTimeDomain(self._vna, self)
+        return TimeDomain(self._vna, self)
     time_domain = property(_time_domain)
 
     def test_ports(self):

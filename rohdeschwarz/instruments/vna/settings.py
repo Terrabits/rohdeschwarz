@@ -87,7 +87,7 @@ class PortPowerLimits(object):
         def __repr__(self):
             return self.__str__()
 
-class VnaSettings(object):
+class Settings(object):
     def __init__(self, vna):
         self._vna = vna
 

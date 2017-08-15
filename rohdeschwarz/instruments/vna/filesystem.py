@@ -1,4 +1,4 @@
-from enum import Enum
+from   enum import Enum
 import pathlib
 import os
 
@@ -17,7 +17,7 @@ class Directory(Enum):
         return self.value
 
 
-class VnaFileSystem(object):
+class FileSystem(object):
     def __init__(self, vna):
         self.__vna = vna
 

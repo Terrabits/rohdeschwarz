@@ -1,2 +1,2 @@
 # instruments
-__all__ = ['vna']
+__all__ = ['ospswitch', 'vna']

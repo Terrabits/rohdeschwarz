@@ -1,10 +1,10 @@
-from enum import Enum
+from   enum                 import Enum
 import numpy
-from rohdeschwarz.general import SiPrefix
-from rohdeschwarz.general import unique_alphanumeric_string
-from rohdeschwarz.general import Units
-from rohdeschwarz.general import number_of_thrus
-from rohdeschwarz.instruments.vna.vnafilesystem     import Directory
+from   rohdeschwarz.general import SiPrefix
+from   rohdeschwarz.general import unique_alphanumeric_string
+from   rohdeschwarz.general import Units
+from   rohdeschwarz.general import number_of_thrus
+from   rohdeschwarz.instruments.vna.filesystem     import Directory
 
 class SweepType(Enum):
     linear    = 'LIN'
@@ -37,7 +37,7 @@ class TouchstoneFormat(Enum):
             return self.value == other
 
 
-class VnaChannel(object):
+class Channel(object):
     def __init__(self, vna, index):
         self._vna = vna
         self.index = index

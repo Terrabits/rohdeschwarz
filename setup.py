@@ -71,7 +71,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pathlib', 'pyvisa', 'numpy'],
+    install_requires=['pathlib', 'pyvisa', 'numpy', 'ruamel.yaml'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -98,8 +98,9 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'vna=rohdeschwarz.bin.vna:main',
-            'instr=rohdeschwarz.bin.instr:main'
+            'instr=rohdeschwarz.bin.instr:main',
+            'osp=rohdeschwarz.bin.osp:main',
+            'vna=rohdeschwarz.bin.vna:main'
         ]
     },
 )

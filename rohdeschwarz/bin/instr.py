@@ -1,8 +1,10 @@
-import argparse
-import datetime
-import code
-import os
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
+
+import argparse
+import code
+import datetime
+import os
+import sys
 
 def main():
     parser = argparse.ArgumentParser(description='Connect to an instrument')
@@ -30,8 +32,7 @@ def main():
                 instr.print_info()
             code.interact('', local=locals())
         else:
-            print('Could not connect to instrument\n')
-            parser.print_help()
+            raise Exception('Could not connect to instrument')
     except SystemExit:
         pass
     except:
@@ -45,3 +46,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sys.exit(0)

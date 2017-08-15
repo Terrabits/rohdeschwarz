@@ -1,6 +1,6 @@
 
 
-class MockBus(object):
+class FifoBus(object):
 	def __init__(self, reads=[]):
 		self.reset(reads)
 
@@ -17,7 +17,7 @@ class MockBus(object):
 		if self.reads:
 			return self.reads.pop(0)
 		else:
-			raise EOFError("MockBus object has no more reads")
+			raise EOFError("FifoBus object has no more reads")
 
 	def write(self, scpi):
 		self.writes.append(scpi)

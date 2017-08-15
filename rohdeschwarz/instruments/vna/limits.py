@@ -1,6 +1,6 @@
 
 
-class VnaLimits(object):
+class Limits(object):
     def __init__(self, vna, trace):
         self._vna = vna
         self._trace = trace
