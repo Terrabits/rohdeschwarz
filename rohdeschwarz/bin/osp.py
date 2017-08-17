@@ -19,27 +19,33 @@ def main():
                         help='SCPI command log filename')
     args = parser.parse_args()
 
-    osp_switch = OspSwitch()
     if not args.driver:
         print('Switch matrix driver is required')
         parser.print_help()
-        sys.exit(1)
+        sys.exit(0)
+
+    switch_dict = {}
     try:
-        switch_dict = {}
         with open(args.driver, 'r') as f:
             switch_dict = yaml.safe_load(f.read())
-        if args.visa:
-            osp_switch.open(args.visa, args.address)
-        else:
-            osp_switch.open_tcp(args.address)
+        assert switch_dict
+    except:
+        print('Could not read driver file')
+        sys.exit(0)
 
-        if osp_switch.connected():
-            print("connected: {0}".format(osp_switch.id_string()))
+    osp = OspSwitch(switch_dict)
+    try:
+        if args.visa:
+            osp.open(args.visa, args.address)
+        else:
+            osp.open_tcp(args.address)
+        if osp.connected():
+            print("connected: {0}".format(osp.id_string()))
             if args.log:
-                osp_switch.open_log(args.log)
-                osp_switch.log.write('{0}\n'.format(datetime.datetime.now()))
-                osp_switch.log.write('--------------------------\n\n')
-                osp_switch.print_info()
+                osp.open_log(args.log)
+                osp.log.write('{0}\n'.format(datetime.datetime.now()))
+                osp.log.write('--------------------------\n\n')
+                osp.print_info()
             code.interact('', local=locals())
         else:
             print('Could not connect to instrument\n')
@@ -53,10 +59,10 @@ def main():
         raise Exception('Error connecting to instrument')
         parser.print_help()
     finally:
-        if osp_switch.log:
-            osp_switch.close_log()
-        if osp_switch.connected():
-            osp_switch.close()
+        if osp.log:
+            osp.close_log()
+        if osp.connected():
+            osp.close()
 
 if __name__ == "__main__":
     main()
