@@ -323,7 +323,7 @@ class Trace(object):
         return []
 
     # Private static methods for parsing
-    # VnaTrace.parameter.
+    # Trace.parameter.
     # Note: Not complete, but covers the
     # most common parameter types:
     #   wave
@@ -362,8 +362,8 @@ class Trace(object):
     @staticmethod
     def _parse_wave_ratio_ports(param):
         waves = param.split('/')
-        port1 = VnaTrace._parse_wave_port(waves[0] + '   ')
-        port2 = VnaTrace._parse_wave_port(waves[1])
+        port1 = Trace._parse_wave_port(waves[0] + '   ')
+        port2 = Trace._parse_wave_port(waves[1])
         if port1 != port2:
             return sorted([port1, port2])
         # else
@@ -390,11 +390,11 @@ class Trace(object):
     @staticmethod
     def _parse_impedance_ports(param):
         param = param.split('-')[-1]
-        return VnaTrace._parse_regular_param_ports(param)
+        return Trace._parse_regular_param_ports(param)
 
     @staticmethod
     def _parse_admittance_ports(param):
-        return VnaTrace._parse_impedance_ports(param)
+        return Trace._parse_impedance_ports(param)
 
     # Parameter: Regular
     # single-ended or balanced
@@ -414,19 +414,19 @@ class Trace(object):
     @staticmethod
     def _is_s_param(param):
         param = param.lower()
-        return VnaTrace._is_regular_param(param) and param[0] == 's'
+        return Trace._is_regular_param(param) and param[0] == 's'
 
     @staticmethod
     def _is_y_param(param):
-        return VnaTrace._is_regular_param(param) and param[0] == 'y'
+        return Trace._is_regular_param(param) and param[0] == 'y'
 
     @staticmethod
     def _is_z_param(param):
-        return VnaTrace._is_regular_param(param) and param[0] == 'z'
+        return Trace._is_regular_param(param) and param[0] == 'z'
 
     @staticmethod
     def _is_regular_single_param(param):
-        if not VnaTrace._is_regular_param(param):
+        if not Trace._is_regular_param(param):
             return False
         param = param.lower()
         if param[1].isdigit():
@@ -436,12 +436,12 @@ class Trace(object):
 
     @staticmethod
     def _is_regular_balanced_param(param):
-        return VnaTrace._is_regular_param(param) and not VnaTrace._is_regular_single_param(param)
+        return Trace._is_regular_param(param) and not Trace._is_regular_single_param(param)
 
     @staticmethod
     def _parse_regular_param_ports(param):
         digits = ''.join(c for c in param if c.isdigit())
-        return VnaTrace._parse_two_digits(digits)
+        return Trace._parse_two_digits(digits)
 
     # Parse ij port notation
     # eg S12, S0102
