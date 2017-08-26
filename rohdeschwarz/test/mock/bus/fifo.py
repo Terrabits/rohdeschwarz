@@ -5,13 +5,13 @@ class FifoBus(object):
 		self.reset(reads)
 
 	def __del__(self):
-		return
+		pass
 
 	def open(self, *args):
-		return
+		pass
 
 	def close(self):
-		return
+		pass
 
 	def read(self):
 		if self.reads:
