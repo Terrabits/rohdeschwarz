@@ -223,7 +223,7 @@ class GenericInstrument(object):
         if not isinstance(data, numpy.ndarray):
             raise ValueError(0, 'Expected numpy.ndarray')
         if data.dtype != 'float64':
-            raise valueError(0, "Expected array values of type 'float64'")
+            raise ValueError(0, "Expected array values of type 'float64'")
         data = data.tobytes()
         header = self.create_block_data_header(len(data))
         data = header + data
@@ -237,7 +237,7 @@ class GenericInstrument(object):
         if not isinstance(data, numpy.ndarray):
             raise ValueError(0, 'Expected numpy.ndarray')
         if data.dtype != 'complex128':
-            raise valueError(0, "Expected array values of type 'float64'")
+            raise ValueError(0, "Expected array values of type 'float64'")
         data = data.tobytes()
         header = self.create_block_data_header(len(data))
         data = header + data
