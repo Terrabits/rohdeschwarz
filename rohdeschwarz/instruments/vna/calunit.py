@@ -69,3 +69,9 @@ class CalUnit:
         scpi = 'SYST:COMM:AKAL:CONN MATC,{0}'.format(port)
         self.select()
         self.vna.write(scpi)
+    def setThru(self, *ports):
+        ports = list(ports)
+        ports.sort()
+        scpi = 'SYST:COMM:AKAL:CONN THR,{0},{1}'
+        scpi = scpi.format(ports[0], ports[1])
+        self.vna.write(scpi)
