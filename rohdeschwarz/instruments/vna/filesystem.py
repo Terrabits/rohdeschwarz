@@ -138,7 +138,10 @@ class FileSystem(object):
         self.__vna.write(scpi)
         self.__vna.pause()
 
-    def upload_file(self, local_filename, remote_filename):
+    def upload_file(self, local_filename, remote_filename=None):
+        assert os.path.isfile(local_filename) and os.access(local_filename, os.R_OK)
+        if not remote_filename:
+            remote_filename = pathlib.Path(local_filename).name
         scpi = ":MMEM:DATA '{0}',"
         scpi = scpi.format(remote_filename)
         self.__vna.write_raw_no_end(scpi.encode())
