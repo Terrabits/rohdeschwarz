@@ -1,8 +1,10 @@
 class Channel:
     def __init__(self, vna, index):
-        self.vna  = vna
-        self.index = index
-        self.name  = 'Ch{0}'.format(index)
+        self.vna       = vna
+        self.index     = index
+        self.name      = 'Ch{0}'.format(index)
+
+        self.cal_group = None
 
     def __int__(self):
         return self.index
@@ -29,11 +31,16 @@ class Channel:
     def sweep(self):
         pass
 
+    def save_cal(self, name):
+        if not name.lower() in self.vna.cal_groups:
+            self.vna.cal_groups.append(name)
+            self.vna.cal_groups.sort()
+
     def auto_calibrate(self, ports, characterization=''):
-        cu = self.vna.selected_cal_unit
-        cu = self.vna.cal_unit(cu)
-        for p in ports:
-            if not p in cu.vna_ports_connected:
+        cal_unit = self.vna.selected_cal_unit
+        cal_unit = self.vna.cal_unit(cal_unit)
+        for port in ports:
+            if not port in cal_unit.vna_ports_connected:
                 msg = 'Port {0} not connected to cal unit'
                 msg = msg.format(p)
                 raise Exception(msg)

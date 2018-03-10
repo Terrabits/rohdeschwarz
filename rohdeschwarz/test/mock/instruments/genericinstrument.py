@@ -6,9 +6,11 @@ class GenericInstrument:
         self._id_string      = id_string
         self._options_string = options_string
         self.errors          = []
+        self.timeout_ms      = 1000
 
     def open(self, *args):
-        self.close()
+        if self.bus:
+            self.close()
         self.bus = FifoBus()
         self.bus.open(*args)
     def open_tcp(self, address):
@@ -17,6 +19,14 @@ class GenericInstrument:
         if self.bus:
             self.bus.close()
         self.bus = None
+
+    def connected(self):
+        return bool(self.bus)
+
+    def open_log(self, filename):
+        pass
+    def close_log(self):
+        pass
 
     def read(self):
         return self.bus.read()
@@ -41,4 +51,12 @@ class GenericInstrument:
     def remote(self):
         pass
     def local(self):
+        pass
+
+    def wait(self):
+        pass
+    def pause(self, timeout_ms=1000):
+        return True
+
+    def print_info(self):
         pass

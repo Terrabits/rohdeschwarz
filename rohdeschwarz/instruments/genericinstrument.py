@@ -6,7 +6,6 @@ from rohdeschwarz.general import ConnectionMethod
 from rohdeschwarz.bus.tcp import TcpBus
 from rohdeschwarz.bus.visa import VisaBus
 
-
 class GenericInstrument(object):
     _MAX_PRINT = 100
 

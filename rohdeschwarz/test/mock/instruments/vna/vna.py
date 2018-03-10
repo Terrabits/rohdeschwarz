@@ -4,6 +4,7 @@ from rohdeschwarz.test.mock.instruments.vna.channel       import Channel
 from rohdeschwarz.test.mock.instruments.vna.diagram       import Diagram
 from rohdeschwarz.test.mock.instruments.vna.properties    import Properties
 from rohdeschwarz.test.mock.instruments.vna.trace         import Trace
+from rohdeschwarz.test.mock.instruments.vna.settings      import Settings
 
 from rohdeschwarz.test.mock.bus                           import FifoBus
 
@@ -11,9 +12,12 @@ class Vna(GenericInstrument):
     def __init__(self, model='ZNBT8', ports=24):
         GenericInstrument.__init__(self)
         self.properties = Properties(self, model, ports)
+        self.settings   = Settings(self)
 
-        self.sets       = []
-        self.active_set = None
+        self.test_ports        = ports
+
+        self.sets              = []
+        self.active_set        = None
 
         self.mock_channels     = []
         self.selected_channel  = None
@@ -26,6 +30,8 @@ class Vna(GenericInstrument):
 
         self.mock_cal_units    = []
         self.selected_cal_unit = None
+
+        self.cal_groups        = []
 
     def read(self):
         return self.bus.read()
@@ -65,8 +71,9 @@ class Vna(GenericInstrument):
         self.mock_diagrams = [diag1]
         self.select_diagram(diag1)
 
+    # sets
     def close_sets(self):
-        self.sets       = []
+        self.sets.clear()
         self.active_set = None
     def open_set(self, name):
         if not name in self.sets:
@@ -74,6 +81,7 @@ class Vna(GenericInstrument):
             self.sets.sort()
         self.active_set = name
 
+    # channels
     def select_channel(self, i):
         i = int(i)
         if i in self.mock_channels:
@@ -104,12 +112,18 @@ class Vna(GenericInstrument):
         self.mock_channels.sort()
     channels = property(_channels, _set_channels)
 
+    # traces
     def select_trace(self, name):
         name = str(name)
         if name in self.mock_traces:
             self.selected_trace = name
     def trace(self, name='Trc1'):
         return self.mock_traces[self.mock_traces.index(name)]
+    def delete_trace(self, name):
+        if name in self.mock_traces:
+            self.mock_traces.remove(name)
+    def delete_traces(self):
+        self.mock_traces.clear()
     def create_trace(self, name=None, channel=1, parameter = 'S11'):
         if not name:
             name = 'Trc{0}'
@@ -132,6 +146,7 @@ class Vna(GenericInstrument):
                 self.create_trace(str(i))
     traces = property(_traces, _set_traces)
 
+    # diagrams
     def select_diagram(self, diagram):
         diagram = int(diagram)
         if diagram in self.mock_diagrams:
@@ -156,12 +171,18 @@ class Vna(GenericInstrument):
                 self.create_diagram(int(i))
     diagrams = property(_diagrams, _set_diagrams)
 
+    # cal groups
+    def is_cal_group(self, name):
+        return name in self.cal_groups
+
+    # cal unit
     def select_cal_unit(self, name):
         if name in self.cal_units:
             self.selected_cal_unit = self.mock_cal_units[self.cal_units.index(name)]
     def cal_unit(self, name=None):
-        if not name and self.cal_units:
-            return self.mock_cal_units[0]
+        if not name:
+            if self.selected_cal_unit:
+                return self.selected_cal_unit
         else:
             return self.mock_cal_units[self.cal_units.index(name)]
     def add_cal_unit(self, name=None):
@@ -174,7 +195,8 @@ class Vna(GenericInstrument):
         if not name in self.cal_units:
             cal_unit = CalUnit(self, name)
             self.mock_cal_units.append(cal_unit)
-            self.select_cal_unit(name)
+            self.mock_cal_units.sort()
+        self.select_cal_unit(name)
     def _cal_units(self):
         return [str(i) for i in self.mock_cal_units]
     cal_units = property(_cal_units)
