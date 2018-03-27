@@ -30,6 +30,7 @@ def main():
                 vna.log.write('{0}\n'.format(datetime.datetime.now()))
                 vna.log.write('--------------------------\n\n')
                 vna.print_info()
+            sys.path.insert(0, os.getcwd())
             code.interact('', local=locals())
             sys.exit(0)
         else:
