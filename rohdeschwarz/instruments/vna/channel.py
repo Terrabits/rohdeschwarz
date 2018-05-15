@@ -36,7 +36,6 @@ class TouchstoneFormat(Enum):
         else:
             return self.value == other
 
-
 class Channel(object):
     def __init__(self, vna, index):
         self._vna = vna
@@ -81,6 +80,37 @@ class Channel(object):
         timeout_ms = number_of_sweeps * (10 * self.total_sweep_time_ms + 10000) + 5000
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
+
+    def source_power_cal(self, port, sweeps=10, tolerance_dB=0.1):
+        # sweeps
+        scpi = 'SOUR{0}:POW{1}:CORR:NRE {2}'
+        scpi = scpi.format(self.index, port, sweeps)
+        self._vna.write(scpi)
+        # tolerance
+        scpi = 'SOUR{0}:POW{1}:CORR:NTOL {2}'
+        scpi = scpi.format(self.index, port, tolerance_dB)
+        self._vna.write(scpi)
+        if self._vna.properties.is_zvx():
+            # Calibrate reference receiver (a<port>-wave)
+            # along with source
+            self._vna.write('SOUR:POW:CORR:COLL:RREC 1')
+        # Perform power cal
+        scpi = 'SOUR{0}:POW:CORR:ACQ PORT,{1}'
+        scpi = scpi.format(self.index, port)
+        self._vna.write(scpi)
+        # Source power cal can take a long time...
+        # *OPC? for up to 10 mins
+        ten_mins = 10*60*1000
+        self._vna.pause(timeout_ms=ten_mins)
+
+    def receiver_power_cal(self, receiver, source):
+        scpi = 'SENS{0}:CORR:POW:ACQ BWAV,{1},PORT,{2}'
+        scpi = scpi.format(self.index, receiver, source)
+        self._vna.write(scpi)
+        # Receiver power cal can take a long time...
+        # *OPC? for up to 10 mins
+        ten_mins = 10*60*1000
+        self._vna.pause(timeout_ms=ten_mins)
 
     def start_sweep(self):
         scpi = ':INIT{0}'.format(self.index)

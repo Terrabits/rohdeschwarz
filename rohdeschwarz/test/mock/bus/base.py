@@ -22,10 +22,9 @@ class MockBus:
     def read(self):
         if not self.buffer:
             raise Exception('Buffer empty')
-        else:
-            self.reads.append(self.buffer)
-            self.buffer = ''
-            return self.reads[-1]
+        self.reads.append(self.buffer)
+        self.buffer = ''
+        return self.reads[-1]
 
     def write(self, scpi):
         self.writes.append(scpi)
