@@ -55,7 +55,6 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: Unix',
 
-
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering',
