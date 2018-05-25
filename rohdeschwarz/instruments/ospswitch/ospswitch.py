@@ -6,7 +6,7 @@ from   ruamel import yaml
 
 class OspSwitch(GenericInstrument):
     def __init__(self, switch_dict={}):
-        GenericInstrument.__init__(self)
+        super(OspSwitch, self).__init__()
         self.switches = switch_dict
 
     def __getattr__(self, name):

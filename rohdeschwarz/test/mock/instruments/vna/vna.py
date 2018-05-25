@@ -10,7 +10,7 @@ from rohdeschwarz.test.mock.bus                           import FifoBus
 
 class Vna(GenericInstrument):
     def __init__(self, model='ZNBT8', ports=24):
-        GenericInstrument.__init__(self)
+        super(Vna, self).__init__()
         self.properties = Properties(self, model, ports)
         self.settings   = Settings(self)
 

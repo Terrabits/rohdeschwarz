@@ -1,5 +1,6 @@
-class CalUnit:
+class CalUnit(object):
     def __init__(self, vna, name):
+        super(CalUnit, self).__init__()
         self.vna   = vna
         self.name  = name
         self.ports = 4

@@ -25,6 +25,7 @@ class Model(Enum):
 
 class Properties(object):
     def __init__(self, vna):
+        super(Properties, self).__init__()
         self._vna = vna
 
     def is_znx(self):

@@ -2,8 +2,9 @@ from rohdeschwarz.instruments.vna.filesystem import Directory
 import re
 import pdb
 
-class CalUnit:
+class CalUnit(object):
     def __init__(self, vna, id=None):
+        super(CalUnit, self).__init__()
         if not id and vna.cal_units:
             id = vna.cal_units[0]
         self.id  = id

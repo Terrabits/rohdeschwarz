@@ -1,5 +1,6 @@
-class Channel:
+class Channel(object):
     def __init__(self, vna, index):
+        super(Channel, self).__init__()
         self.vna       = vna
         self.index     = index
         self.name      = 'Ch{0}'.format(index)

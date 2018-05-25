@@ -1,5 +1,6 @@
 class Marker(object):
     def __init__(self, vna, trace, index=1):
+        super(Marker, self).__init__()
         self.vna   = vna
         self.trace = trace
         self.index = index

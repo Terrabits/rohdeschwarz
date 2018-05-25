@@ -60,6 +60,7 @@ class TcpBus(object):
         """
         Initialize new TcpBus.
         """
+        super(TcpBus, self).__init__()
         self.buffer_size = 1024
         self.delimiter = '\n' # Writes
         self.__socket = None

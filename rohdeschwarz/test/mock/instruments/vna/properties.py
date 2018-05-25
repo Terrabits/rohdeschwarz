@@ -1,5 +1,6 @@
-class Properties:
+class Properties(object):
     def __init__(self, vna, model, ports):
+        super(Properties, self).__init__()
         self.vna = vna
         self.model             = model
         self.physical_ports    = ports

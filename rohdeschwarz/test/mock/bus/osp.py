@@ -7,7 +7,7 @@ read_regex  = r'^ROUT:CLOS\? \(@F(?P<instr>\d{2,2})A(?P<module>\d{2,2})\((?P<sta
 
 class OspBus(MockBus):
     def __init__(self):
-        MockBus.__init__(self)
+        super(OspBus, self).__init__()
         self.switches = {}
         self.reads  = []
         self.writes = []

@@ -4,6 +4,7 @@ from rohdeschwarz.general import unique_alphanumeric_string
 
 class Diagram(object):
     def __init__(self, vna, index=1):
+        super(Diagram, self).__init__()
         self._vna = vna
         self.index = index
 

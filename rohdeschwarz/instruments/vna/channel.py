@@ -38,6 +38,7 @@ class TouchstoneFormat(Enum):
 
 class Channel(object):
     def __init__(self, vna, index):
+        super(Channel, self).__init__()
         self._vna = vna
         self.index = index
 

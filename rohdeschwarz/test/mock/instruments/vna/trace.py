@@ -1,7 +1,8 @@
 from rohdeschwarz.test.mock.instruments.vna.marker import Marker
 
-class Trace:
+class Trace(object):
     def __init__(self, vna, name, channel, parameter):
+        super(Trace, self).__init__()
         self.vna       = vna
         self.name      = name
         self.channel   = channel

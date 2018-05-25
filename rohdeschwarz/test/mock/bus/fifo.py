@@ -2,6 +2,7 @@
 
 class FifoBus(object):
 	def __init__(self, reads=[]):
+		super(FifoBus, self).__init__()
 		self.reset(reads)
 
 	def __del__(self):

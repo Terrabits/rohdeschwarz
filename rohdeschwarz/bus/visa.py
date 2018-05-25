@@ -32,12 +32,13 @@ class VisaBus(object):
 
         # Retrieve bus status
         print(bus.status())
-        # 
+        #
     """
     def __init__(self):
         """
         Constructor
         """
+        super(VisaBus, self).__init__()
         self._instr = None
         self._session = None
         self._visa_lib = None
@@ -169,5 +170,3 @@ class VisaBus(object):
         value = self._instr.last_status.value
         status = VisaIOError(value)
         return result.format(hex(value), status.abbreviation, status.description)
-
-

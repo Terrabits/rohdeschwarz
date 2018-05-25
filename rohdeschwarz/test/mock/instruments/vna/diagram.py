@@ -1,5 +1,6 @@
-class Diagram:
+class Diagram(object):
     def __init__(self, vna, index):
+        super(Diagram, self).__init__()
         self.vna   = vna
         self.index = index
         self.title = ''

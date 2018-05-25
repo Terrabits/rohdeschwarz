@@ -1,7 +1,8 @@
 from rohdeschwarz.general import number_of_thrus
 
-class MultistepAutocal:
+class MultistepAutocal(object):
     def __init__(self, vna, channel, cal_unit='', timeout_ms=None):
+        super(MultistepAutocal, self).__init__()
         self.vna      = vna
         self.channel  = channel
         self.ports = []

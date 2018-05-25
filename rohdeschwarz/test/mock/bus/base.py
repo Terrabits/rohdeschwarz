@@ -3,8 +3,9 @@ import re
 id_regex  = r'\*IDN\?'
 opc_regex = r'\*OPC\?'
 
-class MockBus:
+class MockBus(object):
     def __init__(self):
+        super(MockBus, self).__init__()
         self.reads  = []
         self.writes = []
         self.buffer = ''

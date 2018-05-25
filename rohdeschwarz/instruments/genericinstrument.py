@@ -10,6 +10,7 @@ class GenericInstrument(object):
     _MAX_PRINT = 100
 
     def __init__(self):
+        super(GenericInstrument, self).__init__()
         self.log = None
         self.bus = None
         self.buffer_size = 1024

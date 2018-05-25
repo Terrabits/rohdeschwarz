@@ -23,7 +23,7 @@ class ImageFormat(Enum):
 
 class Vna(GenericInstrument):
     def __init__(self):
-        GenericInstrument.__init__(self)
+        super(Vna, self).__init__()
         self.properties = Properties(self)
         self.settings = Settings(self)
         self.file = FileSystem(self)
