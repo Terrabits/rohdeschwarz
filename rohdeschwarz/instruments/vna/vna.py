@@ -380,6 +380,14 @@ class Vna(GenericInstrument):
     def cal_unit(self, id=None):
         return CalUnit(self, id)
 
+    # power sensors
+    def _power_sensors(self):
+        scpi = 'SYST:COMM:RDEV:PMET:CAT?'
+        sensors = self.query(scpi)
+        sensors = sensors.strip().split(',')
+        return [int(i) for i in sensors if i]
+    power_sensors = property(_power_sensors)
+
     ### General
     def _sweep_time_ms(self):
         sweep_time_ms = 0
