@@ -21,6 +21,8 @@ class Diagram(object):
         scpi = scpi.format(self.index)
         return self._vna.query(scpi).strip().strip("'")
     def _set_title(self, title):
+        if not title:
+            title = ''
         scpi = ":DISP:WIND{0}:TITL:DATA '{1}'"
         scpi = scpi.format(self.index, title)
         self._vna.write(scpi)
