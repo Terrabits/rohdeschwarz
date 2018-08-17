@@ -3,7 +3,7 @@ from   ddt      import ddt, data
 from rohdeschwarz.general         import Units
 from rohdeschwarz.instruments.vna import Vna
 from rohdeschwarz.instruments.vna import TraceFormat
-from rohdeschwarz.instruments.vna import VnaTrace
+from rohdeschwarz.instruments.vna import Trace
 
 @ddt
 class TestVnaTrace(unittest.TestCase):
@@ -44,36 +44,36 @@ class TestVnaTrace(unittest.TestCase):
           {'param': 'A2G1/B1D1SAM',     'type': 'wave_r', 'ports': [1, 2]})
     def test_parse_params(self, data):
         # type
-        self.assertEqual(VnaTrace._is_wave(data['param']),                   data['type'] == 'wave')
-        self.assertEqual(VnaTrace._is_wave_ratio(data['param']),             data['type'] == 'wave_r')
-        self.assertEqual(VnaTrace._is_impedance(data['param']),              data['type'] == 'imp')
-        self.assertEqual(VnaTrace._is_admittance(data['param']),             data['type'] == 'adm')
-        self.assertEqual(VnaTrace._is_regular_param(data['param']),          data['type'][0:3] == 'reg')
-        self.assertEqual(VnaTrace._is_regular_single_param(data['param']),   data['type'] == 'reg_s')
-        self.assertEqual(VnaTrace._is_regular_balanced_param(data['param']), data['type'] == 'reg_b')
+        self.assertEqual(Trace._is_wave(data['param']),                   data['type'] == 'wave')
+        self.assertEqual(Trace._is_wave_ratio(data['param']),             data['type'] == 'wave_r')
+        self.assertEqual(Trace._is_impedance(data['param']),              data['type'] == 'imp')
+        self.assertEqual(Trace._is_admittance(data['param']),             data['type'] == 'adm')
+        self.assertEqual(Trace._is_regular_param(data['param']),          data['type'][0:3] == 'reg')
+        self.assertEqual(Trace._is_regular_single_param(data['param']),   data['type'] == 'reg_s')
+        self.assertEqual(Trace._is_regular_balanced_param(data['param']), data['type'] == 'reg_b')
 
         # ports
         if data['type'] == 'wave':
-            port = VnaTrace._parse_wave_port(data['param'])
+            port = Trace._parse_wave_port(data['param'])
             self.assertEqual([port], data['ports'])
         if data['type'] == 'wave_r':
-            ports = VnaTrace._parse_wave_ratio_ports(data['param'])
+            ports = Trace._parse_wave_ratio_ports(data['param'])
             self.assertEqual(ports, data['ports'])
         if data['type'] == 'imp':
-            ports = VnaTrace._parse_impedance_ports(data['param'])
+            ports = Trace._parse_impedance_ports(data['param'])
             self.assertEqual(ports, data['ports'])
         if data['type'] == 'adm':
-            ports = VnaTrace._parse_admittance_ports(data['param'])
+            ports = Trace._parse_admittance_ports(data['param'])
             self.assertEqual(ports, data['ports'])
         if data['type'][0:3] == 'reg':
-            ports = VnaTrace._parse_regular_param_ports(data['param'])
+            ports = Trace._parse_regular_param_ports(data['param'])
             self.assertEqual(ports, data['ports'])
 
     @data({'digits': '21',     'result': [1, 2]},
           {'digits': '1234',   'result': [12, 34]},
           {'digits': '123456', 'result': [123, 456]})
     def test_parse_two_digits(self, data):
-        result = VnaTrace._parse_two_digits(data['digits'])
+        result = Trace._parse_two_digits(data['digits'])
         self.assertEqual(result, data['result'])
 
 if __name__ == '__main__':
