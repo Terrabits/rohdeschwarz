@@ -419,8 +419,14 @@ class Vna(GenericInstrument):
 
 
     def start_sweeps(self):
-        self.write(":INIT:SCOP ALL")
-        self.write(":INIT")
+        if self.properties.is_zvx():
+            self.write(':INIT:CONT 0')
+            self.write(':INIT:SCOP ALL')
+            self.write(":INIT")
+            return
+        # else
+        self.write(':INIT:CONT:ALL 0')
+        self.write(":INIT:ALL")
 
     def _test_ports(self):
         if self.properties.is_zvx():
