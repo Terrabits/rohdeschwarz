@@ -12,6 +12,8 @@ def main():
                         help="use VISA with 'bus'")
     parser.add_argument('--address', default='127.0.0.1',
                         help='instrument address')
+    parser.add_argument('--timeout', default=5000, type=int,
+                        help='default instrument timeout (ms)')
     parser.add_argument('--log', default='',
                         help='SCPI command log filename')
     args = parser.parse_args()
@@ -22,6 +24,8 @@ def main():
             instr.open(args.visa, args.address)
         else:
             instr.open_tcp(args.address)
+        if args.timeout:
+            instr.timeout_ms = args.timeout
 
         if instr.connected():
             print("connected: {0}".format(instr.id_string()))
