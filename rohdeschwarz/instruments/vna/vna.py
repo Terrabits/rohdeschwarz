@@ -152,7 +152,7 @@ class Vna(GenericInstrument):
             self.write(scpi)
 
     def delete_trace(self, name):
-        _channel = 1 # Fix
+        _channel = self.trace(name).channel
         scpi = ":CALC{0}:PAR:DEL '{1}'"
         scpi = scpi.format(_channel, name)
         self.write(scpi)
