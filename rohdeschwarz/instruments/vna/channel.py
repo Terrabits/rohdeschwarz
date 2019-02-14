@@ -523,7 +523,7 @@ class Channel(object):
         result = self._vna.read_64_bit_complex_vector_block_data()
         self.manual_sweep = is_manual_sweep
         self._vna.settings.ascii_data_format = True
-        points = len(result)/(ports**2)
+        points = len(result)//(ports**2)
         return numpy.reshape(result, (points, ports, ports))
 
     def measure(self, test_ports):
