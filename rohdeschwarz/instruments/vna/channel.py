@@ -542,7 +542,10 @@ class Channel(object):
         self.s_parameter_group = self.to_logical_ports(test_ports)
         self.sweep()
         ports_string = ",".join(map(str, test_ports))
-        scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
+        if self._vna.properties.is_zvx():
+            scpi = ":MMEM:STOR:TRAC:PORT:INC {0},'{1}',{2},{3}"
+        else:
+            scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
         scpi = scpi.format(self.index, \
                            filename, \
                            str(data_format), \
