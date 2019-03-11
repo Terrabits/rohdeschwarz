@@ -14,6 +14,8 @@ def main():
                         help="use VISA with 'bus'")
     parser.add_argument('--address', default='127.0.0.1',
                         help='instrument address')
+    parser.add_argument('--port',    default=5025, type=int,
+                        help='port (TCP only)')
     parser.add_argument('--timeout', default=5000, type=int,
                         help='default instrument timeout (ms)')
     parser.add_argument('--driver')
@@ -40,7 +42,7 @@ def main():
         if args.visa:
             osp.open(args.visa, args.address)
         else:
-            osp.open_tcp(args.address)
+            osp.open_tcp(args.address, args.port)
         if args.timeout:
             osp.timeout_ms = args.timeout
 
