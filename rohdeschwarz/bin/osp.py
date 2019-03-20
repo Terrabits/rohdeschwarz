@@ -21,7 +21,13 @@ def main():
     parser.add_argument('--driver')
     parser.add_argument('--log', default='',
                         help='SCPI command log filename')
+    parser.add_argument('--log-to-stdout', action='store_true',
+                        help='print all SCPI IO to stdout')
     args = parser.parse_args()
+
+    if args.log and args.log_to_stdout:
+        print('error: cannot use both --log and --log-to-stdout')
+        parser.print_help()
 
     if not args.driver:
         print('Switch matrix driver is required')
@@ -53,6 +59,8 @@ def main():
                 osp.log.write('{0}\n'.format(datetime.datetime.now()))
                 osp.log.write('--------------------------\n\n')
                 osp.print_info()
+            elif args.log_to_stdout:
+                vna.log = sys.stdout
             code.interact('', local=locals())
         else:
             print('Could not connect to instrument\n')

@@ -18,7 +18,13 @@ def main():
                         help='default instrument timeout (ms)')
     parser.add_argument('--log', default='',
                         help='SCPI command log filename')
+    parser.add_argument('--log-to-stdout', action='store_true',
+                        help='print all SCPI IO to stdout')
     args = parser.parse_args()
+
+    if args.log and args.log_to_stdout:
+        print('error: cannot use both --log and --log-to-stdout')
+        parser.print_help()
 
     instr = GenericInstrument()
     try:
@@ -36,6 +42,8 @@ def main():
                 instr.log.write('{0}\n'.format(datetime.datetime.now()))
                 instr.log.write('--------------------------\n\n')
                 instr.print_info()
+            elif args.log_to_stdout:
+                vna.log = sys.stdout
             code.interact('', local=locals())
         else:
             raise Exception('Could not connect to instrument')
