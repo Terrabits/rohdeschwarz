@@ -18,11 +18,11 @@ def main():
                         help='port (TCP only)')
     parser.add_argument('--timeout', default=5000, type=int,
                         help='default instrument timeout (ms)')
-    parser.add_argument('--driver')
     parser.add_argument('--log', default='',
                         help='SCPI command log filename')
     parser.add_argument('--log-to-stdout', action='store_true',
                         help='print all SCPI IO to stdout')
+    parser.add_argument('driver')
     args = parser.parse_args()
 
     if args.log and args.log_to_stdout:
@@ -61,6 +61,7 @@ def main():
                 osp.print_info()
             elif args.log_to_stdout:
                 vna.log = sys.stdout
+            sys.path.insert(0, os.getcwd())
             code.interact('', local=locals())
         else:
             print('Could not connect to instrument\n')

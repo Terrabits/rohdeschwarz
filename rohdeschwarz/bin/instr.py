@@ -44,6 +44,7 @@ def main():
                 instr.print_info()
             elif args.log_to_stdout:
                 vna.log = sys.stdout
+            sys.path.insert(0, os.getcwd())
             code.interact('', local=locals())
         else:
             raise Exception('Could not connect to instrument')
