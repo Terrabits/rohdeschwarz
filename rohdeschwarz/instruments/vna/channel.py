@@ -63,7 +63,9 @@ class Channel(object):
         scpi = "CALC{0}:PAR:CAT?"
         scpi = scpi.format(self.index)
         response = self._vna.query(scpi)
-        return response.strip("'").split(",")[::2]
+        traces   = response.strip("'").strip().split(",")[::2]
+        return list(filter(None, traces))
+
     traces = property(_traces)
 
     def auto_calibrate(self, ports, characterization=''):
