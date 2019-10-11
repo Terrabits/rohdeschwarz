@@ -375,7 +375,7 @@ class Channel(object):
             scpi = ':SENS{0}:SWE:TIME?'
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
-        return int(1000.0 * float(result))
+        return 1000.0 * float(result)
     def _set_sweep_time(self, time_ms):
         if self.sweep_type == SweepType.segmented:
             raise ValueError('Cannot set sweep time of segmented sweep as a whole. Set the sweep time per each segment.')
