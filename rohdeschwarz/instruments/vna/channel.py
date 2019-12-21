@@ -4,7 +4,7 @@ from   rohdeschwarz.general import SiPrefix
 from   rohdeschwarz.general import unique_alphanumeric_string
 from   rohdeschwarz.general import Units
 from   rohdeschwarz.general import number_of_thrus
-from   rohdeschwarz.instruments.vna.filesystem     import Directory
+
 
 class SweepType(Enum):
     linear    = 'LIN'
@@ -23,6 +23,7 @@ class SweepType(Enum):
         else:
             return self.value == other
 
+
 class TouchstoneFormat(Enum):
     db_degrees = 'LOGP'
     magnitude_degrees = 'LINP'
@@ -30,11 +31,13 @@ class TouchstoneFormat(Enum):
 
     def __str__(self):
         return self.value
+
     def __eq__(self, other):
         if isinstance(other, TouchstoneFormat):
             return self.value == other.value
         else:
             return self.value == other
+
 
 class Channel(object):
     def __init__(self, vna, index):
@@ -47,6 +50,7 @@ class Channel(object):
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi)
         return result.strip().strip("'")
+
     def _set_name(self, name):
         scpi = ":CONF:CHAN{0}:NAME '{1}'"
         scpi = scpi.format(self.index, name)
@@ -71,8 +75,11 @@ class Channel(object):
     def auto_calibrate(self, ports, characterization=''):
         scpi = ""
         if type(ports) == dict:
+            def format_str(port_items):
+                return "{!r},{!r}".format(*port_items)
+            port_strings = [format_str(items) for items in ports.items()]
+            ports_string = ",".join(port_strings)
             scpi = ":SENS{0}:CORR:COLL:AUTO:PORT '{1}',{2}"
-            ports_string = ",".join("{!r},{!r}".format(k,v) for (k,v) in ports.items())
             scpi = scpi.format(self.index, characterization, ports_string)
         else:
             scpi = ":SENS{0}:CORR:COLL:AUTO '{1}',{2}"
@@ -80,7 +87,8 @@ class Channel(object):
             scpi = scpi.format(self.index, characterization, ports_string)
         port_count = len(ports)
         number_of_sweeps = 3 * port_count + number_of_thrus(port_count)
-        timeout_ms = number_of_sweeps * (10 * self.total_sweep_time_ms + 10000) + 5000
+        one_sweep_ms     = 10 * self.total_sweep_time_ms + 10000
+        timeout_ms = number_of_sweeps * one_sweep_ms + 5000
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
 
@@ -103,7 +111,7 @@ class Channel(object):
         self._vna.write(scpi)
         # Source power cal can take a long time...
         # *OPC? for up to 10 mins
-        ten_mins = 10*60*1000
+        ten_mins = 10 * 60 * 1000
         self._vna.pause(timeout_ms=ten_mins)
 
     def receiver_power_cal(self, receiver, source):
@@ -112,12 +120,13 @@ class Channel(object):
         self._vna.write(scpi)
         # Receiver power cal can take a long time...
         # *OPC? for up to 10 mins
-        ten_mins = 10*60*1000
+        ten_mins = 10 * 60 * 1000
         self._vna.pause(timeout_ms=ten_mins)
 
     def start_sweep(self):
         scpi = ':INIT{0}'.format(self.index)
         self._vna.write(scpi)
+
     def sweep(self):
         self.manual_sweep = True
         timeout_ms = 2 * self.total_sweep_time_ms + 5000
@@ -128,9 +137,10 @@ class Channel(object):
         scpi = ':SENS{0}:SWE:COUN?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return int(result)
+
     def _set_sweep_count(self, count):
         if not count or count < 0:
-            raise ValueError(0,'sweep_count must be of type int and >= 1')
+            raise ValueError(0, 'sweep_count must be of type int and >= 1')
         scpi = ':SENS{0}:SWE:COUN {1}'
         scpi = scpi.format(self.index, count)
         self._vna.write(scpi)
@@ -140,14 +150,17 @@ class Channel(object):
         scpi = ":SENS{0}:AVER?"
         scpi = scpi.format(self.index)
         return self._vna.query(scpi).strip() == "1"
+
     def _averaging_on(self):
         scpi = ":SENS{0}:AVER 1"
         scpi = scpi.format(self.index)
         self._vna.write(scpi)
+
     def _averaging_off(self):
         scpi = ":SENS{0}:AVER 0"
         scpi = scpi.format(self.index)
         self._vna.write(scpi)
+
     def _averages(self):
         if not self._is_averaging():
             return None
@@ -156,6 +169,7 @@ class Channel(object):
             scpi = scpi.format(self.index)
             result = self._vna.query(scpi).strip()
             return int(result)
+
     def _set_averages(self, count):
         if not count:
             self._averaging_off()
@@ -164,21 +178,26 @@ class Channel(object):
             scpi = scpi.format(self.index, count)
             self._vna.write(scpi)
             self._averaging_on()
+
     averages = property(_averages, _set_averages)
 
     def _is_manual_sweep(self):
         return not self._is_continuous_sweep()
+
     def _set_manual_sweep(self, value):
         self._set_continuous_sweep(not value)
+
     manual_sweep = property(_is_manual_sweep, _set_manual_sweep)
 
     def _is_continuous_sweep(self):
         scpi = ':INIT{0}:CONT?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return result == '1'
+
     def _set_continuous_sweep(self, value):
         scpi = ':INIT{0}:CONT {1}'.format(self.index, int(value))
         self._vna.write(scpi)
+
     continuous_sweep = property(_is_continuous_sweep, _set_continuous_sweep)
 
     def is_frequency_sweep(self):
@@ -191,8 +210,10 @@ class Channel(object):
             return True
         # Else:
         return False
+
     def is_power_sweep(self):
         return self.sweep_type == SweepType.power
+
     def is_time_sweep(self):
         sweep_type = self.sweep_type
         if sweep_type == SweepType.time:
@@ -202,11 +223,11 @@ class Channel(object):
         # else
         return False
 
-
     def _sweep_type(self):
         scpi = ':SENS{0}:SWE:TYPE?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return SweepType(result)
+
     def _set_sweep_type(self, value):
         scpi = ':SENS{0}:SWE:TYPE {1}'
         scpi = scpi.format(self.index, value)
@@ -221,11 +242,12 @@ class Channel(object):
         # else
         return Units.Hz
 
-    ### Linear, Log frequency sweeps:
+    # Linear, Log frequency sweeps:
     def _start_frequency(self):
         scpi = ':SENS{0}:FREQ:STAR?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
+
     def _set_start_frequency(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -242,6 +264,7 @@ class Channel(object):
         scpi = ':SENS{0}:FREQ:STOP?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
+
     def _set_stop_frequency(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -259,6 +282,7 @@ class Channel(object):
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
         return int(result)
+
     def _set_points(self, value):
         scpi = ':SENS{0}:SWE:POIN {1}'
         scpi = scpi.format(self.index, value)
@@ -273,6 +297,7 @@ class Channel(object):
         result = self._vna.read_64_bit_vector_block_data()
         self._vna.settings.ascii_data_format = True
         return result
+
     def _set_frequencies(self, x, prefix=SiPrefix.none):
         if isinstance(x, (tuple, list, set)) and len(x) == 2:
             prefix = x[-1]
@@ -282,7 +307,7 @@ class Channel(object):
         self._vna.write(":SENS{0}:SEGM:DEL:ALL".format(self.index))
         for i in range(0, len(x)):
             segment = ":SENS{0}:SEGM{1}:"
-            segment = segment.format(self.index, i+1)
+            segment = segment.format(self.index, i + 1)
             # Create segment i
             self._vna.write(segment + "ADD")
             # Set segment[i].points = 1
@@ -298,28 +323,31 @@ class Channel(object):
         scpi = ':SOUR{0}:POW?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return float(result)
+
     def _set_power(self, value):
         scpi = ':SOUR{0}:POW {1} dBm'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
     power_dBm = property(_power, _set_power)
 
-
-    ### Power sweep:
+    # Power Sweep
     def _start_power(self):
         scpi = ':SOUR{0}:POW:STAR?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
+
     def _set_start_power(self, value):
         scpi = ':SOUR{0}:POW:STAR {1} dBm'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
+
     start_power_dBm = property(_start_power, _set_start_power)
 
     def _stop_power(self):
         scpi = ':SOUR{0}:POW:STOP?'
         scpi = scpi.format(self.index)
         return float(self._vna.query(scpi).strip())
+
     def _set_stop_power(self, value, prefix=SiPrefix.none):
         scpi = ':SOUR{0}:POW:STOP {1} dBm'
         scpi = scpi.format(self.index, value)
@@ -340,6 +368,7 @@ class Channel(object):
         scpi = ':SOUR{0}:FREQ?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return float(result)
+
     def _set_frequency(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -352,11 +381,12 @@ class Channel(object):
         self._vna.write(scpi)
     frequency_Hz = property(_frequency, _set_frequency)
 
-    ### All sweep types
+    # All sweep types
     def _if_bandwidth(self):
         scpi = 'SENS{0}:BAND?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return float(result)
+
     def _set_if_bandwidth(self, value, prefix=SiPrefix.none):
         if isinstance(value, (tuple, list, set)) and len(value) == 2:
             prefix = value[-1]
@@ -378,9 +408,10 @@ class Channel(object):
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
         return 1000.0 * float(result)
+
     def _set_sweep_time(self, time_ms):
         if self.sweep_type == SweepType.segmented:
-            raise ValueError('Cannot set sweep time of segmented sweep as a whole. Set the sweep time per each segment.')
+            raise ValueError('Cannot set sweep time of whole segmented sweep.')
         scpi = ':SENS{0}:SWE:TIME {1} ms'
         scpi = scpi.format(self.index, time_ms)
         self._vna.write(scpi)
@@ -391,6 +422,7 @@ class Channel(object):
         scpi = scpi.format(self.index)
         result = self._vna.query(scpi).strip()
         return result == "1"
+
     def _set_auto_sweep_time(self, value):
         scpi = ':SENS{0}:SWE:TIME:AUTO {1}'
         if value:
@@ -415,9 +447,10 @@ class Channel(object):
             if result.lower().endswith(".cal"):
                 result = result[:-4]
             return result
+
     def _set_cal_group(self, name):
         if not name:
-            scpi =":MMEM:LOAD:CORR:RES {0}"
+            scpi = ":MMEM:LOAD:CORR:RES {0}"
             scpi = scpi.format(self.index)
             self._vna.write(scpi)
         else:
@@ -470,7 +503,7 @@ class Channel(object):
         groups = int(self._vna.query(scpi).strip())
 
         result  = []
-        for i in range(1, groups+1):
+        for i in range(1, groups + 1):
             scpi  = "SOUR{0}:GRO{1}:PORT?"
             scpi  = scpi.format(self.index, i)
             ports = self._vna.query(scpi)
@@ -488,7 +521,7 @@ class Channel(object):
         port_map = self.test_to_logical_port_map()
         for test_port in test_ports:
             logical_port = port_map[test_port]
-            if not logical_port in result:
+            if logical_port not in result:
                 result.append(logical_port)
         result.sort()
         return result
@@ -525,7 +558,7 @@ class Channel(object):
         result = self._vna.read_64_bit_complex_vector_block_data()
         self.manual_sweep = is_manual_sweep
         self._vna.settings.ascii_data_format = True
-        points = len(result)//(ports**2)
+        points = len(result) // (ports**2)
         return numpy.reshape(result, (points, ports, ports))
 
     def measure(self, test_ports):
@@ -548,9 +581,9 @@ class Channel(object):
             scpi = ":MMEM:STOR:TRAC:PORT:INC {0},'{1}',{2},{3}"
         else:
             scpi = ":MMEM:STOR:TRAC:PORT {0},'{1}',{2},{3}"
-        scpi = scpi.format(self.index, \
-                           filename, \
-                           str(data_format), \
+        scpi = scpi.format(self.index,
+                           filename,
+                           str(data_format),
                            ports_string)
         self._vna.write(scpi)
         self._vna.pause(5000)

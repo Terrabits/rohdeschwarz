@@ -71,7 +71,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='RF test equipment automation ATE VISA SCPI VNA network spectrum analyzer signal generator oscilloscope',
+    keywords='RF test equipment automation ATE',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
