@@ -8,22 +8,6 @@ import unittest
 
 @ddt
 class TestVnaChannel(unittest.TestCase):
-    def test_save_measurement_locally(self):
-        vna = Vna()
-        vna.open_tcp('rsa22471.local')
-        vna.preset()
-        ports = [1, 2]
-        ch = vna.channel()
-        try:
-            success = ch.save_measurement_locally('test', ports)
-        except:
-            print(sys.exc_info()[0])
-            print(vna.errors)
-            raise
-        if not success:
-            print(vna.errors)
-            vna.clear_status()
-        self.assertTrue(success)
     @data({'channel':   5,
            'port':      3,
            'sweeps':   13,
