@@ -6,6 +6,7 @@ class Model(Enum):
     zvh  = 'ZVH'
     zvl  = 'ZVL'
     zvt  = 'ZVT'
+    zna  = 'ZNA'
     znbt = 'ZNBT'
     znb  = 'ZNB'
     znc  = 'ZNC'
@@ -30,18 +31,20 @@ class Properties(object):
 
     def is_znx(self):
         id = self._vna.id_string()
+        if Model.zna.is_in(id):
+            return True
         if Model.znbt.is_in(id):
             return True
-        elif Model.znb.is_in(id):
+        if Model.znb.is_in(id):
             return True
-        elif Model.znc.is_in(id):
+        if Model.znc.is_in(id):
             return True
-        elif Model.znd.is_in(id):
+        if Model.znd.is_in(id):
             return True
-        elif Model.znp.is_in(id):
+        if Model.znp.is_in(id):
             return True
-        else:
-            return False
+        # else: not known znx model
+        return False
 
     def is_zvx(self):
         id = self._vna.id_string()

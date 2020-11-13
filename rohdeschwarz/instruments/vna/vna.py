@@ -211,16 +211,25 @@ class Vna(GenericInstrument):
 
     ### Sets
     def __add_set_suffix(self, name):
-        if self.properties.is_zvx() and not name.lower().endswith('.zvx'):
-            name += '.zvx'
-        elif self.properties.is_znx() and not name.lower().endswith('.znx'):
-            name += '.znx'
+        path = PureWindowsPath(name.lower())
+        if self.properties.is_zvx():
+            suffix    = '.zvx'
+            is_suffix = path.suffix == suffix
+            if not is_suffix:
+                name += suffix
+            return name
+        if self.properties.is_znx():
+            suffixes  = ['.znx', '.znxml']
+            is_suffix = path.suffix in suffixes
+            if not is_suffix:
+                name += suffixes[0]
+            return name
+        # else unknown model, do nothing to name
         return name
 
     def create_set(self, name=None):
         if name:
-            scpi = ":MEM:DEF '{0}'"
-            scpi = scpi.format(name)
+            scpi = ":MEM:DEF '{0}'".format(name)
             self.write(scpi)
         else:
             sets = self.sets
@@ -235,26 +244,45 @@ class Vna(GenericInstrument):
             return name
 
     def open_set(self, name):
+        # filename must include suffix
         name = self.__add_set_suffix(name)
-        current_dir = ''
-        if str(PureWindowsPath(name).parent) == '.':
-            current_dir = self.file.directory()
+
+        # directory
+        dir    = PureWindowsPath(name).parent
+        is_dir = str(dir) != '.'
+
+        # change directory?
+        restore_dir = None
+        if not is_dir:
+            restore_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
-        scpi = ":MMEM:LOAD:STAT 1,'{0}'"
-        scpi = scpi.format(name)
+
+        # send scpi
+        scpi = ":MMEM:LOAD:STAT 1,'{0}'".format(name)
         self.write(scpi)
-        if current_dir:
-            self.file.cd(current_dir)
+
+        # restore directory?
+        if restore_dir:
+            self.file.cd(restore_dir)
 
     def open_set_locally(self, name):
+        # name must include suffix
         name = self.__add_set_suffix(name)
-        filename = Path(name).name
-        current_dir = self.file.directory()
+
+        # cd into RecallSets
+        restore_dir = self.file.directory()
         self.file.cd(Directory.recall_sets)
+
+        # upload set file
+        filename = Path(name).name
         self.file.upload_file(name, filename)
         self.pause(10000)
+
+        # open set
         self.open_set(filename)
-        self.file.cd(current_dir)
+
+        # restore dir
+        self.file.cd(restore_dir)
 
     def _sets(self):
         result = self.query(":MEM:CAT?")
@@ -288,46 +316,51 @@ class Vna(GenericInstrument):
     active_set = property(_active_set, _set_active_set)
 
     def save_active_set(self, path):
-        extension = None
-        if self.properties.is_zvx():
-            extension = ".zvx"
-        elif self.properties.is_znx():
-            extension = ".znx"
+        # must include suffix
+        path = self.__add_set_suffix(path)
 
-        if not path.lower().endswith(extension):
-            path += extension
+        # directory
+        dir    = PureWindowsPath(path).parent
+        is_dir = str(dir) != '.'
 
-        current_dir = None
-        if str(PureWindowsPath(path).parent) ==  '.':
-            current_dir = self.file.directory()
+        # change directory
+        restore_dir = None
+        if not is_dir:
+            restore_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
+
         scpi = ":MMEM:STOR:STAT 1,'{0}'"
         scpi = scpi.format(path)
         self.write(scpi)
         self.pause()
-        if current_dir:
-            self.file.cd(current_dir)
+
+        if restore_dir:
+            self.file.cd(restore_dir)
+
     def save_active_set_locally(self, filename):
-        extension = None
-        if self.properties.is_zvx():
-            extension = ".zvx"
-        elif self.properties.is_znx():
-            extension = ".znx"
+        # must include suffix
+        filename  = self.__add_set_suffix(filename)
+        suffix    = Path(filename).suffix
 
-        unique_filename = unique_alphanumeric_string() + extension
-        if not filename.lower().endswith(extension):
-            filename += extension
+        # save on VNA in RecallSets
+        temp_file = unique_alphanumeric_string() + suffix
+        self.save_active_set(temp_file)
 
-        self.save_active_set(unique_filename)
-        current_directory = self.file.directory()
+        # cd into RecallSets
+        restore_dir = self.file.directory()
         self.file.cd(Directory.recall_sets)
-        self.file.download_file(unique_filename, filename)
-        self.file.delete(unique_filename)
-        self.file.cd(current_directory)
+
+        # download set file
+        self.file.download_file(temp_file, filename)
+
+        # delete temp file from VNA
+        self.file.delete(temp_file)
+
+        # restore dir
+        self.file.cd(restore_dir)
 
     def close_set(self, name):
-        scpi = ":MEM:DEL '{0}'"
-        scpi = scpi.format(name)
+        scpi = ":MEM:DEL '{0}'".format(name)
         self.write(scpi)
 
     def close_sets(self):
@@ -336,17 +369,25 @@ class Vna(GenericInstrument):
             self.close_set(set)
 
     def delete_set(self, name):
-        if self.properties.is_zvx() and not name.lower().endswith('.zvx'):
-            name += '.zvx'
-        elif self.properties.is_znx() and not name.lower().endswith('.znx'):
-            name += '.znx'
-        current_dir = ''
-        if str(PureWindowsPath(name).parent) ==  '.':
-            current_dir = self.file.directory()
+        # must have suffix
+        name   = self.__add_set_suffix(name)
+
+        # directory
+        dir    = PureWindowsPath(name).parent
+        is_dir = dir != '.'
+
+        # cd into RecallSets?
+        restore_dir = None
+        if not is_dir:
+            restore_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
+
+        # delete file
         self.file.delete(name)
-        if current_dir:
-            self.file.cd(current_dir)
+
+        # restore directory?
+        if restore_dir:
+            self.file.cd(restore_dir)
 
     ### Cal groups
     def is_cal_group(self, name):
