@@ -88,7 +88,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev':  ['ddt'],
+        'dev':  ['ddt', 'twine', 'wheel'],
         'test': ['ddt']
     },
 
