@@ -1,5 +1,9 @@
 
 
+def floats(string):
+    return [float(i) for i in string.split(',')]
+
+
 class Marker(object):
     def __init__(self, vna, trace, index=1):
         super(Marker, self).__init__()
@@ -33,12 +37,22 @@ class Marker(object):
     x = property(_x, _set_x)
 
     def _y(self):
-        scpi = ":CALC{0}:MARK{1}:Y?"
-        scpi = scpi.format(self._trace.channel, self._index)
         self._trace.select()
-        value = self._vna.query(scpi).strip()
-        return float(value)
-    #   _set_y(self): ?
+        ch     = self._trace.channel
+        scpi   = ":CALC{0}:MARK{1}:Y?".format(ch, self._index)
+        values = floats(self._vna.query(scpi))
+        if len(values) == 1:
+            return values[0]
+        if len(values) == 2:
+            re = values[0]
+            im = values[1]
+            return complex(re, im)
+        if len(values) == 3:
+            re = values[0]
+            im = values[1]
+            return [complex(re, im), values[2]]
+        # else?
+        return values
     y = property(_y)
 
     def find_max(self):
