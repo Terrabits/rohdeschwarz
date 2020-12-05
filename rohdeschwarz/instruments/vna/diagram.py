@@ -64,7 +64,8 @@ class Diagram(object):
     failed = property(_failed)
 
     def autoscale(self):
-        raise NotImplementedError(0, 'No SCPI command for autoscaling')
+        for name in self.traces:
+            self._vna.trace(name).autoscale()
 
     def is_maximized(self):
         scpi = ":DISP:WIND{0}:MAX?"
