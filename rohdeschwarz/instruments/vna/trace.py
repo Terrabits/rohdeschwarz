@@ -1,12 +1,15 @@
-import sys
+import csv
 from   enum import Enum
 import numpy
+from   pathlib import Path
 import re
-from rohdeschwarz.general import unique_alphanumeric_string
-from rohdeschwarz.general import Units
-from rohdeschwarz.instruments.vna.marker     import Marker
-from rohdeschwarz.instruments.vna.limits     import Limits
-from rohdeschwarz.instruments.vna.timedomain import TimeDomain
+from   rohdeschwarz.general import unique_alphanumeric_string
+from   rohdeschwarz.general import Units
+from   rohdeschwarz.instruments.vna.marker     import Marker
+from   rohdeschwarz.instruments.vna.limits     import Limits
+from   rohdeschwarz.instruments.vna.timedomain import TimeDomain
+import sys
+
 
 class TraceFormat(Enum):
     magnitude_dB = 'MLOG'
@@ -43,12 +46,14 @@ class TraceFormat(Enum):
     def __eq__(self, other):
         return self.value.lower() == str(other).lower()
 
+
 class SaveDataFormat(Enum):
     real_imaginary = 'COMP'
     dB_degrees = 'LOGP'
     magnitude_degrees = 'LINP'
     def __str__(self):
         return self.value
+
 
 class Trace(object):
     def __init__(self, vna, name='Trc1'):
@@ -200,6 +205,32 @@ class Trace(object):
         return result
     y_formatted = property(_y_formatted)
 
+    # trace history data
+    def _complex_history(self):
+        channel     = self.channel
+        sweep_count = self._vna.channel(channel).sweep_count
+
+        # set data format
+        current_data_format = self._vna.settings.data_format
+        self._vna.settings.binary_64_bit_data_format = True
+        self._vna.settings.little_endian             = True
+
+        # read history
+        self.select()
+        scpi        = 'CALC{0}:DATA:NSW:FIRS? SDAT,1,{1}'.format(channel, sweep_count)
+        self._vna.write(scpi)
+        data        = self._vna.read_64_bit_complex_vector_block_data()
+
+        # restore data format
+        self._vna.settings.data_format = current_data_format
+
+        # reshape
+        points    = len(data) // sweep_count
+        new_shape = (sweep_count, points)
+        return data.reshape(new_shape)
+    complex_history = property(_complex_history)
+
+
     def measure_formatted_data(self):
         channel = self._vna.channel(self.channel)
         is_manual = channel.manual_sweep
@@ -251,6 +282,15 @@ class Trace(object):
         self.save_complex_data(unique_filename, format)
         self._vna.file.download_file(unique_filename, filename)
         self._vna.file.delete(unique_filename)
+
+    def save_complex_history_locally(self, filename):
+        history = self.complex_history
+        file    = Path(filename).with_suffix('.csv')
+        with file.open('w') as f:
+            csvwriter = csv.writer(f)
+            for sweep in history:
+                csvwriter.writerow(sweep.view(float))
+
 
     def is_marker(self, index):
         self.select()
