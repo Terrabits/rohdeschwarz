@@ -469,6 +469,25 @@ class Vna(GenericInstrument):
         self.write(':INIT:CONT:ALL 0')
         self.write(":INIT:ALL")
 
+    def sweep(self):
+        self.manual_sweep = True
+        timeout_ms = 2 * self.sweep_time_ms
+        self.start_sweeps()
+        self.pause(timeout_ms)
+
+    def _sweep_count(self):
+        indexes = self.channels
+        sweep_count = self.channel(indexes.pop(0)).sweep_count
+        for i in indexes:
+            if self.channel(i).sweep_count != sweep_count:
+                raise ValueError('channel sweep counts are not equal')
+        return sweep_count
+    def _set_sweep_count(self, sweep_count):
+        for index in self.channels:
+            self.channel(index).sweep_count = sweep_count
+    sweep_count = property(_sweep_count, _set_sweep_count)
+
+
     def _test_ports(self):
         if self.properties.is_zvx():
             return self.properties.physical_ports
