@@ -471,7 +471,7 @@ class Vna(GenericInstrument):
 
     def sweep(self):
         self.manual_sweep = True
-        timeout_ms = 2 * self.sweep_time_ms
+        timeout_ms = 2 * self.sweep_time_ms + 5000
         self.start_sweeps()
         self.pause(timeout_ms)
 
