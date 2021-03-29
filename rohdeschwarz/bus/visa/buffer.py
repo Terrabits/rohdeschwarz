@@ -24,8 +24,14 @@ class Buffer:
         self.to_char_p().value = value
 
     def to_ViBuf(self):
-        return ctypes.cast(self._buffer, Types.ViBuf)
+        return self.cast_to(Types.ViBuf)
+
+    def to_ViPChar(self):
+        return self.cast_to(Types.ViPChar)
 
     # helpers
+    def cast_to(self, type):
+        return ctypes.cast(self._buffer, type)
+
     def to_char_p(self):
-        return ctypes.cast(self._buffer, ctypes.c_char_p)
+        return self.cast_to(ctypes.c_char_p)

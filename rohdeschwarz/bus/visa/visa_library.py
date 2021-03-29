@@ -9,10 +9,17 @@ class VisaLibrary:
         self._visa   = CVisaLibrary()
         self._status = None
 
+    # error handling
+    @property
     def is_success(self):
         return self._status == ErrorCodes.VI_SUCCESS
 
-    def openDefaultRM(self):
+    def status_description(self, session, buffer):
+        session = Types.ViSession(session)
+        self._visa.viStatusDesc(session, self._status, buffer.to_ViPChar())
+        return buffer.value.decode()
+
+    def open_default_resource_mgr(self):
         resource_mgr = Types.ViSession()
         self._status = self._visa.viOpenDefaultRM(ctypes.byref(resource_mgr))
         return resource_mgr.value

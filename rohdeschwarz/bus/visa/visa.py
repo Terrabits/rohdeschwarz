@@ -18,10 +18,7 @@ class VisaBus(BusMixin):
     # open/close
     def open(self, resource='tcpip::localhost::instr', timeout_ms=1000):
         if not self._resource_mgr:
-            self._resource_mgr = self._visa.openDefaultRM()
-        if not self._visa.is_success:
-            self._resource_mgr = None
-            return False
+            self._resource_mgr = self._visa.open_default_resource_mgr()
         self._instr = self._visa.open(self._resource_mgr, resource, timeout_ms)
         if not self._visa.is_success:
             self._instr = None
@@ -48,6 +45,10 @@ class VisaBus(BusMixin):
     def timeout_ms(self, time_ms):
         self._visa.set_timeout_ms(self._instr, time_ms)
         self._timeout_ms = time_ms
+
+    def status(self):
+        session = self._instr or self._resource_mgr
+        return self._visa.status_description(session, self._buffer)
 
     def _read_bytes_no_endline(self):
         return self._visa.read(self._instr, self._buffer)
