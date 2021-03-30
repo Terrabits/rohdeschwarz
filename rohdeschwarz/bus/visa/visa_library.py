@@ -12,7 +12,7 @@ class VisaLibrary:
     # error handling
     @property
     def is_success(self):
-        return self._status == ErrorCodes.VI_SUCCESS
+        return self._status == ErrorCodes.VI_SUCCESS.value
 
     def status_description(self, session, buffer):
         session = Types.ViSession(session)

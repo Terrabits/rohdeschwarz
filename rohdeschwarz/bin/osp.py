@@ -1,12 +1,11 @@
-from   rohdeschwarz.instruments.ospswitch import OspSwitch
-
-from   ruamel import yaml
-
 import argparse
 import code
 import datetime
 import os
+from   rohdeschwarz.instruments import OspSwitch
+from   ruamel import yaml
 import sys
+
 
 def main():
     parser = argparse.ArgumentParser(description='Connect to a Rohde & Schwarz OSP Switch')
@@ -79,6 +78,7 @@ def main():
             osp.close_log()
         if osp.connected():
             osp.close()
+
 
 if __name__ == "__main__":
     main()

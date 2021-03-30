@@ -1,6 +1,6 @@
 from .buffer       import Buffer
 from .visa_library import VisaLibrary
-from rohdeschwarz.bus.mixins.bus import BusMixin
+from rohdeschwarz.bus.mixins import BusMixin
 
 
 class VisaBus(BusMixin):

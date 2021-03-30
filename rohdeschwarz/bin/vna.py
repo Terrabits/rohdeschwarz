@@ -1,10 +1,10 @@
-from   rohdeschwarz.instruments.vna import Vna
-
 import argparse
 import code
 import datetime
 import os
+from rohdeschwarz.instruments import Vna
 import sys
+
 
 def main():
     parser = argparse.ArgumentParser(description='Connect to a Rohde & Schwarz VNA')
@@ -59,6 +59,7 @@ def main():
             vna.close_log()
         if vna.connected():
             vna.close()
+
 
 if __name__ == "__main__":
     main()

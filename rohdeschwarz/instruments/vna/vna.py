@@ -1,7 +1,7 @@
 from pathlib import Path, PureWindowsPath
 from enum    import Enum
-from rohdeschwarz.general                       import SiPrefix
-from rohdeschwarz.general                       import unique_alphanumeric_string
+from rohdeschwarz.enums                       import SiPrefix
+from rohdeschwarz.helpers                       import unique_alphanumeric_string
 from rohdeschwarz.instruments.genericinstrument import GenericInstrument
 from rohdeschwarz.instruments.vna.calunit       import CalUnit
 from rohdeschwarz.instruments.vna.channel       import Channel

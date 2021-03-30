@@ -1,10 +1,10 @@
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
-
 import argparse
 import code
 import datetime
 import os
+from rohdeschwarz.instruments import GenericInstrument
 import sys
+
 
 def main():
     parser = argparse.ArgumentParser(description='Connect to an instrument')
@@ -58,6 +58,7 @@ def main():
             instr.close_log()
         if instr.connected():
             instr.close()
+
 
 if __name__ == "__main__":
     main()

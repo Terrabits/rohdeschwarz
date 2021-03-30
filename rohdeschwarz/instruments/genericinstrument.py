@@ -1,57 +1,49 @@
-import sys
-import os
-#import struct
 import numpy
-from rohdeschwarz.general import ConnectionMethod
-from rohdeschwarz.bus.tcp import TcpBus
-from rohdeschwarz.bus.visa import VisaBus
+import os
+from rohdeschwarz.bus import TcpBus, VisaBus
+import sys
 
-class GenericInstrument(object):
-    _MAX_PRINT = 100
 
+MAX_PRINT = 100
+
+
+class GenericInstrument:
     def __init__(self):
-        super(GenericInstrument, self).__init__()
         self.log = None
         self.bus = None
-        self.buffer_size = 1024
-        self.connection_method = ''
-        self.address = ''
         self.bytes_transferred = 0
 
     def __del__(self):
-        self.close()
+        if self.is_open:
+            self.close()
 
-    def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
+    # open/close
+    def open(self, resource='tcpip::localhost::instr'):
         self.bus = VisaBus()
-        self.bus.open(connection_method, address)
+        self.bus.open(resource)
 
-    def open_tcp(self, ip_address='127.0.0.1', socket=5025):
-        self.connection_method = ConnectionMethod.tcpip
-        self.address = "{0}:{1}".format(ip_address, socket)
+    def open_tcp(self, address='localhost', port=5025):
         self.bus = TcpBus()
-        self.bus.open(ip_address, socket)
+        self.bus.open(address)
 
     def close(self):
-        if self.bus:
-            self.bus.close()
-            self.bus = None
+        self.bus.close()
+        self.bus = None
 
-    def connected(self):
-        if not self.bus:
-            return False
-        try:
-            return len(self.id_string()) > 0
-        except:
-            return False
-        # Else
-        return True
+    @property
+    def is_open(self):
+        return self.bus is not None
 
-    def _timeout_ms(self):
+    # timeout (ms)
+    @property
+    def timeout_ms(self):
         return self.bus.timeout_ms
-    def _set_timeout_ms(self, time):
-        self.bus.timeout_ms = time
-    timeout_ms = property(_timeout_ms, _set_timeout_ms)
 
+    @timeout_ms.setter
+    def timeout_ms(self, time_ms):
+        self.bus.timeout_ms = time_ms
+
+    # scpi log
     def open_log(self, filename):
         self.log = open(filename, 'w')
         if self.log.closed:
@@ -66,35 +58,41 @@ class GenericInstrument(object):
             self.log.close()
             self.log = None
 
+    @property
+    def is_log(self):
+        return self.log is not None
+
+    # instrument info
     def id_string(self):
         return self.query('*IDN?').strip()
 
     def options_string(self):
         return self.query("*OPT?").strip()
 
-    def is_error(self):
-        return bool(self._errors())
+    def is_rohde_schwarz(self):
+        return ("ROHDE" in self.id_string().upper())
 
+    # errors
     def next_error(self):
-        code = 0;
-        message = '';
-        result = self.query(':SYST:ERR?').strip()
+        result  = self.query(':SYST:ERR?').strip()
         comma_index = result.find(',')
-        code = int(result[:comma_index])
+        code    = int(result[:comma_index])
         message = result[comma_index+2:-1]
-        if (code != 0):
-            return(code, message)
-        else:
+        if code == 0:
             return None
+        # else
+        return code, message
 
-    def _errors(self):
-        errors = []
-        error = self.next_error()
-        while error:
-            errors.append(error)
-            error = self.next_error()
+    @property
+    def errors(self):
+        errors = [self.next_error()]
+        while errors[-1] is not None:
+            errors.append(self.next_error())
+        errors.pop()
         return errors
-    errors = property(_errors)
+
+    def is_error(self):
+        return bool(self.errors)
 
     def clear_status(self):
         self.write("*CLS")
@@ -108,43 +106,27 @@ class GenericInstrument(object):
     def remote(self):
         self.write("@REM")
 
-    def is_rohde_schwarz(self):
-        return ("ROHDE" in self.id_string().upper())
+    # timing
 
     def wait(self):
         self.write('*WAI')
 
     def pause(self, timeout_ms=1000):
-        # Take greater of timeout amounts
-        timeout_ms = self.timeout_ms if self.timeout_ms > timeout_ms else timeout_ms
-
-        old_timeout = self.timeout_ms
-        self.timeout_ms = timeout_ms
-        result = self.query('*OPC?').strip() == "1"
+        old_timeout     = self.timeout_ms
+        self.timeout_ms = max(timeout_ms, self.timeout_ms)
+        result = self.query('*OPC?').strip()
         self.timeout_ms = old_timeout
-        return result
+        return result == "1"
 
     def initialize_polling(self):
         self.write("*OPC")
 
     def is_operation_complete(self):
         opcBit = 1
-        esr = int(self.query('*ESR?').strip())
+        esr    = int(self.query('*ESR?').strip())
         return opcBit & esr > 0
 
-    def print_info(self):
-        _log = self.log
-        self.log = None
-        _log.write('INSTRUMENT INFO\n')
-        _log.write('Connection: {0}\n'.format(self.connection_method))
-        _log.write('Address:    {0}\n'.format(self.address))
-        if self.is_rohde_schwarz():
-            _log.write('Make:       Rohde & Schwarz\n')
-        else:
-            _log.write('Make:       Unknown\n')
-        _log.write('Id string:  {0}\n\n'.format(self.id_string()))
-        self.log = _log
-
+    # str io
     def read(self):
         buffer = self.bus.read()
         self.bytes_transferred = len(buffer)
@@ -262,13 +244,13 @@ class GenericInstrument(object):
             return
         buffer = buffer.strip()
         if isinstance(buffer, str):
-            if len(buffer) > self._MAX_PRINT:
-                buffer = buffer[:self._MAX_PRINT]
+            if len(buffer) > self.MAX_PRINT:
+                buffer = buffer[:self.MAX_PRINT]
                 buffer += "..."
             self.log.write('Read:     "{0}"\n'.format(buffer))
         else:
-            if len(buffer) > self._MAX_PRINT:
-                buffer = buffer[:self._MAX_PRINT]
+            if len(buffer) > self.MAX_PRINT:
+                buffer = buffer[:self.MAX_PRINT]
                 buffer += b"..."
             self.log.write('Read:     {0}\n'.format(buffer))
         self.log.write('Bytes:    {0}\n'.format(self.bytes_transferred))
@@ -282,13 +264,13 @@ class GenericInstrument(object):
             return
         buffer = buffer.strip()
         if isinstance(buffer, str):
-            if len(buffer) > self._MAX_PRINT:
-                buffer = buffer[:self._MAX_PRINT]
+            if len(buffer) > self.MAX_PRINT:
+                buffer = buffer[:self.MAX_PRINT]
                 buffer += "..."
             self.log.write('Write:    "{0}"\n'.format(buffer))
         else:
-            if len(buffer) > self._MAX_PRINT:
-                buffer = buffer[:self._MAX_PRINT]
+            if len(buffer) > self.MAX_PRINT:
+                buffer = buffer[:self.MAX_PRINT]
                 buffer += b"..."
             self.log.write('Write:    {0}\n'.format(buffer))
         self.log.write('Bytes:    {0}\n'.format(self.bytes_transferred))

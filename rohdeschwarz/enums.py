@@ -1,19 +1,7 @@
-import numpy
-
-import datetime
-from   enum     import Enum
-import math
-from   numbers  import Number
+from   enum    import Enum
+from   numbers import Number
 import re
-import uuid
 
-### Enums
-class ConnectionMethod(Enum):
-    tcpip = 'TCPIP'
-    gpib  = 'GPIB'
-    usb   = 'USB'
-    def __str__(self):
-        return self.value
 
 class SiPrefix(Enum):
     femto  = 1.0E-15
@@ -127,77 +115,15 @@ class Units(Enum):
     def __eq__(self, other):
         return self.value == str(other)
 
-def format_value(value, units = Units.none):
-    if units == Units.dB:
-        value = "{0:.2f}".format(value)
-        value = value.rstrip('0').rstrip('.')
-        return "{0} {1}".format(value, units)
-    conv_value, prefix = SiPrefix.convert(value)
-    conv_value = "{0:.3f}".format(conv_value)
-    conv_value = conv_value.rstrip('0').rstrip('.')
-    if prefix == SiPrefix.none:
-        return "{0} {1}".format(conv_value, units)
-    else:
-        return "{0} {1}{2}".format(conv_value, prefix, units)
-
-def to_float(*args):
-    argc = len(args)
-    if argc == 0 or argc > 2:
-        raise SyntaxError("to_float requires 1-2 arguments. You provided {0}".format(argc))
-    if len(args) == 1:
-        arg = args[0]
-        if isinstance(arg, tuple):
-            return to_float(*arg)
-        if isinstance(arg, str):
-            return to_float(*SiPrefix.convert(arg))
-        return float(arg)
-    # Two args
-    num    = args[0]
-    prefix = args[1]
-    return float(num) * float(prefix)
-
-### Functions
-def print_header(file, app_name, app_version):
-    #R&S <_appName> Version <_version>
-    #(C) 2015 Rohde & Schwarz America
-    #
-    #Mon Jul 6 15:05:51 2015
-    #
-    today = datetime.datetime.now()
-    file.write("{0} Version {1}\n".format(app_name, app_version))
-    file.write("(C) {0} Rohde & Schwarz\n\n".format(today.year))
-    file.write(today.strftime('%a %d %b %H:%M:%S %Y\n\n'))
-
-def dB(magnitude):
-    """
-    Convert complex values or linear magnitude to dB
-    Args:
-        magnitude (int, float, numpy.float32, numpy, float64, numpy.ndarray)
-    Returns:
-        Similar type with the value converted to dB
-    """
-    if isinstance(magnitude, (int, float, numpy.float32, numpy.float64)):
-        return 20.0 * math.log10(abs(magnitude))
-    elif isinstance(magnitude, numpy.ndarray):
-        result = None
-        if isinstance(magnitude[0], (numpy.complex64, numpy.complex128)):
-            result = numpy.array(abs(magnitude))
-        else:
-            result = numpy.array(magnitude)
-        for i in range(0, len(magnitude)):
-            result[i] = dB(result[i])
-        return result
-    else:
-        raise ValueError(0, 'Cannot convert type {0} to dB'.format(type(magnitude)))
 
 def number_of_thrus(port_count):
-    f = math.factorial
     if port_count <= 0:
         raise ValueError("number_of_thrus() not defined for port count less than 1")
-    elif port_count == 1:
+    if port_count == 1:
         return 0
-    else:
-        return f(port_count) / (2*f(port_count-2))
+    # else
+    return factorial(port_count) / (2 * factorial(port_count - 2))
+
 
 def unique_alphanumeric_string():
     unique_string = str(uuid.uuid4())

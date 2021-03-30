@@ -1,10 +1,10 @@
-from   rohdeschwarz.instruments.vsg import Vsg
-
 import argparse
 import code
 import datetime
 import os
+from rohdeschwarz.instruments import Vsg
 import sys
+
 
 def main():
     parser = argparse.ArgumentParser(description='Connect to a Rohde & Schwarz VSG')
@@ -59,6 +59,7 @@ def main():
             vsg.close_log()
         if vsg.connected():
             vsg.close()
+
 
 if __name__ == "__main__":
     main()
