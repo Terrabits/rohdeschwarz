@@ -1,5 +1,4 @@
-from enum                 import Enum
-from rohdeschwarz.general import unique_alphanumeric_string
+from rohdeschwarz.helpers import unique_alphanumeric_string
 
 
 class Diagram(object):

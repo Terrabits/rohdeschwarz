@@ -15,3 +15,12 @@ def unique_alphanumeric_string():
     unique_string = str(uuid.uuid4())
     unique_string = unique_string.replace('-', '')
     return unique_string
+
+
+def ellipsis(data, max_length):
+    if len(data) <= max_length:
+        return data
+
+    # truncate and add ellipsis
+    dot_dot_dot = '...' if isinstance(data, str) else b'...'
+    return data[:max_length] + dot_dot_dot

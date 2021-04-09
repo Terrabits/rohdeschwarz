@@ -1,9 +1,7 @@
 from   enum                 import Enum
 import numpy
-from   rohdeschwarz.general import SiPrefix
-from   rohdeschwarz.general import unique_alphanumeric_string
-from   rohdeschwarz.general import Units
-from   rohdeschwarz.general import number_of_thrus
+from   rohdeschwarz.enums   import SiPrefix, Units
+from   rohdeschwarz.helpers import number_of_thrus, unique_alphanumeric_string
 
 
 class SweepType(Enum):

@@ -1,13 +1,13 @@
+from   .marker     import Marker
+from   .limits     import Limits
+from   .timedomain import TimeDomain
 import csv
-from   enum import Enum
+from   enum    import Enum
 import numpy
 from   pathlib import Path
 import re
-from   rohdeschwarz.general import unique_alphanumeric_string
-from   rohdeschwarz.general import Units
-from   rohdeschwarz.instruments.vna.marker     import Marker
-from   rohdeschwarz.instruments.vna.limits     import Limits
-from   rohdeschwarz.instruments.vna.timedomain import TimeDomain
+from   rohdeschwarz.helpers import unique_alphanumeric_string
+from   rohdeschwarz.enums   import Units
 import sys
 
 

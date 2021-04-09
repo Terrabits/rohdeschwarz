@@ -1,30 +1,30 @@
 import numpy
 import os
-from rohdeschwarz.bus import TcpBus, VisaBus
+from rohdeschwarz.bus     import TcpBus, VisaBus
+from rohdeschwarz.helpers import ellipsis_bytes, ellipsis_str
 import sys
 
 
-MAX_PRINT = 100
+MAX_PRINT_LENGTH = 100
 
 
 class GenericInstrument:
     def __init__(self):
         self.log = None
         self.bus = None
-        self.bytes_transferred = 0
 
     def __del__(self):
         if self.is_open:
             self.close()
 
     # open/close
-    def open(self, resource='tcpip::localhost::instr'):
+    def open(self, resource='tcpip::localhost::instr', timeout_ms=1000):
         self.bus = VisaBus()
-        self.bus.open(resource)
+        self.bus.open(resource, timeout_ms)
 
-    def open_tcp(self, address='localhost', port=5025):
+    def open_tcp(self, address='localhost', port=5025, timeout_ms=1000):
         self.bus = TcpBus()
-        self.bus.open(address)
+        self.bus.open(address, port, timeout_ms)
 
     def close(self):
         self.bus.close()
@@ -47,16 +47,13 @@ class GenericInstrument:
     def open_log(self, filename):
         self.log = open(filename, 'w')
         if self.log.closed:
-            message = "Could not open log at '{0}'\n"
-            message = message.format(filename)
-            sys.stderr.write(message)
+            sys.stderr.write(f"Could not open log '{filename}'\n")
             self.log = None
 
     def close_log(self):
-        if self.log:
-            self.log.flush()
-            self.log.close()
-            self.log = None
+        self.log.flush()
+        self.log.close()
+        self.log = None
 
     @property
     def is_log(self):
@@ -97,21 +94,23 @@ class GenericInstrument:
     def clear_status(self):
         self.write("*CLS")
 
+    # preset
     def preset(self):
         self.write("*RST")
 
+    # local/remote
     def local(self):
         self.write("@LOC")
 
     def remote(self):
         self.write("@REM")
 
-    # timing
-
+    # synchronization
     def wait(self):
         self.write('*WAI')
 
     def pause(self, timeout_ms=1000):
+        '''*OPC?'''
         old_timeout     = self.timeout_ms
         self.timeout_ms = max(timeout_ms, self.timeout_ms)
         result = self.query('*OPC?').strip()
@@ -119,56 +118,58 @@ class GenericInstrument:
         return result == "1"
 
     def initialize_polling(self):
+        '''*OPC'''
         self.write("*OPC")
 
     def is_operation_complete(self):
+        '''*ESR? OPC bit == 1?'''
         opcBit = 1
         esr    = int(self.query('*ESR?').strip())
         return opcBit & esr > 0
 
     # str io
     def read(self):
-        buffer = self.bus.read()
-        self.bytes_transferred = len(buffer)
-        self._print_read(buffer)
-        return buffer
+        data = self.bus.read()
+        self._print_read(data)
+        return data
 
-    def write(self, buffer):
-        self.bus.write(buffer)
-        self.bytes_transferred = len(buffer)
-        self._print_write(buffer)
+    def write(self, scpi_command):
+        self.bus.write(scpi_command)
+        self._print_write(scpi_command)
 
-    def query(self, buffer):
-        self.write(buffer)
+    def query(self, data):
+        self.write(data)
         return self.read()
 
+    # bytes io
+    def read_bytes(self, read_until_endline=True)
+
+    # TODO: clean these read/writes up
     def read_raw_no_end(self, buffer_size=102400):
-        buffer = self.bus.read_raw_no_end(buffer_size)
-        self.bytes_transferred = len(buffer)
-        self._print_read(buffer)
-        return buffer
+        data = self.bus.read_raw_no_end(buffer_size)
+        self._print_read(data)
+        return data
 
-    def write_raw_no_end(self, buffer):
-        self.bus.write_raw_no_end(buffer)
-        self.bytes_transferred = len(buffer)
-        self._print_write(buffer)
+    def write_raw_no_end(self, data):
+        self.bus.write_raw_no_end(data)
+        self._print_write(data)
 
-    def query_raw_no_end(self, buffer, buffer_size=102400):
-        self.write_raw_no_end(buffer)
+    def query_raw_no_end(self, data, buffer_size=102400):
+        self.write_raw_no_end(data)
         return self.read_raw_no_end(buffer_size)
 
     def read_block_data(self):
-        buffer = self.read_raw_no_end()
-        size, buffer = self.parse_block_data_header(buffer)
-        while len(buffer) < size+1:
-            buffer += self.read_raw_no_end()
-        buffer = buffer[:size]
-        return (size, buffer)
+        data = self.read_raw_no_end()
+        size, data = self.parse_block_data_header(data)
+        while len(data) < size+1:
+            data += self.read_raw_no_end()
+        data = data[:size]
+        return (size, data)
 
-    def write_block_data(self, buffer):
-        header = self.create_block_data_header(len(buffer))
-        buffer = header + buffer
-        self.write_raw_no_end(buffer)
+    def write_block_data(self, data):
+        header = self.create_block_data_header(len(data))
+        data = header + data
+        self.write_raw_no_end(data)
 
     def read_block_data_to_file(self, filename, buffer_size=102400):
         if buffer_size < 11:
@@ -239,41 +240,36 @@ class GenericInstrument:
         result = "#" + str(len(size_string)) + size_string
         return result.encode()
 
-    def _print_read(self, buffer):
+    def _print_read(self, data):
         if not self.log or self.log.closed:
             return
-        buffer = buffer.strip()
-        if isinstance(buffer, str):
-            if len(buffer) > self.MAX_PRINT:
-                buffer = buffer[:self.MAX_PRINT]
-                buffer += "..."
-            self.log.write('Read:     "{0}"\n'.format(buffer))
+        data = data.strip()
+        if isinstance(data, str):
+            if len(data) > self.MAX_PRINT:
+                data = data[:self.MAX_PRINT]
+                data += "..."
+            self.log.write('Read:     "{0}"\n'.format(data))
         else:
-            if len(buffer) > self.MAX_PRINT:
-                buffer = buffer[:self.MAX_PRINT]
-                buffer += b"..."
-            self.log.write('Read:     {0}\n'.format(buffer))
-        self.log.write('Bytes:    {0}\n'.format(self.bytes_transferred))
+            if len(data) > self.MAX_PRINT:
+                data = data[:self.MAX_PRINT]
+                data += b"..."
+            self.log.write('Read:     {0}\n'.format(data))
+        self.log.write('Bytes:    {0}\n'.format(len(data)))
         status = self.bus.status_string()
         if status:
             self.log.write('Status:   {0}\n'.format(status))
         self.log.write('\n')
 
-    def _print_write(self, buffer):
+    def _print_write(self, data):
         if not self.log or self.log.closed:
             return
-        buffer = buffer.strip()
-        if isinstance(buffer, str):
-            if len(buffer) > self.MAX_PRINT:
-                buffer = buffer[:self.MAX_PRINT]
-                buffer += "..."
-            self.log.write('Write:    "{0}"\n'.format(buffer))
+
+        data = data.strip()
+        if isinstance(data, str):
+            data = ellipsis_str(data, MAX_PRINT_LENGTH)
         else:
-            if len(buffer) > self.MAX_PRINT:
-                buffer = buffer[:self.MAX_PRINT]
-                buffer += b"..."
-            self.log.write('Write:    {0}\n'.format(buffer))
-        self.log.write('Bytes:    {0}\n'.format(self.bytes_transferred))
+        self.log.write(f'Write:    "{data}"\n')
+        self.log.write('Bytes:    {0}\n'.format(len(data)))
         status = self.bus.status_string()
         if status:
             self.log.write('Status:   {0}\n'.format(status))

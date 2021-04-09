@@ -1,9 +1,10 @@
-import unittest
-from   ddt      import ddt, data
-from rohdeschwarz.general         import Units
+from ddt                          import ddt, data
+from rohdeschwarz.enums           import Units
 from rohdeschwarz.instruments.vna import Vna
 from rohdeschwarz.instruments.vna import TraceFormat
 from rohdeschwarz.instruments.vna import Trace
+import unittest
+
 
 @ddt
 class TestVnaTrace(unittest.TestCase):

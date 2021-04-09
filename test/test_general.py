@@ -1,13 +1,10 @@
-from rohdeschwarz.general         import format_value
-from rohdeschwarz.general         import SiPrefix
-from rohdeschwarz.general         import to_float
-from rohdeschwarz.general         import Units
+from ddt import ddt, data
+from rohdeschwarz.helpers import SiPrefix
+from rohdeschwarz.enums   import Units
 from rohdeschwarz.instruments.vna import Vna
 from rohdeschwarz.instruments.vna import TraceFormat
-
-from   ddt      import ddt, data
-
 import unittest
+
 
 @ddt
 class TestGeneral(unittest.TestCase):
@@ -25,17 +22,6 @@ class TestGeneral(unittest.TestCase):
 		num, prefix = SiPrefix.convert(data['value'])
 		self.assertEqual(data['num'], num)
 		self.assertEqual(data['prefix'], prefix)
-
-	@data({'args': (10.0),              'value': 10.0},
-		  {'args': ('10.0'),            'value': 10.0},
-		  {'args': ('10 MHz'),          'value': 10e6},
-		  {'args': (99, SiPrefix.mega), 'value': 99e6})
-	def test_to_float(self, data):
-		args = data['args']
-		if isinstance(args, tuple):
-			self.assertEqual(to_float(*args), data['value'])
-		else:
-			self.assertEqual(to_float(args), data['value'])
 
 if __name__ == '__main__':
 	unittest.main()

@@ -1,4 +1,5 @@
-from rohdeschwarz.general import number_of_thrus
+from rohdeschwarz.helpers import number_of_thrus
+
 
 class MultistepAutocal(object):
     def __init__(self, vna, channel, cal_unit='', timeout_ms=None):
