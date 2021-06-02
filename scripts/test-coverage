@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+
+
+# exit on error
+set -e
+
+
+cd "$ROOT_DIR"
+
+
+# test with coverage
+coverage run --source rohdeschwarz -m unittest || true
+
+# view results
+coverage html
+open htmlcov/index.html
