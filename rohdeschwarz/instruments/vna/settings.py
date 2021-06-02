@@ -132,10 +132,10 @@ class Settings(object):
         # Date: June 2021
         # ZNL(E) does not support this command
         # Assumes SWAP
-        model = self._vna.properties.model
+        model = str(self._vna.properties.model)
         if model == 'ZNL' or model == 'ZNLE':
             if is_big_endian:
-                raise Exception('ZNL(E) does not support big endian')
+                raise Exception('{0} does not support big endian'.format(model))
             # no-op
             return
 
