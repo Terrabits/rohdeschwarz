@@ -128,22 +128,27 @@ class Settings(object):
         scpi = ':FORM:BORD?'
         result = self._vna.query(scpi).strip().upper()
         return result == 'NORM'
-    def _set_big_endian(self, value):
-        if value:
-            self._vna.write(':FORM:BORD NORM')
-        else:
-            self._vna.write(':FORM:BORD SWAP')
+    def _set_big_endian(self, is_big_endian):
+        # Date: June 2021
+        # ZNL(E) does not support this command
+        # Assumes SWAP
+        model = self._vna.properties.model
+        if model == 'ZNL' or model == 'ZNLE':
+            if is_big_endian:
+                raise Exception('ZNL(E) does not support big endian')
+            # no-op
+            return
+
+        # set
+        scpi_value = 'NORM' if is_big_endian else 'SWAP'
+        scpi       = 'FORM:BORD {0}'.format(scpi_value)
+        self._vna.write(scpi)
     big_endian = property(_big_endian, _set_big_endian)
 
     def _little_endian(self):
-        scpi = ':FORM:BORD?'
-        result = self._vna.query(scpi).strip().upper()
-        return result == 'SWAP'
-    def _set_little_endian(self, value):
-        if value:
-            self._vna.write(':FORM:BORD SWAP')
-        else:
-            self._vna.write(':FORM:BORD NORM')
+        return not self.big_endian
+    def _set_little_endian(self, is_little_endian):
+        self.big_endian = not is_little_endian
     little_endian = property(_little_endian, _set_little_endian)
 
     def _emulation_mode(self):
