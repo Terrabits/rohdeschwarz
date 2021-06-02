@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+
+
+# exit on error
+set -e
+
+
+cd "$ROOT_DIR"
+
+
+# install for development
+pip install --editable .[dev]
