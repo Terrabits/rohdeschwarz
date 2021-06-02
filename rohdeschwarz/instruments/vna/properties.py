@@ -12,6 +12,8 @@ class Model(Enum):
     znc  = 'ZNC'
     znd  = 'ZND'
     znp  = 'ZNP'
+    znle = 'ZNLE'
+    znl  = 'ZNL'
     unknown = ''
 
     def __str__(self):
