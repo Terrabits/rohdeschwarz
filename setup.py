@@ -109,7 +109,6 @@ setup(
     entry_points={
         'console_scripts': [
             'instr=rohdeschwarz.bin.instr:main',
-            'osp=rohdeschwarz.bin.osp:main',
             'vna=rohdeschwarz.bin.vna:main',
             'vsg=rohdeschwarz.bin.vsg:main'
         ]

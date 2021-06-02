@@ -1,8 +1,7 @@
 from ddt                          import ddt, data
 from rohdeschwarz.enums           import Units
 from rohdeschwarz.instruments.vna import Vna
-from rohdeschwarz.instruments.vna import TraceFormat
-from rohdeschwarz.instruments.vna import Trace
+from rohdeschwarz.instruments.vna.trace import Trace, TraceFormat
 import unittest
 
 

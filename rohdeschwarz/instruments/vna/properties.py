@@ -30,7 +30,7 @@ class Properties(object):
         self._vna = vna
 
     def is_znx(self):
-        id = self._vna.id_string()
+        id = self._vna.id_string
         if Model.zna.is_in(id):
             return True
         if Model.znbt.is_in(id):
@@ -47,7 +47,7 @@ class Properties(object):
         return False
 
     def is_zvx(self):
-        id = self._vna.id_string()
+        id = self._vna.id_string
         if Model.zva.is_in(id):
             return True
         elif Model.zvb.is_in(id):
@@ -62,7 +62,7 @@ class Properties(object):
             return False
 
     def _model(self):
-        id = self._vna.id_string()
+        id = self._vna.id_string
         for model in Model:
             if (model.is_in(id)):
                 return model
@@ -74,7 +74,7 @@ class Properties(object):
         return self.is_znx() or self.is_zvx()
 
     def _serial_number(self):
-        id_list = self._vna.id_string().strip().split(',');
+        id_list = self._vna.id_string.strip().split(',');
         if len(id_list) < 3:
             return None
         else:
@@ -83,7 +83,7 @@ class Properties(object):
     serial_number = property(_serial_number)
 
     def _firmware_version(self):
-        id_list = self._vna.id_string().strip().split(',');
+        id_list = self._vna.id_string.strip().split(',');
         if len(id_list) < 4:
             return None
         else:

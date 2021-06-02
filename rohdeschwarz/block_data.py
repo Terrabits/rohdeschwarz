@@ -26,9 +26,6 @@ def from_block_data(block_data):
         raise EOFError(f'missing block data: received {len(data)} of {data_length} bytes')
     return data[:data_length]
 
-
-
-
     # get data from block
     data_end = str_end + data_length
     return block_data[str_end:data_end]

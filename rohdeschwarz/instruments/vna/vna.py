@@ -1,74 +1,69 @@
-from pathlib import Path, PureWindowsPath
-from enum    import Enum
-from rohdeschwarz.enums                       import SiPrefix
-from rohdeschwarz.helpers                       import unique_alphanumeric_string
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
-from rohdeschwarz.instruments.vna.calunit       import CalUnit
-from rohdeschwarz.instruments.vna.channel       import Channel
-from rohdeschwarz.instruments.vna.diagram       import Diagram
-from rohdeschwarz.instruments.vna.trace         import Trace
-from rohdeschwarz.instruments.vna.properties    import Properties
-from rohdeschwarz.instruments.vna.settings      import Settings
-from rohdeschwarz.instruments.vna.filesystem    import FileSystem, Directory
+from .calunit    import CalUnit
+from .channel    import Channel
+from .diagram    import Diagram
+from .trace      import Trace
+from .properties import Properties
+from .settings   import Settings
+from .filesystem import FileSystem, Directory
+from enum        import Enum
+from io          import StringIO
+from pathlib     import Path, PureWindowsPath
+from rohdeschwarz.enums       import SiPrefix
+from rohdeschwarz.helpers     import unique_alphanumeric_string
+from rohdeschwarz.instruments import Instrument
 
 
-class ImageFormat(Enum):
-    bmp = 'BMP'
-    png = 'PNG'
-    jpg = 'JPG'
-    pdf = 'PDF'
-    svg = 'SVG'
-    def __str__(self):
-        return self.value
-
-class Vna(GenericInstrument):
+class Vna(Instrument):
     def __init__(self):
-        super(Vna, self).__init__()
+        Instrument.__init__(self)
         self.properties = Properties(self)
-        self.settings = Settings(self)
-        self.file = FileSystem(self)
+        self.settings   = Settings(self)
+        self.file       = FileSystem(self)
 
-    def __del__(self):
-        if self.connected():
-            self.local()
-            self.close()
-
+    # log
     def print_info(self):
-        _log = self.log
-        self.log = None
-        _log.write('VNA INSTRUMENT INFO\n')
-        if self.connected() and self.properties.is_known_model():
-            _log.write('Connection:       {0}\n'.format(self.connection_method))
-            _log.write('Address:          {0}\n'.format(self.address))
-            _log.write('Make:             Rohde & Schwarz\n')
-            _log.write('Model:            {0}\n'.format(self.properties.model))
-            _log.write('Serial No:        {0}\n'.format(self.properties.serial_number))
-            _log.write('Firmware Version: {0}\n'.format(self.properties.firmware_version))
-            value, prefix = SiPrefix.convert(self.properties.minimum_frequency_Hz)
-            _log.write('Min Frequency:    {0} {1}Hz\n'.format(value, prefix))
-            value, prefix = SiPrefix.convert(self.properties.maximum_frequency_Hz)
-            _log.write('Max Frequency:    {0} {1}Hz\n'.format(value, prefix))
-            _log.write('Number of Ports:  {0}\n'.format(self.properties.physical_ports))
-            options = self.properties.options_list
-            if options:
-                _log.write('Options:          ')
-                _log.write('\n                  '.join(options))
-                _log.write('\n')
-        elif self.connected():
-            _log.write('Make: Unknown\n')
-            _log.write('*IDN?\n  {0}\n'.format(self.id_string()))
-        else:
-            _log.write('Instrument not found!\n')
-            _log.write('Connection:       {0}\n'.format(self.connection_method))
-            _log.write('Address:          {0}\n'.format(self.address))
-        _log.write('\n\n')
-        self.log = _log
+        self.log.pause()
+        if not self.is_open or not self.properties.is_known_model():
+            # not connected or not known VNA:
+            # use generic print_info
+            Instrument.print_info(self)
+            self.log.resume()
+            return
 
-    ### Channels
+        # build info str
+        info = StringIO('VNA Info\n')
+        info.write(f'Connection:       {self.connection_method}\n')
+        info.write(f'Address:          {self.address}\n')
+        info.write( 'Make:             Rohde & Schwarz\n')
+        info.write(f'Model:            {self.properties.model}\n')
+        info.write(f'Serial No:        {self.properties.serial_number}\n')
+        info.write(f'Firmware Version: {self.properties.firmware_version}\n')
+
+        value, prefix = SiPrefix.convert(self.properties.minimum_frequency_Hz)
+        info.write(f'Min Frequency:    {value} {prefix}Hz\n')
+
+        value, prefix = SiPrefix.convert(self.properties.maximum_frequency_Hz)
+        info.write(f'Max Frequency:    {value} {prefix}Hz\n')
+
+        info.write(f'Number of Ports:  {self.properties.physical_ports}\n')
+        options = self.properties.options_list
+        if options:
+            info.write('Options:          \n')
+            for option in options:
+                info.write(f'                  {option}\n')
+        info.write('\n')
+
+        # print
+        self.log.resume()
+        self.log.print(info.getvalue())
+        self.log.flush()
+
+    # channels
     def is_channel(self, index):
-        return index in self._channels()
+        return index in self.channels()
 
-    def _channels(self):
+    @property
+    def channels(self):
         result = self.query(':CONF:CHAN:CAT?')
         result = result.strip().strip("'")
         if len(result) == 0:
@@ -76,19 +71,20 @@ class Vna(GenericInstrument):
         result = result.split(",")
         result = result[::2]
         return list(map(int, result))
-    def _set_channels(self, channels):
-        _allChannels = self._channels()
+
+    @channels.setter
+    def channels(self, channels):
+        _allChannels = self.channels
         for c in channels:
             if c not in _allChannels:
                 self.create_channel(c)
         for c in _allChannels:
             if c not in channels:
                 self.delete_channel(c)
-    channels = property(_channels, _set_channels)
 
     def create_channel(self, index=None):
         if not index:
-            _channels = self._channels()
+            _channels = self.channels()
             if len(_channels) == 0:
                 index = 1
             else:
@@ -96,43 +92,38 @@ class Vna(GenericInstrument):
         self.write(':CONF:CHAN{0} 1'.format(index))
         return index
 
-    def copy_channel(self, original_index, new_index=None):
-        self.channel(original_index).select()
-        if not new_index:
-            return create_channel()
-        else:
-            create_channel(new_index)
-
     def delete_channel(self, index):
         self.write(':CONF:CHAN{0} 0'.format(index))
 
-    def delete_channels(self, indexes):
-        for i in indexes:
-            self.delete_channel(i)
+    def delete_channels(self):
+        for c in self.channels:
+            self.delete_channel(c)
 
     def channel(self, index=1):
         return Channel(self, index)
 
 
-    ### Traces
+    # traces
     def is_trace(self, name):
-        return name in self._traces()
+        return name in self.traces()
 
-    def _traces(self):
+    @property
+    def traces(self):
         result = self.query(':CONF:TRAC:CAT?').strip().strip("'")
         if len(result) == 0:
             return []
         result = result.split(",")
         return result[1::2]
-    def _set_traces(self, traces):
-        _allTraces = self._traces()
+
+    @traces.setter
+    def traces(self, traces):
+        _allTraces = self.traces()
         for t in traces:
             if t not in _allTraces:
                 self.create_trace(name=t)
         for t in _allTraces:
             if t not in traces:
                 self.delete_trace(name=t)
-    traces = property(_traces, _set_traces)
 
     def create_trace(self, name=None, channel=1, parameter = 'S11'):
         if not name:
@@ -158,17 +149,18 @@ class Vna(GenericInstrument):
         self.write(scpi)
 
     def delete_traces(self):
-        for t in self._traces():
+        for t in self.traces():
             self.delete_trace(t)
 
     def trace(self, name='Trc1'):
         return Trace(self, name)
 
-    ### Diagrams
+    # diagrams
     def is_diagram(self, index):
-        return index in self._diagrams()
+        return index in self.diagrams()
 
-    def _diagrams(self):
+    @property
+    def diagrams(self):
         result = self.query(':DISP:CAT?').strip().strip("'")
         if len(result) == 0:
             return []
@@ -176,19 +168,18 @@ class Vna(GenericInstrument):
         result = result[::2]
         return list(map(int, result))
 
-    def _set_diagrams(self, diagrams):
-        _allDiagrams = self._diagrams()
+    @diagrams.setter
+    def diagrams(self, diagrams):
+        _allDiagrams = self.diagrams()
         while len(diagrams) > len(_allDiagrams):
             _allDiagrams.append(self.create_diagram())
         while len(diagrams) < len(_allDiagrams):
             self.delete_diagram(_allDiagrams[-1])
             _allDiagrams.pop(-1)
 
-    diagrams = property(_diagrams, _set_diagrams)
-
     def create_diagram(self, index=None):
         if not index:
-            _diagrams = self._diagrams()
+            _diagrams = self.diagrams()
             if len(_diagrams) == 0:
                 index = 1
             else:
@@ -200,52 +191,29 @@ class Vna(GenericInstrument):
         self.write(':DISP:WIND{0}:STAT 0'.format(index))
 
     def delete_diagrams(self):
-        _diagrams = self._diagrams()
+        '''delete all diagrams except one due to firmware limitation'''
+        _diagrams = self.diagrams
         while len(_diagrams) > 1:
             self.delete_diagram(_diagrams[-1])
-            _diagrams = self._diagrams()
+            _diagrams = self.diagrams
 
     def diagram(self, index=1):
         return Diagram(self, index)
 
 
-    ### Sets
-    def __add_set_suffix(self, name):
-        path = PureWindowsPath(name.lower())
-        if self.properties.is_zvx():
-            suffix    = '.zvx'
-            is_suffix = path.suffix == suffix
-            if not is_suffix:
-                name += suffix
-            return name
-        if self.properties.is_znx():
-            suffixes  = ['.znx', '.znxml']
-            is_suffix = path.suffix in suffixes
-            if not is_suffix:
-                name += suffixes[0]
-            return name
-        # else unknown model, do nothing to name
-        return name
-
-    def create_set(self, name=None):
-        if name:
-            scpi = ":MEM:DEF '{0}'".format(name)
-            self.write(scpi)
-        else:
-            sets = self.sets
-            name = 'Set1'
-            i = 2
-            while name in sets:
-                name = "Set{0}".format(i)
-                i += 1
-            scpi = ":MEM:DEF '{0}'"
-            scpi = scpi.format(name)
-            self.write(scpi)
-            return name
+    # sets
+    @property
+    def sets(self):
+        result = self.query(":MEM:CAT?")
+        result = result.strip().replace("'","")
+        if not result:
+            return []
+        result = result.split(',')
+        return result
 
     def open_set(self, name):
         # filename must include suffix
-        name = self.__add_set_suffix(name)
+        name = self._add_set_suffix(name)
 
         # directory
         dir    = PureWindowsPath(name).parent
@@ -265,9 +233,55 @@ class Vna(GenericInstrument):
         if restore_dir:
             self.file.cd(restore_dir)
 
+    def close_set(self, name):
+        scpi = ":MEM:DEL '{0}'".format(name)
+        self.write(scpi)
+
+    def close_sets(self):
+        sets = self.sets
+        for set in sets:
+            self.close_set(set)
+
+    def create_set(self, name=None):
+        if name:
+            scpi = ":MEM:DEF '{0}'".format(name)
+            self.write(scpi)
+        else:
+            sets = self.sets
+            name = 'Set1'
+            i = 2
+            while name in sets:
+                name = "Set{0}".format(i)
+                i += 1
+            scpi = ":MEM:DEF '{0}'"
+            scpi = scpi.format(name)
+            self.write(scpi)
+            return name
+
+    def delete_set(self, name):
+        # must have suffix
+        name   = self._add_set_suffix(name)
+
+        # directory
+        dir    = PureWindowsPath(name).parent
+        is_dir = dir != '.'
+
+        # cd into RecallSets?
+        restore_dir = None
+        if not is_dir:
+            restore_dir = self.file.directory()
+            self.file.cd(Directory.recall_sets)
+
+        # delete file
+        self.file.delete(name)
+
+        # restore directory?
+        if restore_dir:
+            self.file.cd(restore_dir)
+
     def open_set_locally(self, name):
         # name must include suffix
-        name = self.__add_set_suffix(name)
+        name = self._add_set_suffix(name)
 
         # cd into RecallSets
         restore_dir = self.file.directory()
@@ -284,20 +298,9 @@ class Vna(GenericInstrument):
         # restore dir
         self.file.cd(restore_dir)
 
-    def _sets(self):
-        result = self.query(":MEM:CAT?")
-        result = result.strip().replace("'","")
-        if not result:
-            return []
-        result = result.split(',')
-        return result
-    sets = property(_sets)
-
-    def _set_active_set(self, name):
-        scpi = ":MEM:SEL '{0}'"
-        scpi = scpi.format(name)
-        self.write(scpi)
-    def _active_set(self):
+    # active set
+    @property
+    def active_set(self):
         sets = self.sets
         if len(sets) == 0:
             return None
@@ -313,11 +316,16 @@ class Vna(GenericInstrument):
                 self.delete_trace(unique_trace_name)
                 return set
         return None
-    active_set = property(_active_set, _set_active_set)
+
+    @active_set.setter
+    def active_set(self, name):
+        scpi = ":MEM:SEL '{0}'"
+        scpi = scpi.format(name)
+        self.write(scpi)
 
     def save_active_set(self, path):
         # must include suffix
-        path = self.__add_set_suffix(path)
+        path = self._add_set_suffix(path)
 
         # directory
         dir    = PureWindowsPath(path).parent
@@ -339,7 +347,7 @@ class Vna(GenericInstrument):
 
     def save_active_set_locally(self, filename):
         # must include suffix
-        filename  = self.__add_set_suffix(filename)
+        filename  = self._add_set_suffix(filename)
         suffix    = Path(filename).suffix
 
         # save on VNA in RecallSets
@@ -359,37 +367,7 @@ class Vna(GenericInstrument):
         # restore dir
         self.file.cd(restore_dir)
 
-    def close_set(self, name):
-        scpi = ":MEM:DEL '{0}'".format(name)
-        self.write(scpi)
-
-    def close_sets(self):
-        sets = self.sets
-        for set in sets:
-            self.close_set(set)
-
-    def delete_set(self, name):
-        # must have suffix
-        name   = self.__add_set_suffix(name)
-
-        # directory
-        dir    = PureWindowsPath(name).parent
-        is_dir = dir != '.'
-
-        # cd into RecallSets?
-        restore_dir = None
-        if not is_dir:
-            restore_dir = self.file.directory()
-            self.file.cd(Directory.recall_sets)
-
-        # delete file
-        self.file.delete(name)
-
-        # restore directory?
-        if restore_dir:
-            self.file.cd(restore_dir)
-
-    ### Cal groups
+    # cal groups
     def is_cal_group(self, name):
         name = name.lower()
         if name.endswith('.cal'):
@@ -397,7 +375,8 @@ class Vna(GenericInstrument):
         cal_groups = [i.lower() for i in self.cal_groups]
         return name in cal_groups
 
-    def _cal_groups(self):
+    @property
+    def cal_groups(self):
         current_dir = self.file.directory()
         self.file.cd(Directory.cal_groups)
         cal_groups = self.file.files()
@@ -407,57 +386,55 @@ class Vna(GenericInstrument):
         cal_groups = [name[:-4] for name in cal_groups]
         self.file.cd(current_dir)
         return cal_groups
-    cal_groups = property(_cal_groups)
 
     # cal units
-    def _cal_units(self):
+    @property
+    def cal_units(self):
         results = self.query(':SYST:COMM:RDEV:AKAL:ADDR:ALL?')
         results = results.strip().strip("'")
         if not results:
             return []
         else:
             return [unit.strip("'") for unit in results.split(',')]
-    cal_units = property(_cal_units)
+
     def cal_unit(self, id=None):
         return CalUnit(self, id)
 
     # power sensors
-    def _power_sensors(self):
+    @property
+    def power_sensors(self):
         scpi = 'SYST:COMM:RDEV:PMET:CAT?'
         sensors = self.query(scpi)
         sensors = sensors.strip().split(',')
         return [int(i) for i in sensors if i]
-    power_sensors = property(_power_sensors)
 
-    ### General
-    def _sweep_time_ms(self):
+    # sweep
+    @property
+    def sweep_time_ms(self):
         sweep_time_ms = 0
         channels = self.channels
         for i in channels:
             sweep_time_ms += self.channel(i).total_sweep_time_ms
         return sweep_time_ms
-    sweep_time_ms = property(_sweep_time_ms)
 
-    def _is_manual_sweep(self):
+    @property
+    def manual_sweep(self):
         for c in self.channels:
             if not self.channel(c).manual_sweep:
                 return False
         return True
-    def _set_manual_sweep(self, value):
+
+    @manual_sweep.setter
+    def manual_sweep(self, value):
         for c in self.channels:
             self.channel(c).manual_sweep = value
-    manual_sweep = property(_is_manual_sweep, _set_manual_sweep)
 
-    def _is_continuous_sweep(self):
-        for c in self.channels:
-            if not self.channel(c).continuous_sweep:
-                return False
-        return True
-    def _set_continuous_sweep(self, value):
-        for c in self.channels:
-            self.channel(c).continuous_sweep = value
-    continuous_sweep = property(_is_continuous_sweep, _set_continuous_sweep)
-
+    @property
+    def continuous_sweep(self):
+        return not self.manual_sweep
+    @continuous_sweep.setter
+    def continuous_sweep(self, value):
+        self.manual_sweep = not value
 
     def start_sweeps(self):
         if self.properties.is_zvx():
@@ -475,28 +452,22 @@ class Vna(GenericInstrument):
         self.start_sweeps()
         self.pause(timeout_ms)
 
-    def _sweep_count(self):
+    @property
+    def sweep_count(self):
         indexes = self.channels
         sweep_count = self.channel(indexes.pop(0)).sweep_count
         for i in indexes:
             if self.channel(i).sweep_count != sweep_count:
                 raise ValueError('channel sweep counts are not equal')
         return sweep_count
-    def _set_sweep_count(self, sweep_count):
+
+    @sweep_count.setter
+    def sweep_count(self, sweep_count):
         for index in self.channels:
             self.channel(index).sweep_count = sweep_count
-    sweep_count = property(_sweep_count, _set_sweep_count)
 
-
-    def _test_ports(self):
-        if self.properties.is_zvx():
-            return self.properties.physical_ports
-        else:
-            scpi = ':INST:TPORT:COUN?'
-            result = self.query(scpi)
-            return int(result.strip())
-    test_ports = property(_test_ports)
-
+    # limits
+    @property
     def is_limits(self):
         for i in self.traces:
             t = self.trace(i)
@@ -505,14 +476,16 @@ class Vna(GenericInstrument):
         # else
         return False
 
-    def _passed(self):
+    @property
+    def passed(self):
         scpi = ":CALC:CLIM:FAIL?"
         return self.query(scpi).strip() == "0"
-    passed = property(_passed)
-    def _failed(self):
-        return not self.passed
-    failed = property(_failed)
 
+    @property
+    def failed(self):
+        return not self.passed
+
+    # screenshots
     def save_screenshot(self, filename, image_format='JPG'):
         extension = ".{0}".format(image_format).lower()
         if not filename.lower().endswith(extension):
@@ -528,6 +501,7 @@ class Vna(GenericInstrument):
         self.write(":HCOP")
         self.pause(5000)
         return self.file.is_file(filename)
+
     def save_screenshot_locally(self, filename, image_format='JPG'):
         extension = "." + str(image_format).lower()
         unique_filename = unique_alphanumeric_string() + extension
@@ -539,3 +513,32 @@ class Vna(GenericInstrument):
             return True
         else:
             return False
+
+    # helpers
+    def test_ports(self):
+        if self.properties.is_zvx():
+            return self.properties.physical_ports
+        else:
+            scpi = ':INST:TPORT:COUN?'
+            result = self.query(scpi)
+            return int(result.strip())
+
+    @property
+    def set_suffix(self):
+        if self.properties.is_zvx():
+            return '.zvx'
+        if self.properties.is_znx():
+            return '.znx'
+
+        # default to znx
+        return '.znx'
+
+    def _add_set_suffix(self, name):
+        path = PureWindowsPath(name.lower())
+        if self.properties.is_znx():
+            # znx has two set file extensions
+            suffixes  = ['.znx', '.znxml']
+            if path.suffix in suffixes:
+                return name
+
+        return name.with_suffix(self.set_suffix)
