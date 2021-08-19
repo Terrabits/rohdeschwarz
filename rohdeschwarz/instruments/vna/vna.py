@@ -247,17 +247,13 @@ class Vna(GenericInstrument):
         # filename must include suffix
         name = self.__add_set_suffix(name)
 
-        # directory
-        dir    = PureWindowsPath(name).parent
-        is_dir = str(dir) != '.'
-
-        # change directory?
+        # file exists?
         restore_dir = None
-        if not is_dir:
+        if not self.file.is_file(name):
+            # try recallsets folder
             restore_dir = self.file.directory()
             self.file.cd(Directory.recall_sets)
 
-        # send scpi
         scpi = ":MMEM:LOAD:STAT 1,'{0}'".format(name)
         self.write(scpi)
 
