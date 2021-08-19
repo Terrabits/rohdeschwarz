@@ -5,42 +5,46 @@ class Limits(object):
         self._vna = vna
         self._trace = trace
 
-    def _passed(self):
+    @property
+    def passed(self):
         scpi = ":CALC{0}:LIM:FAIL?"
         scpi = scpi.format(self._trace.channel)
         self._trace.select()
         return self._vna.query(scpi).strip() == "0"
-    passed = property(_passed)
 
-    def _failed(self):
+    @property
+    def failed(self):
         return not self.passed
-    failed = property(_failed)
 
-    def _on(self):
+    @property
+    def on(self):
         scpi = ":CALC{0}:LIM:STAT?"
         scpi = scpi.format(self._trace.channel)
         self._trace.select()
         return self._vna.query(scpi).strip() == "1"
-    def _set_on(self, state):
+
+    @on.setter
+    def on(self, state):
         scpi  = ":CALC{0}:LIM:STAT {1}"
         state = 1 if state else 0
         scpi  = scpi.format(self._trace.channel, state)
         self._trace.select()
         self._vna.write(scpi)
-    on = property(_on, _set_on)
 
-    def _visible(self):
+    @property
+    def visible(self):
         scpi = ":CALC{0}:LIM:DISP?"
         scpi = scpi.format(self._trace.channel)
         self._trace.select()
         return self._vna.query(scpi).strip() == "1"
-    def _set_visible(self, visible):
+
+    @visible.setter
+    def visible(self, visible):
         scpi = ":CALC{0}:LIM:DISP {1}"
         visible = 1 if visible else 0
         scpi = scpi.format(self._trace.channel, visible)
         self._trace.select()
         self._vna.write(scpi)
-    visible = property(_visible, _set_visible)
 
     def apply_file(self, filename):
         scpi = "MMEM:LOAD:LIM '{0}', '{1}'"
@@ -48,11 +52,25 @@ class Limits(object):
         self._vna.write(scpi)
         self.on      = True
         self.visible = True
+
     def upload_and_apply_file(self, filename):
         dest = '~temp.limit'
         self._vna.file.upload_file(filename, dest)
         self.apply_file(dest)
         self._vna.file.delete(dest)
+
+    def save(self, filename):
+        trace_name = self._trace.name
+        scpi = "MMEM:STOR:LIM '{0}','{1}'"
+        scpi = scpi.format(trace_name, filename)
+        self._vna.write(scpi)
+
+    def save_locally(self, filename):
+        temp = '~temp.limit'
+        self.save(temp)
+        is_success = self._vna.file.download_file(temp, filename)
+        self._vna.file.delete(temp)
+        return is_success
 
     def clear(self):
         scpi = ":CALC{0}:LIM:DEL:ALL"
