@@ -3,7 +3,15 @@ import re
 import pdb
 
 class CalUnit(object):
+    """A Cal Unit object represents a particular cal unit connected to the VNA"""
     def __init__(self, vna, id=None):
+        """
+        Initializes CalUnit object
+
+        Args:
+            vna (:obj:`vna`): a connected rohdeschwarz.instruments.vna.Vna object
+            id: the id of the cal unit
+        """
         super(CalUnit, self).__init__()
         if not id and vna.cal_units:
             id = vna.cal_units[0]

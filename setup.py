@@ -89,6 +89,7 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         'dev':  ['ddt', 'twine', 'wheel'],
+        'doc':  ['myst-parser', 'sphinx', 'sphinx-rtd-theme'],
         'test': ['ddt']
     },
 

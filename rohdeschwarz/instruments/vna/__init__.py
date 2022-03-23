@@ -1,5 +1,5 @@
-# vna
-from rohdeschwarz.instruments.vna.vna        import *
+"""VNA instrument driver module"""
+from rohdeschwarz.instruments.vna.vna        import ImageFormat, Vna
 from rohdeschwarz.instruments.vna.properties import Model
 from rohdeschwarz.instruments.vna.settings   import EmulationMode
 from rohdeschwarz.instruments.vna.filesystem import Directory

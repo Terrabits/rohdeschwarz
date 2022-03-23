@@ -1,12 +1,51 @@
-import sys
-import os
-#import struct
 import numpy
-from rohdeschwarz.general import ConnectionMethod
-from rohdeschwarz.bus.tcp import TcpBus
-from rohdeschwarz.bus.visa import VisaBus
+import os
+from   rohdeschwarz.general  import ConnectionMethod
+from   rohdeschwarz.bus.tcp  import TcpBus
+from   rohdeschwarz.bus.visa import VisaBus
+import sys
+
 
 class GenericInstrument(object):
+    """
+    A generic instrument driver
+
+    This driver provides base functionality common to all instruments. It can both be used directly or subclassed to create specific drivers.
+
+    Example:
+        .. highlight:: python
+        .. code-block:: python
+
+            instr = GenericInstrument()
+
+            # connect
+            instr.open_tcp('192.168.86.201')
+
+            # open log
+            instr.open_log('vna.log')
+
+            # writes connection and instrument info (if available) to log
+            instr.print_info()
+
+            # connected?
+            id = instr.id_string()
+            if not id:
+                raise Exception('Could not connect to VNA')
+
+            # connected
+            print(f'connected to VNA: {id}')
+
+            # start from preset
+            instr.preset()
+            instr.clear_status()
+
+            # TODO: your code here
+            # instr.write('SCPI:HELLo:WORLd')
+
+            # close
+            instr.close()
+            instr.close_log()
+    """
     _MAX_PRINT = 100
 
     def __init__(self):
@@ -22,16 +61,43 @@ class GenericInstrument(object):
         self.close()
 
     def open(self, connection_method = ConnectionMethod.tcpip, address = '127.0.0.1'):
+        """
+        Open VISA connection to instrument
+
+        Args:
+            connection_method (:obj:`str`, optional): The VISA connection method.
+                Options are:
+                - `'tcpip'` (the default)
+                - `'gpib'`
+                - `'usb'`
+            address (:obj:`str`, optional): Address of the instrument.
+                This defaults to `'127.0.0.1'` to compliment the default connection method (TCPIP)
+
+        """
         self.bus = VisaBus()
         self.bus.open(connection_method, address)
 
     def open_tcp(self, ip_address='127.0.0.1', socket=5025):
+        """
+        Open TCP Socket connection to instrument.
+
+        Note that this option does not use VISA; instead, it uses the standard python library `socket`.
+
+        Args:
+            ip_address (:obj:`str`, optional): The IP address of the instrument.
+                The default value is `'127.0.0.1'`.
+            socket (int): The instrument socket to connect to.
+                The default value is `5025`.
+        """
         self.connection_method = ConnectionMethod.tcpip
         self.address = "{0}:{1}".format(ip_address, socket)
         self.bus = TcpBus()
         self.bus.open(ip_address, socket)
 
     def close(self):
+        """
+        close the connection to the instrument
+        """
         if self.bus:
             self.bus.close()
             self.bus = None
