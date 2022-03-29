@@ -1,2 +1,6 @@
-from rohdeschwarz.instruments.ospswitch.ospswitch import OspSwitch
-from rohdeschwarz.instruments.ospswitch.enums     import Spdt, Sp6t
+from .ospswitch import OspSwitch
+from .enums     import Spdt, Sp6t
+
+
+# exports
+__all__ = ['OspSwitch', 'Spdt', 'Sp6t']
