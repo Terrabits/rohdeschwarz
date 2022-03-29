@@ -1,11 +1,15 @@
 class Channel(object):
     def __init__(self, vna, index):
         super(Channel, self).__init__()
-        self.vna       = vna
-        self.index     = index
-        self.name      = 'Ch{0}'.format(index)
-
-        self.cal_group = None
+        self.vna                = vna
+        self.index              = index
+        self.name               = 'Ch{0}'.format(index)
+        self.start_frequency_Hz = 100e3
+        self.stop_frequency_Hz  = 8e9
+        self.points             = 101
+        self.if_bandwidth_Hz    = 10e3
+        self.power_dBm          = 0.0
+        self.cal_group          = None
 
     def __int__(self):
         return self.index
