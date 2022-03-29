@@ -62,7 +62,7 @@ class Vna(GenericInstrument):
         self.active_set    = 'Set1'
         ch1                = Channel(self, 1)
         self.mock_channels = [ch1]
-        self.select_trace(ch1)
+        self.select_channel(ch1)
         trc1               = Trace(self, 'Trc1', 1, 'S21')
         trc1.diagram       = 1
         self.mock_traces   = [trc1]
