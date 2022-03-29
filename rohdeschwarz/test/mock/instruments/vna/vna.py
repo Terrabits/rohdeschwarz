@@ -47,6 +47,12 @@ class Vna(GenericInstrument):
         self.manual_sweep = not value
     continuous_sweep = property(_continuous_sweep, _set_continuous_sweep)
 
+    def start_sweeps(self):
+        pass
+
+    def sweep(self):
+        pass
+
     def id_string(self):
         id = 'Rohde-Schwarz,{0}-{1}Port,{2},{3}'
         id = id.format(self.properties.model,
