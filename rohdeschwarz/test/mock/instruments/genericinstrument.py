@@ -14,8 +14,10 @@ class GenericInstrument(object):
             self.close()
         self.bus = FifoBus()
         self.bus.open(*args)
-    def open_tcp(self, address):
-        self.open(address)
+
+    def open_tcp(self, ip_address='127.0.0.1', socket=5025):
+        self.open(ip_address, socket)
+
     def close(self):
         if self.bus:
             self.bus.close()
