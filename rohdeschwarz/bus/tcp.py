@@ -1,3 +1,4 @@
+from   .mixins import QueryMixin
 import socket
 
 """
@@ -28,7 +29,7 @@ Example:
 
 """
 
-class TcpBus(object):
+class TcpBus(QueryMixin):
     """
     TcpBus provides a VISA-like interface for an instrument
     connection using TCP sockets.
@@ -70,8 +71,7 @@ class TcpBus(object):
             self.close()
 
     def open(self, address='127.0.0.1', port=5025):
-        """
-        Open TCP socket connection.
+        """Open TCP socket connection at `address`:`port`
 
         Args:
             address (str): address of instrument

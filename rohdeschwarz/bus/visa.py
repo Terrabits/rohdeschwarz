@@ -1,10 +1,12 @@
-from rohdeschwarz.general import ConnectionMethod
+from   .mixins              import QueryMixin
+from   rohdeschwarz.general import ConnectionMethod
 import pyvisa
-from   pyvisa.errors import VisaIOError
+from   pyvisa.errors        import VisaIOError
 import pyvisa.ctwrapper.functions as vi
 import warnings
 
-class VisaBus(object):
+
+class VisaBus(QueryMixin):
     """
     VisaBus is a wrapper for pyvisa for compatibility with
     the rohdeschwarz.instruments.genericinstrument genericinstrument

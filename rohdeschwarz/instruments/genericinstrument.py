@@ -146,47 +146,55 @@ class GenericInstrument(object):
         self.log = _log
 
     def read(self):
-        buffer = self.bus.read()
-        self.bytes_transferred = len(buffer)
-        self._print_read(buffer)
-        return buffer
+        response_str = self.bus.read()
+        self.bytes_transferred = len(response_str)
+        self._print_read(response_str)
+        return response_str.strip()
 
-    def write(self, buffer):
-        self.bus.write(buffer)
-        self.bytes_transferred = len(buffer)
-        self._print_write(buffer)
+    def write(self, command_str):
+        self.bus.write(command_str)
+        self.bytes_transferred = len(command_str)
+        self._print_write(command_str)
 
-    def query(self, buffer):
-        self.write(buffer)
+    def query(self, command_str):
+        self.write(command_str)
         return self.read()
 
     def read_raw_no_end(self, buffer_size=102400):
-        buffer = self.bus.read_raw_no_end(buffer_size)
-        self.bytes_transferred = len(buffer)
-        self._print_read(buffer)
-        return buffer
+        data_bytes = self.bus.read_raw_no_end(buffer_size)
+        self.bytes_transferred = len(data_bytes)
+        self._print_read(data_bytes)
+        return data_bytes
 
-    def write_raw_no_end(self, buffer):
-        self.bus.write_raw_no_end(buffer)
-        self.bytes_transferred = len(buffer)
-        self._print_write(buffer)
+    def write_raw_no_end(self, data_bytes):
+        self.bus.write_raw_no_end(data_bytes)
+        self.bytes_transferred = len(data_bytes)
+        self._print_write(data_bytes)
 
-    def query_raw_no_end(self, buffer, buffer_size=102400):
-        self.write_raw_no_end(buffer)
+    def query_raw_no_end(self, command_bytes, buffer_size=102400):
+        self.write_raw_no_end(command_bytes)
         return self.read_raw_no_end(buffer_size)
 
     def read_block_data(self):
-        buffer = self.read_raw_no_end()
-        size, buffer = self.parse_block_data_header(buffer)
-        while len(buffer) < size+1:
-            buffer += self.read_raw_no_end()
-        buffer = buffer[:size]
-        return (size, buffer)
+        # read, parse block header
+        response_bytes = self.read_raw_no_end()
+        size, data     = self.parse_block_data_header(response_bytes)
 
-    def write_block_data(self, buffer):
-        header = self.create_block_data_header(len(buffer))
-        buffer = header + buffer
-        self.write_raw_no_end(buffer)
+        # read more data?
+        data_plus_termchar_size = size + 1
+        while len(data) < data_plus_termchar_size:
+            data += self.read_raw_no_end()
+
+        # discard termchar
+        data = data[:size]
+
+        # return data
+        return (size, data)
+
+    def write_block_data(self, data):
+        size   = len(data)
+        header = self.create_block_data_header(size)
+        self.write_raw_no_end(header + data + b'\n')
 
     def read_block_data_to_file(self, filename, buffer_size=102400):
         if buffer_size < 11:
@@ -206,18 +214,26 @@ class GenericInstrument(object):
                 size -= len(data)
 
     def write_block_data_from_file(self, filename, buffer_size=1024*1024):
-        header = self.create_block_data_header(os.path.getsize(filename))
+        # write header
+        size   = os.path.getsize(filename)
+        header = self.create_block_data_header(size)
         self.write_raw_no_end(header)
+
+        # write data
         with open(filename, 'rb') as file:
             data = file.read(buffer_size)
             while data:
                 self.write_raw_no_end(data)
+
+                # more data?
                 data = file.read(buffer_size)
-        self.write_raw_no_end('\n') # Firmware won't move until to confirm end somehow
+
+        # send termchar
+        self.write_raw_no_end(b'\n')
 
     def read_64_bit_vector_block_data(self):
-        size, buffer = self.read_block_data()
-        return numpy.frombuffer(buffer, 'float64')
+        _, data = self.read_block_data()
+        return numpy.frombuffer(data, 'float64')
 
     def write_64_bit_vector_block_data(self, data):
         if not isinstance(data, numpy.ndarray):
