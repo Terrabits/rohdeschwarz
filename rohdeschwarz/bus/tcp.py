@@ -1,4 +1,3 @@
-from   .mixins import QueryMixin
 import socket
 
 """
@@ -29,7 +28,7 @@ Example:
 
 """
 
-class TcpBus(QueryMixin):
+class TcpBus:
     """
     TcpBus provides a VISA-like interface for an instrument
     connection using TCP sockets.
