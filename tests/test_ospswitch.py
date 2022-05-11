@@ -10,7 +10,7 @@ import unittest
 class TestOspSwitch(unittest.TestCase):
     def setUp(self):
         switches = {}
-        with open('test/fixtures/osp/driver.yaml', 'r') as f:
+        with open('tests/fixtures/osp/driver.yaml', 'r') as f:
             switches = yaml.safe_load(f.read())
         self.osp     = OspSwitch(switches)
         self.osp.bus = OspBus()
@@ -23,7 +23,7 @@ class TestOspSwitch(unittest.TestCase):
 
     def test_set_switches(self):
         path = {}
-        with open('test/fixtures/osp/path.yaml', 'r') as f:
+        with open('tests/fixtures/osp/path.yaml', 'r') as f:
             path = yaml.safe_load(f.read())
         self.osp.set_switches(path)
         for key in path:
