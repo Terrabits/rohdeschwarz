@@ -9,7 +9,7 @@ import warnings
 class VisaBus(QueryMixin):
     """
     VisaBus is a wrapper for pyvisa for compatibility with
-    the rohdeschwarz.instruments.genericinstrument genericinstrument
+    the rohdeschwarz.instruments.instrument instrument
     base class
 
     Example:

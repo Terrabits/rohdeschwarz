@@ -1,4 +1,4 @@
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
+from rohdeschwarz.instruments.instrument import Instrument
 
 import argparse
 import code
@@ -26,7 +26,7 @@ def main():
         print('error: cannot use both --log and --log-to-stdout')
         parser.print_help()
 
-    instr = GenericInstrument()
+    instr = Instrument()
     try:
         if args.visa:
             instr.open(args.visa, args.address)

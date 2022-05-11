@@ -2,7 +2,7 @@ from pathlib import Path, PureWindowsPath
 from enum    import Enum
 from rohdeschwarz.general                       import SiPrefix
 from rohdeschwarz.general                       import unique_alphanumeric_string
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
+from rohdeschwarz.instruments.instrument import Instrument
 from rohdeschwarz.instruments.vna.calunit       import CalUnit
 from rohdeschwarz.instruments.vna.channel       import Channel
 from rohdeschwarz.instruments.vna.diagram       import Diagram
@@ -21,7 +21,7 @@ class ImageFormat(Enum):
     def __str__(self):
         return self.value
 
-class Vna(GenericInstrument):
+class Vna(Instrument):
     def __init__(self):
         super(Vna, self).__init__()
         self.properties = Properties(self)

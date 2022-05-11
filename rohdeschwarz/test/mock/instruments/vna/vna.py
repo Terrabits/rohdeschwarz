@@ -1,4 +1,4 @@
-from rohdeschwarz.test.mock.instruments.genericinstrument import GenericInstrument
+from rohdeschwarz.test.mock.instruments.instrument import Instrument
 from rohdeschwarz.test.mock.instruments.vna.calunit       import CalUnit
 from rohdeschwarz.test.mock.instruments.vna.channel       import Channel
 from rohdeschwarz.test.mock.instruments.vna.diagram       import Diagram
@@ -8,7 +8,7 @@ from rohdeschwarz.test.mock.instruments.vna.settings      import Settings
 
 from rohdeschwarz.test.mock.bus                           import FifoBus
 
-class Vna(GenericInstrument):
+class Vna(Instrument):
     def __init__(self, model='ZNBT8', ports=24):
         super(Vna, self).__init__()
         self.properties = Properties(self, model, ports)
@@ -63,7 +63,7 @@ class Vna(GenericInstrument):
     def options_string(self):
         return ",".join(self.properties.options_list)
     def preset(self):
-        GenericInstrument.preset(self)
+        Instrument.preset(self)
         self.sets          = ['Set1']
         self.active_set    = 'Set1'
         ch1                = Channel(self, 1)

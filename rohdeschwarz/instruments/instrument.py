@@ -6,11 +6,11 @@ from rohdeschwarz.general import ConnectionMethod
 from rohdeschwarz.bus.tcp import TcpBus
 from rohdeschwarz.bus.visa import VisaBus
 
-class GenericInstrument(object):
+class Instrument(object):
     _MAX_PRINT = 100
 
     def __init__(self):
-        super(GenericInstrument, self).__init__()
+        super(Instrument, self).__init__()
         self.log = None
         self.bus = None
         self.buffer_size = 1024
