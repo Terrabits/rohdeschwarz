@@ -6,6 +6,7 @@ import datetime
 import os
 import sys
 
+
 def main():
     parser = argparse.ArgumentParser(description='Connect to an instrument')
     parser.add_argument('--visa', metavar='bus', default=False,

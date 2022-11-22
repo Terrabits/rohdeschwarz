@@ -4,7 +4,7 @@ def floats(string):
     return [float(i) for i in string.split(',')]
 
 
-class Marker(object):
+class Marker:
     def __init__(self, vna, trace, index=1):
         super(Marker, self).__init__()
         self._vna = vna

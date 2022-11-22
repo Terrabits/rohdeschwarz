@@ -1,4 +1,4 @@
-class CalUnit(object):
+class CalUnit:
     def __init__(self, vna, name):
         super(CalUnit, self).__init__()
         self.vna   = vna

@@ -1,6 +1,6 @@
 
 
-class FifoBus(object):
+class FifoBus:
 	def __init__(self, reads=[]):
 		super(FifoBus, self).__init__()
 		self.reset(reads)

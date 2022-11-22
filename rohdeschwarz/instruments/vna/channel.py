@@ -39,7 +39,7 @@ class TouchstoneFormat(Enum):
             return self.value == other
 
 
-class Channel(object):
+class Channel:
     def __init__(self, vna, index):
         super(Channel, self).__init__()
         self._vna = vna

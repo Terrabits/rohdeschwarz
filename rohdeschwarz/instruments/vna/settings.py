@@ -17,7 +17,7 @@ class EmulationMode(Enum):
     def __str__(self):
         return self.value
 
-class PortPowerLimits(object):
+class PortPowerLimits:
         def __init__(self, vna):
             super(PortPowerLimits, self).__init__()
             self._vna = vna
@@ -88,7 +88,7 @@ class PortPowerLimits(object):
         def __repr__(self):
             return self.__str__()
 
-class Settings(object):
+class Settings:
     def __init__(self, vna):
         self._vna = vna
 

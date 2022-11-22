@@ -1,6 +1,6 @@
 from rohdeschwarz.test.mock.bus  import FifoBus
 
-class Instrument(object):
+class Instrument:
     def __init__(self, id_string='', options_string=''):
         super(Instrument, self).__init__()
         self.bus             = FifoBus()

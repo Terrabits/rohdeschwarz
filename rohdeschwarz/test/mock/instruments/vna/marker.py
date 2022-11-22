@@ -1,4 +1,4 @@
-class Marker(object):
+class Marker:
     def __init__(self, vna, trace, index=1):
         super(Marker, self).__init__()
         self.vna   = vna

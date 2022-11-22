@@ -1,4 +1,4 @@
-class Channel(object):
+class Channel:
     def __init__(self, vna, index):
         super(Channel, self).__init__()
         self.vna                = vna

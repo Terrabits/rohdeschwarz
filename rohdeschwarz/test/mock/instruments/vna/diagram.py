@@ -1,4 +1,4 @@
-class Diagram(object):
+class Diagram:
     def __init__(self, vna, index):
         super(Diagram, self).__init__()
         self.vna   = vna

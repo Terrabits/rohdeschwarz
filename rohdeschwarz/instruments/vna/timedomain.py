@@ -1,5 +1,5 @@
 
-class TimeDomain(object):
+class TimeDomain:
     def __init__(self, vna, trace):
         self._vna = vna
         self._trace = trace

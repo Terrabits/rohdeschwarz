@@ -26,7 +26,7 @@ class Model(Enum):
             return string.upper().find(self.value) != -1
 
 
-class Properties(object):
+class Properties:
     def __init__(self, vna):
         super(Properties, self).__init__()
         self._vna = vna

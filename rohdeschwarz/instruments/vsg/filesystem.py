@@ -2,7 +2,7 @@ import csv
 import os
 from   pathlib import Path, PurePosixPath
 
-class FileSystem(object):
+class FileSystem:
     def __init__(self, vsg):
         self._vsg = vsg
     def ls(self):

@@ -19,7 +19,7 @@ def random_complex_numbers(count):
     return  real + imag
 
 
-class Trace(object):
+class Trace:
     def __init__(self, vna, name, channel, parameter):
         super(Trace, self).__init__()
         self.vna       = vna

@@ -1,12 +1,14 @@
+from .mixins import BlockDataMixin
+from .mixins import scpi_method, scpi_property, ScpiMixin
+from .mixins import StringIOMixin
+# TODO?
 import sys
 import os
-#import struct
 import numpy
-from rohdeschwarz.general import ConnectionMethod
-from rohdeschwarz.bus.tcp import TcpBus
-from rohdeschwarz.bus.visa import VisaBus
+from   rohdeschwarz.bus import TcpBus, VisaBus
 
-class Instrument(object):
+
+class Instrument: # TODO: inherit
     _MAX_PRINT = 100
 
     def __init__(self):

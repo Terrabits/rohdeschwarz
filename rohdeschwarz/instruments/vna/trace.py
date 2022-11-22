@@ -55,7 +55,7 @@ class SaveDataFormat(Enum):
         return self.value
 
 
-class Trace(object):
+class Trace:
     def __init__(self, vna, name='Trc1'):
         super(Trace, self).__init__()
         self._vna = vna
