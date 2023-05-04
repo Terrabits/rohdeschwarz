@@ -1,3 +1,4 @@
+from   .trigger             import Trigger
 from   enum                 import Enum
 import numpy
 from   rohdeschwarz.general import SiPrefix
@@ -146,6 +147,42 @@ class Channel(object):
         self._vna.write(scpi)
     sweep_count = property(_sweep_count, _set_sweep_count)
 
+
+    # completed sweeps
+
+    def _completed_sweeps(self):
+        """
+        number of completed sweeps
+        type:   int
+        access: read-only
+        """
+        scpi   = f':CALC{self.index}:DATA:NSW:COUN?'
+        result = self._vna.query(scpi)
+        return int(result)
+
+
+    completed_sweeps = property(_completed_sweeps)
+
+
+    # Define User Port, Pin 4: `UC_BUSY`
+
+    @property
+    def user_busy_signal(self):
+        """User Port pin 4 `UC_BUSY` signal definition
+
+        Note: this property is ZVX Only!
+
+        """
+        scpi = f'OUTP{self.index}:UPOR:BUSY:LINK?'
+        return self._vna.query(scpi).strip()
+
+
+    @user_busy_signal.setter
+    def user_busy_signal(self, value):
+        scpi = f'OUTP{self.index}:UPOR:BUSY:LINK {value}'
+        self._vna.write(scpi)
+
+
     def _is_averaging(self):
         scpi = ":SENS{0}:AVER?"
         scpi = scpi.format(self.index)
@@ -181,6 +218,9 @@ class Channel(object):
 
     averages = property(_averages, _set_averages)
 
+
+    # sweep control
+
     def _is_manual_sweep(self):
         return not self._is_continuous_sweep()
 
@@ -199,6 +239,15 @@ class Channel(object):
         self._vna.write(scpi)
 
     continuous_sweep = property(_is_continuous_sweep, _set_continuous_sweep)
+
+
+    # trigger settings
+
+    @property
+    def trigger(self):
+        """trigger settings object"""
+        return Trigger(self._vna, self.index)
+
 
     def is_frequency_sweep(self):
         sweep_type = self.sweep_type
