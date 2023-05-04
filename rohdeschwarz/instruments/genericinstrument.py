@@ -111,6 +111,15 @@ class GenericInstrument(object):
     def is_rohde_schwarz(self):
         return ("ROHDE" in self.id_string().upper())
 
+
+    # manual trigger
+
+    def manual_trigger(self):
+        """send a manual trigger (*TRG)"""
+        self.write('*TRG')
+
+
+
     def wait(self):
         self.write('*WAI')
 
