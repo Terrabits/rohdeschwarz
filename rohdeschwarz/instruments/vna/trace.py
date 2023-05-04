@@ -1,13 +1,14 @@
+from   .limits     import Limits
+from   .marker     import Marker
+from   .preserve_data_transfer_settings import PreserveDataTransferSettings
+from   .timedomain import TimeDomain
 import csv
-from   enum import Enum
+from   enum    import Enum
 import numpy
 from   pathlib import Path
 import re
 from   rohdeschwarz.general import unique_alphanumeric_string
 from   rohdeschwarz.general import Units
-from   rohdeschwarz.instruments.vna.marker     import Marker
-from   rohdeschwarz.instruments.vna.limits     import Limits
-from   rohdeschwarz.instruments.vna.timedomain import TimeDomain
 import sys
 
 
@@ -205,30 +206,61 @@ class Trace(object):
         return result
     y_formatted = property(_y_formatted)
 
-    # trace history data
-    def _complex_history(self):
-        channel     = self.channel
-        sweep_count = self._vna.channel(channel).sweep_count
 
-        # set data format
-        current_data_format = self._vna.settings.data_format
-        self._vna.settings.binary_64_bit_data_format = True
-        self._vna.settings.little_endian             = True
+    # trace history
 
-        # read history
+    @property
+    def complex_history(self):
+        """
+        get complex trace history for all sweeps
+        type:  `numpy.ndarray`
+        dtype: `c16` (complex128)
+        """
+        # make this trace the active trace
         self.select()
-        scpi        = 'CALC{0}:DATA:NSW:FIRS? SDAT,1,{1}'.format(channel, sweep_count)
-        self._vna.write(scpi)
-        data        = self._vna.read_64_bit_complex_vector_block_data()
 
-        # restore data format
-        self._vna.settings.data_format = current_data_format
+        # get history for all sweeps
+        index = self.channel
+        vna   = self._vna
+        count = vna.channel(index).sweep_count
+        scpi  = f'CALC{index}:DATA:NSW:FIRS? SDAT,1,{count}'
+        with PreserveDataTransferSettings(vna):
+            # configure data transfer settings
+            settings = vna.settings
+            settings.binary_64_bit_data_format = True
+            settings.little_endian = True
 
-        # reshape
-        points    = len(data) // sweep_count
-        new_shape = (sweep_count, points)
-        return data.reshape(new_shape)
-    complex_history = property(_complex_history)
+            # transfer data
+            vna.write(scpi)
+            data = vna.read_64_bit_complex_vector_block_data()
+
+        # reshape and return
+        points = len(data) // count
+        return data.reshape((count, points))
+
+
+    def complex_history_for_sweep(self, index):
+        """
+        get complex trace history for a single sweep by index
+
+        Returns:
+            `numpy.ndarray` with dtype "c16" (complex128)
+        """
+        # make this trace the active trace
+        self.select()
+
+        # get history at index
+        vna  = self._vna
+        scpi = f'CALC{self.channel}:DATA:NSW:FIRS? SDAT, {index}'
+        with PreserveDataTransferSettings(vna):
+            # configure data transfer settings
+            settings = vna.settings
+            settings.binary_64_bit_data_format = True
+            settings.little_endian = True
+
+            # transfer data
+            vna.write(scpi)
+            return vna.read_64_bit_complex_vector_block_data()
 
 
     def measure_formatted_data(self):
