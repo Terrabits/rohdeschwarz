@@ -151,6 +151,27 @@ class Settings(object):
         self.big_endian = not is_little_endian
     little_endian = property(_little_endian, _set_little_endian)
 
+
+    # byte order
+
+    @property
+    def byte_order(self):
+        """
+        byte order
+
+        Value:
+        `str`, "NORM" (big-endian) or "SWAP" (little-endian)
+        """
+        return self._vna.query(':FORM:BORD?').strip()
+
+
+    @byte_order.setter
+    def byte_order(self, byte_order):
+        scpi = f':FORM:BORD {byte_order}'
+        self._vna.write(scpi)
+
+
+
     def _emulation_mode(self):
         # ':SYST:LANG?'
         result = self._vna.query(':SYST:LANG?').strip().strip("'").upper()
