@@ -82,6 +82,8 @@ class TcpBus(QueryMixin):
 
         """
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # to speed up every request, turn off Nagle's algorithm:
+        self.__socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.timeout_ms = 1000
         self.__socket.connect((address, port))
 
