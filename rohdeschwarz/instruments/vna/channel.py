@@ -1,3 +1,4 @@
+from   .segments            import Segments
 from   .trigger             import Trigger
 from   enum                 import Enum
 import numpy
@@ -249,39 +250,40 @@ class Channel(object):
         return Trigger(self._vna, self.index)
 
 
+    # sweep type
+
     def is_frequency_sweep(self):
-        sweep_type = self.sweep_type
-        if sweep_type == SweepType.linear:
-            return True
-        if sweep_type == SweepType.log:
-            return True
-        if sweep_type == SweepType.segmented:
-            return True
-        # Else:
-        return False
+        frequency_sweep_types = (SweepType.linear, SweepType.log, SweepType.segmented)
+        return self.sweep_type in frequency_sweep_types
+
+
+    def is_segmented_sweep(self):
+        return self.sweep_type == SweepType.segmented
+
 
     def is_power_sweep(self):
         return self.sweep_type == SweepType.power
 
+
     def is_time_sweep(self):
-        sweep_type = self.sweep_type
-        if sweep_type == SweepType.time:
-            return True
-        if sweep_type == SweepType.cw:
-            return True
-        # else
-        return False
+        time_sweep_types = (SweepType.time, SweepTime.cw)
+        return self.sweep_type in time_sweep_types
+
 
     def _sweep_type(self):
         scpi = ':SENS{0}:SWE:TYPE?'.format(self.index)
         result = self._vna.query(scpi).strip()
         return SweepType(result)
 
+
     def _set_sweep_type(self, value):
         scpi = ':SENS{0}:SWE:TYPE {1}'
         scpi = scpi.format(self.index, value)
         self._vna.write(scpi)
+
+
     sweep_type = property(_sweep_type, _set_sweep_type)
+
 
     def x_units(self):
         if self.is_power_sweep():
@@ -484,6 +486,16 @@ class Channel(object):
     def _total_sweep_time_ms(self):
         return self.sweep_count * self.sweep_time_ms
     total_sweep_time_ms = property(_total_sweep_time_ms)
+
+
+    # segmented sweeps
+
+    @property
+    def segments(self):
+        return Segments(self._vna, self.index)
+
+
+    # calibration
 
     def _cal_group(self):
         scpi = ":MMEM:LOAD:CORR? {0}"
