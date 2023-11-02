@@ -1,13 +1,16 @@
 from rohdeschwarz.test.mock.bus  import FifoBus
 
 class GenericInstrument(object):
-    def __init__(self, id_string='', options_string=''):
+    def __init__(self, id_string='Rohde-Schwarz,Instrument,1,1.0.0', options_string=''):
         super(GenericInstrument, self).__init__()
-        self.bus             = FifoBus()
-        self._id_string      = id_string
-        self._options_string = options_string
-        self.errors          = []
-        self.timeout_ms      = 1000
+        self.bus     = None
+        self.log     = None
+        self.id      = id_string
+        self.options = options_string
+        self.errors  = []
+        self.timeout_ms = 1000
+        self._operation_complete = False
+
 
     def open(self, *args):
         if self.bus:
@@ -24,10 +27,11 @@ class GenericInstrument(object):
         self.bus = None
 
     def connected(self):
-        return bool(self.bus)
+        return self.bus is not None
 
     def open_log(self, filename):
-        pass
+        self.log = filename
+
     def close_log(self):
         pass
 
@@ -40,26 +44,42 @@ class GenericInstrument(object):
         return self.read()
 
     def id_string(self):
-        return self._id_string
+        return self.id
+
     def options_string(self):
-        return self._options_string
+        return self.options
+
     def preset(self):
         pass
 
     def is_error(self):
         return bool(self.errors)
+
     def clear_status(self):
         self.errors = []
 
     def remote(self):
         pass
+
     def local(self):
         pass
 
+
+    # operation status
+
+    def initialize_polling(self):
+        self._operation_complete = False
+
+    def is_operation_complete(self):
+        return self._operation_complete
+
     def wait(self):
-        pass
+        self._operation_complete = True
+
     def pause(self, timeout_ms=1000):
+        self._operation_complete = True
         return True
+
 
     def print_info(self):
         pass

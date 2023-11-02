@@ -14,18 +14,19 @@ class Vna(GenericInstrument):
         self.properties = Properties(self, model, ports)
         self.settings   = Settings(self)
 
-        self.test_ports        = ports
+        self.test_ports = ports
 
-        self.sets              = []
-        self.active_set        = None
+        self.sets       = []
+        self.active_set = None
 
-        self.mock_channels     = []
-        self.selected_channel  = None
-        self.mock_traces       = []
-        self.selected_trace    = None
-        self.mock_diagrams     = []
-        self.selected_diagram  = None
-        self.manual_sweep      = False
+        self.mock_channels      = []
+        self.selected_channel   = None
+        self.mock_traces        = []
+        self.selected_trace     = None
+        self.mock_diagrams      = []
+        self.selected_diagram   = None
+        self.manual_sweep       = False
+        self.operation_complete = True
         self.preset()
 
         self.mock_cal_units    = []
@@ -43,15 +44,46 @@ class Vna(GenericInstrument):
 
     def _continuous_sweep(self):
         return not self.manual_sweep
+
     def _set_continuous_sweep(self, value):
         self.manual_sweep = not value
+
     continuous_sweep = property(_continuous_sweep, _set_continuous_sweep)
 
+
+    # sweep count (per channel)
+
+    def _sweep_count(self):
+        channels = self.channels
+        if not channels:
+            raise ValueError('error getting Vna.sweep_count: no channels')
+
+        # compare channel sweep counts
+        ch = self.channel(channels[0])
+        sweep_count = ch.sweep_count
+        for index in channels[1:]:
+            ch = self.channel(index)
+            if ch.sweep_count != sweep_count:
+                raise ValueError('error getting Vna.sweep_count: channel sweep counts are different')
+        return sweep_count
+
+    def _set_sweep_count(self, sweep_count):
+        for index in self.channels:
+            ch = self.channel(index)
+            ch.sweep_count = sweep_count
+
+    sweep_count = property(_sweep_count, _set_sweep_count)
+
+
     def start_sweeps(self):
-        pass
+        self.operation_complete = False
+
 
     def sweep(self):
-        pass
+        self.manual_sweep = True
+        self.start_sweeps()
+        self.pause()
+
 
     def id_string(self):
         id = 'Rohde-Schwarz,{0}-{1}Port,{2},{3}'
@@ -60,8 +92,7 @@ class Vna(GenericInstrument):
                        self.properties.serial_number,
                        self.properties.firmware_version)
         return id
-    def options_string(self):
-        return ",".join(self.properties.options_list)
+
     def preset(self):
         GenericInstrument.preset(self)
         self.sets          = ['Set1']
@@ -77,25 +108,30 @@ class Vna(GenericInstrument):
         self.mock_diagrams = [diag1]
         self.select_diagram(diag1)
 
+
     # sets
+
     def close_sets(self):
         self.sets.clear()
         self.active_set = None
+
     def open_set(self, name):
         if not name in self.sets:
             self.sets.append(name)
             self.sets.sort()
         self.active_set = name
 
-    # channels
+
     def select_channel(self, i):
         i = int(i)
         if i in self.mock_channels:
             self.selected_channel = i
         else:
             self.errors.append(())
+
     def channel(self, index=1):
         return self.mock_channels[self.mock_channels.index(index)]
+
     def create_channel(self, index=None):
         if not index:
             if len(self.channels) == 0:
@@ -106,8 +142,10 @@ class Vna(GenericInstrument):
             self.mock_channels.append(Channel(self, index))
             self.mock_channels.sort()
         return index
+
     def _channels(self):
         return [int(i) for i in self.mock_channels]
+
     def _set_channels(self, channels):
         for i in self.mock_channels:
             if not i in channels:
@@ -116,9 +154,12 @@ class Vna(GenericInstrument):
             if not i in self.mock_channels:
                 self.create_channel(int(i))
         self.mock_channels.sort()
+
     channels = property(_channels, _set_channels)
 
+
     # traces
+
     def select_trace(self, name):
         name = str(name)
         if name in self.mock_traces:

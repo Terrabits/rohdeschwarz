@@ -9,6 +9,7 @@ class Channel(object):
         self.points             = 101
         self.if_bandwidth_Hz    = 10e3
         self.power_dBm          = 0.0
+        self.sweep_count        = 1
         self.cal_group          = None
 
     def __int__(self):
