@@ -12,6 +12,8 @@ from rohdeschwarz.instruments.vna.settings      import Settings
 from rohdeschwarz.instruments.vna.filesystem    import FileSystem, Directory
 
 
+# enums
+
 class ImageFormat(Enum):
     bmp = 'BMP'
     png = 'PNG'
@@ -20,6 +22,7 @@ class ImageFormat(Enum):
     svg = 'SVG'
     def __str__(self):
         return self.value
+
 
 class Vna(GenericInstrument):
     def __init__(self):
@@ -210,22 +213,34 @@ class Vna(GenericInstrument):
 
 
     ### Sets
-    def __add_set_suffix(self, name):
-        path = PureWindowsPath(name.lower())
-        if self.properties.is_zvx():
-            suffix    = '.zvx'
-            is_suffix = path.suffix == suffix
-            if not is_suffix:
-                name += suffix
-            return name
-        if self.properties.is_znx():
-            suffixes  = ['.znx', '.znxml']
-            is_suffix = path.suffix in suffixes
-            if not is_suffix:
-                name += suffixes[0]
-            return name
-        # else unknown model, do nothing to name
-        return name
+
+    def add_set_suffix(self, filename):
+
+        # uses vna properties
+        properties = self.properties
+        is_zvx     = properties.is_zvx()
+
+        # handle legacy
+        if is_zvx:
+            suffix = '.zvx'
+            if not filename.lower().endswith(suffix):
+                return filename + suffix
+
+        # test for correct suffix
+
+        if filename.lower().endswith('.znx'):
+            # has znx suffix
+            return filename
+
+        if filename.lower().endswith('.znxml'):
+            # has znxml suffix
+            return filename
+
+        # default to znx
+        return filename + '.znx'
+
+
+    # create new set
 
     def create_set(self, name=None):
         if name:
@@ -243,9 +258,12 @@ class Vna(GenericInstrument):
             self.write(scpi)
             return name
 
+
+    # open set from set file
+
     def open_set(self, name):
         # filename must include suffix
-        name = self.__add_set_suffix(name)
+        name = self.add_set_suffix(name)
 
         # file exists?
         restore_dir = None
@@ -261,9 +279,10 @@ class Vna(GenericInstrument):
         if restore_dir:
             self.file.cd(restore_dir)
 
+
     def open_set_locally(self, name):
         # name must include suffix
-        name = self.__add_set_suffix(name)
+        name = self.add_set_suffix(name)
 
         # cd into RecallSets
         restore_dir = self.file.directory()
@@ -280,6 +299,9 @@ class Vna(GenericInstrument):
         # restore dir
         self.file.cd(restore_dir)
 
+
+    # sets (tabs)
+
     def _sets(self):
         result = self.query(":MEM:CAT?")
         result = result.strip().replace("'","")
@@ -288,6 +310,22 @@ class Vna(GenericInstrument):
         result = result.split(',')
         return result
     sets = property(_sets)
+
+
+    # close set(s)
+
+    def close_set(self, name):
+        scpi = ":MEM:DEL '{0}'".format(name)
+        self.write(scpi)
+
+
+    def close_sets(self):
+        sets = self.sets
+        for set in sets:
+            self.close_set(set)
+
+
+    # active set
 
     def _set_active_set(self, name):
         scpi = ":MEM:SEL '{0}'"
@@ -311,9 +349,12 @@ class Vna(GenericInstrument):
         return None
     active_set = property(_active_set, _set_active_set)
 
+
+    # save active set to set file
+
     def save_active_set(self, path):
         # must include suffix
-        path = self.__add_set_suffix(path)
+        path = self.add_set_suffix(path)
 
         # directory
         dir    = PureWindowsPath(path).parent
@@ -333,9 +374,10 @@ class Vna(GenericInstrument):
         if restore_dir:
             self.file.cd(restore_dir)
 
+
     def save_active_set_locally(self, filename):
         # must include suffix
-        filename  = self.__add_set_suffix(filename)
+        filename  = self.add_set_suffix(filename)
         suffix    = Path(filename).suffix
 
         # save on VNA in RecallSets
@@ -355,37 +397,50 @@ class Vna(GenericInstrument):
         # restore dir
         self.file.cd(restore_dir)
 
-    def close_set(self, name):
-        scpi = ":MEM:DEL '{0}'".format(name)
-        self.write(scpi)
 
-    def close_sets(self):
-        sets = self.sets
-        for set in sets:
-            self.close_set(set)
+    # set files
 
-    def delete_set(self, name):
+    @property
+    def set_files(self):
+
+        # uses vna file system scpi
+        file = self.file
+
+        # cd into RecallSets/
+        current_dir = file.directory()
+        file.cd(Directory.recall_sets)
+
+        # get set files
+        is_znx    = lambda name: Path(name).suffix.lower().startswith('.znx')
+        set_files = list(filter(is_znx, file.files()))
+
+        # restore directory
+        file.cd(current_dir)
+
+        # return result
+        return set_files
+
+
+    def delete_set_file(self, filename):
         # must have suffix
-        name   = self.__add_set_suffix(name)
+        filename = self.add_set_suffix(filename)
 
-        # directory
-        dir    = PureWindowsPath(name).parent
-        is_dir = dir != '.'
+        # use file scpi
+        file = self.file
 
-        # cd into RecallSets?
-        restore_dir = None
-        if not is_dir:
-            restore_dir = self.file.directory()
-            self.file.cd(Directory.recall_sets)
+        # cd into RecallSets/
+        current_dir = file.directory()
+        file.cd(Directory.recall_sets)
 
         # delete file
-        self.file.delete(name)
+        file.delete(filename)
 
         # restore directory?
-        if restore_dir:
-            self.file.cd(restore_dir)
+        file.cd(current_dir)
+
 
     ### Cal groups
+
     def is_cal_group(self, name):
         name = name.lower()
         if name.endswith('.cal'):

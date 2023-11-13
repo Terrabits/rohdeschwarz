@@ -18,6 +18,7 @@ class Vna(GenericInstrument):
 
         self.sets       = []
         self.active_set = None
+        self.set_files  = ['MySet1.znx', 'MySet2.znx', 'MySet3.znx']
 
         self.mock_channels      = []
         self.selected_channel   = None
@@ -118,7 +119,6 @@ class Vna(GenericInstrument):
     def open_set(self, name):
         if not name in self.sets:
             self.sets.append(name)
-            self.sets.sort()
         self.active_set = name
 
 
