@@ -1,3 +1,6 @@
+from numpy import linspace
+
+
 class Channel(object):
     def __init__(self, vna, index):
         super(Channel, self).__init__()
@@ -33,6 +36,18 @@ class Channel(object):
                 traces.append(i)
         return traces
     traces = property(_traces)
+
+
+    # frequencies (Hz)
+
+    @property
+    def frequencies_Hz(self):
+        return linspace(
+            self.start_frequency_Hz,
+            self.stop_frequency_Hz,
+            self.points
+        )
+
 
     def sweep(self):
         pass
