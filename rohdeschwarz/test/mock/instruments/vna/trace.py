@@ -9,13 +9,13 @@ generator = default_rng()
 
 # helpers
 
-def random_numbers(count):
-    return generator.standard_normal(count)
+def random_numbers(shape):
+    return generator.standard_normal(shape)
 
 
-def random_complex_numbers(count):
-    real = random_numbers(count)
-    imag = random_numbers(count) * 1j
+def random_complex_numbers(shape):
+    real = random_numbers(shape)
+    imag = random_numbers(shape) * 1j
     return  real + imag
 
 
@@ -44,17 +44,41 @@ class Trace(object):
     def select(self):
         self.vna.select_trace(self)
 
+
+    # data
+
+    @property
+    def x(self):
+        index   = self.channel
+        channel = self.vna.channel(index)
+        return channel.frequencies_Hz
+
+
     @property
     def y_formatted(self):
-        channel = self.vna.channel(self.channel)
+        index   = self.channel
+        channel = self.vna.channel(index)
         points  = channel.points
         return random_numbers(points)
 
+
     @property
     def y_complex(self):
-        channel = self.vna.channel(self.channel)
+        index   = self.channel
+        channel = self.vna.channel(index)
         points  = channel.points
         return random_complex_numbers(points)
+
+
+    @property
+    def complex_history(self):
+        index   = self.channel
+        channel = self.vna.channel(index)
+        shape   = (channel.sweep_count, channel.points)
+        return random_complex_numbers(shape)
+
+
+    # markers
 
     def is_marker(self, index):
         return index in self.mock_markers
