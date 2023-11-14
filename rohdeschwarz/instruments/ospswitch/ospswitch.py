@@ -1,8 +1,7 @@
+import re
 from   rohdeschwarz.instruments.genericinstrument import GenericInstrument
 from   rohdeschwarz.instruments.ospswitch.enums   import Spdt
 
-import re
-from   ruamel import yaml
 
 class OspSwitch(GenericInstrument):
     def __init__(self, switch_dict={}):

@@ -1,14 +1,17 @@
 from   rohdeschwarz.instruments.ospswitch import OspSwitch
-
-from   ruamel import yaml
-
+from   rohdeschwarz.yaml import load_yaml
 import argparse
 import code
 import datetime
 import os
+from   pathlib import Path
 import sys
 
+
 def main():
+
+
+    # create command line interface
     parser = argparse.ArgumentParser(description='Connect to a Rohde & Schwarz OSP Switch')
     parser.add_argument('--visa', metavar='bus', default=False,
                         help="use VISA with 'bus'")
@@ -23,27 +26,44 @@ def main():
     parser.add_argument('--log-to-stdout', action='store_true',
                         help='print all SCPI IO to stdout')
     parser.add_argument('driver')
+
+
+    # parse args
     args = parser.parse_args()
 
+
+    # check log settings
     if args.log and args.log_to_stdout:
         print('error: cannot use both --log and --log-to-stdout')
         parser.print_help()
+        sys.exit(1)
 
+
+    # check driver file
     if not args.driver:
         print('Switch matrix driver is required')
         parser.print_help()
-        sys.exit(0)
+        sys.exit(2)
 
-    switch_dict = {}
-    try:
-        with open(args.driver, 'r') as f:
-            switch_dict = yaml.safe_load(f.read())
-        assert switch_dict
-    except:
-        print('Could not read driver file')
-        sys.exit(0)
 
-    osp = OspSwitch(switch_dict)
+    # get driver file
+    driver_file = Path(args.driver)
+    if not driver_file.exists():
+        print('Driver file does not exist')
+        sys.exit(3)
+
+
+    # parse driver file
+    switches = load_yaml(driver_file)
+    if not switches:
+        print('No switch definitions found in driver file')
+        sys.exit(4)
+
+
+    # init osp
+
+    osp = OspSwitch(switches)
+
     try:
         if args.visa:
             osp.open(args.visa, args.address)
@@ -79,6 +99,7 @@ def main():
             osp.close_log()
         if osp.connected():
             osp.close()
+
 
 if __name__ == "__main__":
     main()
