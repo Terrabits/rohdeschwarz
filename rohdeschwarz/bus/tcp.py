@@ -1,6 +1,7 @@
 from   .mixins import QueryMixin
 import socket
 
+
 """
 @class rohdeschwarz.bus.tcp.TcpBus
 TcpBus provides a VISA-like interface for an instrument

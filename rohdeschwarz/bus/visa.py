@@ -1,8 +1,8 @@
-from   .mixins              import QueryMixin
-from   rohdeschwarz.general import ConnectionMethod
+from   .mixins                import QueryMixin
 import pyvisa
-from   pyvisa.errors        import VisaIOError
+from   pyvisa.errors          import VisaIOError
 import pyvisa.ctwrapper.functions as vi
+from   rohdeschwarz.general   import ConnectionMethod
 import warnings
 
 

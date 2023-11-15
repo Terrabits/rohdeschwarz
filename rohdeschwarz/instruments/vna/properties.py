@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Model(Enum):
     zva  = 'ZVA'
     zvb  = 'ZVB'

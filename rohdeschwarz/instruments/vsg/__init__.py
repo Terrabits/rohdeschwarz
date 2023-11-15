@@ -1,1 +1,5 @@
-from rohdeschwarz.instruments.vsg.vsg import Vsg
+from .vsg import Vsg
+
+
+# exports
+__all__ = [ 'Vsg' ]

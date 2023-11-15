@@ -1,2 +1,11 @@
-from rohdeschwarz.test.mock.bus.fifo import FifoBus
-from rohdeschwarz.test.mock.bus.osp  import OspBus
+from .base import MockBus
+from .fifo import FifoBus
+from .osp  import OspBus
+
+
+# exports
+__all__ = [
+    'MockBus',
+    'FifoBus',
+    'OspBus',
+]

@@ -1,4 +1,4 @@
-from rohdeschwarz.instruments.vna.filesystem import Directory
+from   .filesystem import Directory
 import re
 import pdb
 

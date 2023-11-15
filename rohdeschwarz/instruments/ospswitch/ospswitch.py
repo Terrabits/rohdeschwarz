@@ -1,6 +1,7 @@
+from   .enums import Spdt
 import re
 from   rohdeschwarz.instruments.genericinstrument import GenericInstrument
-from   rohdeschwarz.instruments.ospswitch.enums   import Spdt
+
 
 
 class OspSwitch(GenericInstrument):

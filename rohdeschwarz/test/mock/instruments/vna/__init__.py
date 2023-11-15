@@ -1,1 +1,5 @@
-from rohdeschwarz.test.mock.instruments.vna.vna import Vna
+from .vna import Vna
+
+
+# exports
+__all__ = [ 'Vna' ]

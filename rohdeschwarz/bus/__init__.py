@@ -1,2 +1,6 @@
-from rohdeschwarz.bus.tcp import TcpBus
-from rohdeschwarz.bus.visa import VisaBus
+from .tcp  import TcpBus
+from .visa import VisaBus
+
+
+# exports
+__all__ = [ 'TcpBus', 'VisaBus' ]

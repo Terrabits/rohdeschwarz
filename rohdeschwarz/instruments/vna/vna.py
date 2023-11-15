@@ -1,15 +1,16 @@
-from pathlib import Path, PureWindowsPath
+from ..genericinstrument import GenericInstrument
+from .calunit       import CalUnit
+from .channel       import Channel
+from .diagram       import Diagram
+from .trace         import Trace
+from .properties    import Properties
+from .settings      import Settings
+from .filesystem    import FileSystem, Directory
 from enum    import Enum
+from pathlib import Path, PureWindowsPath
 from rohdeschwarz.general                       import SiPrefix
 from rohdeschwarz.general                       import unique_alphanumeric_string
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
-from rohdeschwarz.instruments.vna.calunit       import CalUnit
-from rohdeschwarz.instruments.vna.channel       import Channel
-from rohdeschwarz.instruments.vna.diagram       import Diagram
-from rohdeschwarz.instruments.vna.trace         import Trace
-from rohdeschwarz.instruments.vna.properties    import Properties
-from rohdeschwarz.instruments.vna.settings      import Settings
-from rohdeschwarz.instruments.vna.filesystem    import FileSystem, Directory
+
 
 
 # enums

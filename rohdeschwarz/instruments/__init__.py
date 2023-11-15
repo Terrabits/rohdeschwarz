@@ -5,4 +5,9 @@ from .vsg               import Vsg
 
 
 # exports
-__all__ = ['GenericInstrument', 'OspSwitch', 'Vna', 'Vsg']
+__all__ = [
+    'GenericInstrument',
+    'OspSwitch',
+    'Vna',
+    'Vsg',
+]

@@ -1,5 +1,6 @@
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
-from rohdeschwarz.instruments.vsg.filesystem    import FileSystem
+from ..genericinstrument import GenericInstrument
+from .filesystem         import FileSystem
+
 
 class Vsg(GenericInstrument):
     def __init__(self):

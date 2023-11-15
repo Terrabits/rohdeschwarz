@@ -1,3 +1,5 @@
-# rohdeschwarz
-from rohdeschwarz.general import *
-# from rohdeschwarz.instruments.genericinstrument import *
+from .version import VERSION
+
+
+# exports
+__all__ = [ 'VERSION' ]
