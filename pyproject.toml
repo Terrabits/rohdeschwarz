@@ -1,0 +1,70 @@
+[build-system]
+requires      = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "rohdeschwarz"
+authors = [{name  = "Nick Lalic", email = "nick.lalic@rsa.rohde-schwarz.com"}]
+description     = "Rohde & Schwarz general purpose test and measurement equipment instrument control library for python"
+requires-python = ">=3.5"
+keywords = [
+  "rohde",
+  "schwarz",
+  "vector",
+  "network",
+  "analyzer",
+  "VNA",
+  "trace",
+  "history",
+  "trace-history",
+]
+license      = { file = "LICENSE.md" }
+classifiers  = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX",
+  "Operating System :: Unix",
+  "Intended Audience :: Developers",
+  "Topic :: Scientific/Engineering",
+  "License :: Other/Proprietary License",
+  "Programming Language :: Python :: 2.7",
+  "Programming Language :: Python :: 3.5",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+]
+dependencies = [
+  "pathlib2",
+  "pyvisa",
+  "numpy",
+  "ruamel.yaml"
+]
+dynamic = [
+  "readme",
+  "version"
+]
+
+
+[project.optional-dependencies]
+dev  = ["ddt", "twine", "wheel"]
+test = ["ddt"]
+
+
+[project.scripts]
+instr = "rohdeschwarz.bin.instr:main"
+osp   = "rohdeschwarz.bin.osp:main"
+vna   = "rohdeschwarz.bin.vna:main"
+vsg   = "rohdeschwarz.bin.vsg:main"
+
+
+[project.urls]
+Homepage = "https://github.com/Terrabits/rohdeschwarz"
+# Documentation = "https://readthedocs.org"
+Repository = "https://github.com/Terrabits/rohdeschwarz"
+
+
+[tool.setuptools.dynamic]
+readme  = { file = ["README.md"] }
+version = { attr = "rohdeschwarz.VERSION" }
