@@ -1,59 +1,15 @@
+from   .enums      import SaveDataFormat, TraceFormat
 from   .limits     import Limits
 from   .marker     import Marker
 from   .preserve_data_transfer_settings import PreserveDataTransferSettings
 from   .timedomain import TimeDomain
 import csv
-from   enum    import Enum
 import numpy
 from   pathlib import Path
 import re
 from   rohdeschwarz.general import unique_alphanumeric_string
 from   rohdeschwarz.general import Units
 import sys
-
-
-class TraceFormat(Enum):
-    magnitude_dB = 'MLOG'
-    phase_deg    = 'PHAS'
-    smith_chart  = 'SMIT'
-    polar        = 'POL'
-    vswr         = 'SWR'
-    unwrapped_phase_deg = 'UPH'
-    magnitude    = 'MLIN'
-    inverse_smith_chart = 'ISM'
-    real         = 'REAL'
-    imaginary    = 'IMAG'
-    group_delay  = 'GDEL'
-    def units(self):
-        # These references to TraceFormat.enum
-        # do not work in python 3-3.4 for some
-        # reason. I can't find a way to reference
-        # the enums inside a member method!
-        return {
-            self.magnitude_dB.value:        Units.dB,
-            self.phase_deg.value:           Units.deg,
-            self.smith_chart.value:         Units.ohms,
-            self.polar.value:               Units.none,
-            self.vswr.value:                Units.none,
-            self.unwrapped_phase_deg.value: Units.deg,
-            self.magnitude.value:           Units.none,
-            self.inverse_smith_chart.value: Units.siemens,
-            self.real.value:                Units.none,
-            self.imaginary.value:           Units.none,
-            self.group_delay.value:         Units.seconds
-        }.get(self.value, self.magnitude_dB.value)
-    def __str__(self):
-        return self.value
-    def __eq__(self, other):
-        return self.value.lower() == str(other).lower()
-
-
-class SaveDataFormat(Enum):
-    real_imaginary = 'COMP'
-    dB_degrees = 'LOGP'
-    magnitude_degrees = 'LINP'
-    def __str__(self):
-        return self.value
 
 
 class Trace(object):
@@ -287,7 +243,7 @@ class Trace(object):
         if not filename.lower().endswith('.csv'):
             filename += '.csv'
         scpi = ":MMEM:STOR:TRAC '{0}', '{1}', FORM, {2}, POIN, COMM"
-        scpi = scpi.format(self.name, filename, SaveDataFormat.real_imaginary)
+        scpi = scpi.format(self.name, filename, SaveDataFormat.REAL_IMAGINARY)
         self._vna.write(scpi)
         self._vna.pause()
     def save_data_locally(self, filename):
@@ -299,14 +255,14 @@ class Trace(object):
         self._vna.file.download_file(unique_filename, filename)
         self._vna.file.delete(unique_filename)
 
-    def save_complex_data(self, filename, format = SaveDataFormat.real_imaginary):
+    def save_complex_data(self, filename, format = SaveDataFormat.REAL_IMAGINARY):
         if not filename.lower().endswith('.csv'):
             filename += '.csv'
         scpi = ":MMEM:STOR:TRAC '{0}', '{1}', UNF, {2}, POIN, COMM"
         scpi = scpi.format(self.name, filename, format)
         self._vna.write(scpi)
         self._vna.pause()
-    def save_complex_data_locally(self, filename, format = SaveDataFormat.real_imaginary):
+    def save_complex_data_locally(self, filename, format = SaveDataFormat.REAL_IMAGINARY):
         extension = ".csv"
         unique_filename = unique_alphanumeric_string() + extension
         if not filename.lower().endswith(extension):

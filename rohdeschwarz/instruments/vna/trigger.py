@@ -1,10 +1,3 @@
-from enum import Enum
-
-
-class TriggerSource(Enum):
-    pass
-
-
 class Trigger:
     """
     Channel trigger settings

@@ -25,7 +25,7 @@ cal_unit.setMatch(1)
 cal_unit.setThru(1,2)
 
 # Temp dir for cal data
-vna.file.cd(Directory.default)
+vna.file.cd(Directory.DEFAULT)
 temp_dir = PureWindowsPath(vna.file.directory()) / 'CAL_UNIT_DATA'
 if vna.file.is_directory(temp_dir):
     vna.file.delete_all(temp_dir)

@@ -138,7 +138,7 @@ vna.settings.user_preset_remotely = True
 vna.file.directory()
 
 # Change current directory
-vna.file.cd(Directory.default)
+vna.file.cd(Directory.DEFAULT)
 
 # Change current directory manually:
 ### vna.file.cd('C:\\Users\\Public\\Documents\\Rohde-Schwarz\\Vna')
@@ -199,7 +199,7 @@ vna.delete_channel(10)
 vna.channels = [1]
 
 # Channel 1 sweep type:
-vna.channel(1).sweep_type = SweepType.linear
+vna.channel(1).sweep_type = SweepType.LINEAR
 # - OR - if you know the SCPI parameter:
 ### vna.channel(1).sweep_type = 'LIN'
 
@@ -252,7 +252,7 @@ y = vna.channel(1).measure([1,2])
 
 # Save S-Parameters to touchstone file
 # with dB, degrees format:
-### vna.channel(1).save_measurement('/path/to/remote/snp_file', [1,2], TouchstoneFormat.db_degrees)
+### vna.channel(1).save_measurement('/path/to/remote/snp_file', [1,2], TouchstoneFormat.DB_DEGREES)
 
 
 # Diagrams
@@ -301,7 +301,7 @@ vna.trace('My_Trace').diagram = 2
 vna.trace('My_Trace').parameter = 'S22'
 
 # Set Format to dB:
-vna.trace('My_Trace').format = TraceFormat.magnitude_dB
+vna.trace('My_Trace').format = TraceFormat.MAGNITUDE_DB
 # - OR - if you know the SCPI parameter:
 ### vna.trace('My_Trace').format = 'MLOG'
 
@@ -318,7 +318,7 @@ x, y = vna.trace('My_Trace').measure_complex_data()
 
 # Save complex trace data
 # Default format is Re/Im:
-### vna.trace('My_Trace').save_complex_data('/path/to/remote/file.csv', SaveDataFormat.db_degrees)
+### vna.trace('My_Trace').save_complex_data('/path/to/remote/file.csv', SaveDataFormat.DB_DEGREES)
 
 # Close Log
 vna.close_log()

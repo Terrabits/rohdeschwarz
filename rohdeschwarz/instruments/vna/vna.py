@@ -1,3 +1,4 @@
+from .enums         import ImageFormat
 from ..genericinstrument import GenericInstrument
 from .calunit       import CalUnit
 from .channel       import Channel
@@ -6,23 +7,9 @@ from .trace         import Trace
 from .properties    import Properties
 from .settings      import Settings
 from .filesystem    import FileSystem, Directory
-from enum    import Enum
-from pathlib import Path, PureWindowsPath
-from rohdeschwarz.general                       import SiPrefix
-from rohdeschwarz.general                       import unique_alphanumeric_string
-
-
-
-# enums
-
-class ImageFormat(Enum):
-    bmp = 'BMP'
-    png = 'PNG'
-    jpg = 'JPG'
-    pdf = 'PDF'
-    svg = 'SVG'
-    def __str__(self):
-        return self.value
+from pathlib        import Path, PureWindowsPath
+from rohdeschwarz.general import SiPrefix
+from rohdeschwarz.general import unique_alphanumeric_string
 
 
 class Vna(GenericInstrument):
@@ -271,7 +258,7 @@ class Vna(GenericInstrument):
         if not self.file.is_file(name):
             # try recallsets folder
             restore_dir = self.file.directory()
-            self.file.cd(Directory.recall_sets)
+            self.file.cd(Directory.RECALL_SETS)
 
         scpi = ":MMEM:LOAD:STAT 1,'{0}'".format(name)
         self.write(scpi)
@@ -287,7 +274,7 @@ class Vna(GenericInstrument):
 
         # cd into RecallSets
         restore_dir = self.file.directory()
-        self.file.cd(Directory.recall_sets)
+        self.file.cd(Directory.RECALL_SETS)
 
         # upload set file
         filename = Path(name).name
@@ -365,7 +352,7 @@ class Vna(GenericInstrument):
         restore_dir = None
         if not is_dir:
             restore_dir = self.file.directory()
-            self.file.cd(Directory.recall_sets)
+            self.file.cd(Directory.RECALL_SETS)
 
         scpi = ":MMEM:STOR:STAT 1,'{0}'"
         scpi = scpi.format(path)
@@ -387,7 +374,7 @@ class Vna(GenericInstrument):
 
         # cd into RecallSets
         restore_dir = self.file.directory()
-        self.file.cd(Directory.recall_sets)
+        self.file.cd(Directory.RECALL_SETS)
 
         # download set file
         self.file.download_file(temp_file, filename)
@@ -409,7 +396,7 @@ class Vna(GenericInstrument):
 
         # cd into RecallSets/
         current_dir = file.directory()
-        file.cd(Directory.recall_sets)
+        file.cd(Directory.RECALL_SETS)
 
         # get set files
         is_znx    = lambda name: Path(name).suffix.lower().startswith('.znx')
@@ -431,7 +418,7 @@ class Vna(GenericInstrument):
 
         # cd into RecallSets/
         current_dir = file.directory()
-        file.cd(Directory.recall_sets)
+        file.cd(Directory.RECALL_SETS)
 
         # delete file
         file.delete(filename)
@@ -451,7 +438,7 @@ class Vna(GenericInstrument):
 
     def _cal_groups(self):
         current_dir = self.file.directory()
-        self.file.cd(Directory.cal_groups)
+        self.file.cd(Directory.CAL_GROUPS)
         cal_groups = self.file.files()
         def is_cal(filename):
             return filename.lower().endswith('.cal')

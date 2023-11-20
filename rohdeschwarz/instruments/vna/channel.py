@@ -1,44 +1,11 @@
+from   .enums               import SweepType
 from   .segments            import Segments
 from   .trigger             import Trigger
-from   enum                 import Enum
 import numpy
 from   rohdeschwarz.general import SiPrefix
 from   rohdeschwarz.general import unique_alphanumeric_string
 from   rohdeschwarz.general import Units
 from   rohdeschwarz.general import number_of_thrus
-
-
-class SweepType(Enum):
-    linear    = 'LIN'
-    log       = 'LOG'
-    segmented = 'SEGM'
-    power     = 'POW'
-    cw        = 'CW'
-    time      = 'POIN'
-
-    def __str__(self):
-        return self.value
-
-    def __eq__(self, other):
-        if type(other) == SweepType:
-            return self.value == other.value
-        else:
-            return self.value == other
-
-
-class TouchstoneFormat(Enum):
-    db_degrees = 'LOGP'
-    magnitude_degrees = 'LINP'
-    real_imaginary = 'COMP'
-
-    def __str__(self):
-        return self.value
-
-    def __eq__(self, other):
-        if isinstance(other, TouchstoneFormat):
-            return self.value == other.value
-        else:
-            return self.value == other
 
 
 class Channel(object):
@@ -253,20 +220,20 @@ class Channel(object):
     # sweep type
 
     def is_frequency_sweep(self):
-        frequency_sweep_types = (SweepType.linear, SweepType.log, SweepType.segmented)
+        frequency_sweep_types = (SweepType.LINEAR, SweepType.LOG, SweepType.SEGMENTED)
         return self.sweep_type in frequency_sweep_types
 
 
     def is_segmented_sweep(self):
-        return self.sweep_type == SweepType.segmented
+        return self.sweep_type == SweepType.SEGMENTED
 
 
     def is_power_sweep(self):
-        return self.sweep_type == SweepType.power
+        return self.sweep_type == SweepType.POWER
 
 
     def is_time_sweep(self):
-        time_sweep_types = (SweepType.time, SweepTime.cw)
+        time_sweep_types = (SweepType.TIME, SweepType.CW)
         return self.sweep_type in time_sweep_types
 
 
@@ -367,7 +334,7 @@ class Channel(object):
             set_stop_freq = "FREQ:STOP {0}{1}"
             set_stop_freq = set_stop_freq.format(x[i], prefix)
             self._vna.write(segment + set_stop_freq)
-        self.sweep_type = SweepType.segmented
+        self.sweep_type = SweepType.SEGMENTED
     frequencies_Hz = property(_frequencies, _set_frequencies)
 
     def _power(self):
@@ -452,7 +419,7 @@ class Channel(object):
 
     def _sweep_time(self):
         scpi = ""
-        if self.sweep_type == SweepType.segmented:
+        if self.sweep_type == SweepType.SEGMENTED:
             scpi = ":SENS{0}:SEGM:SWE:TIME:SUM?"
         else:
             scpi = ':SENS{0}:SWE:TIME?'
@@ -461,7 +428,7 @@ class Channel(object):
         return 1000.0 * float(result)
 
     def _set_sweep_time(self, time_ms):
-        if self.sweep_type == SweepType.segmented:
+        if self.sweep_type == SweepType.SEGMENTED:
             raise ValueError('Cannot set sweep time of whole segmented sweep.')
         scpi = ':SENS{0}:SWE:TIME {1} ms'
         scpi = scpi.format(self.index, time_ms)

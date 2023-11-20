@@ -1,21 +1,6 @@
-from enum import Enum
+from   .enums import EmulationMode
 import sys
 
-class EmulationMode(Enum):
-    pna = 'PNA'
-    ena = 'ENA'
-    hp_8510 = 'HP8510'
-    hp_8530 = 'HP8530'
-    hp_8720 = 'HP8720'
-    hp_8753 = 'HP8753'
-    hp_8714 = 'HP8714'
-    zvr = 'ZVR'
-    zvabt = 'ZVABT'
-    off = 'SCPI'
-    def __bool__(self):
-        return not self == EmulationMode.off
-    def __str__(self):
-        return self.value
 
 class PortPowerLimits(object):
         def __init__(self, vna):
@@ -178,7 +163,7 @@ class Settings(object):
         return EmulationMode(result)
     def _set_emulation_mode(self, value):
         if not value:
-            value = EmulationMode.off
+            value = EmulationMode.OFF
         scpi = ":SYST:LANG '{0}'"
         scpi = scpi.format(value)
         self._vna.write(scpi)

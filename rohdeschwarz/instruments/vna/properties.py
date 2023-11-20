@@ -1,30 +1,4 @@
-from enum import Enum
-
-
-class Model(Enum):
-    zva  = 'ZVA'
-    zvb  = 'ZVB'
-    zvh  = 'ZVH'
-    zvl  = 'ZVL'
-    zvt  = 'ZVT'
-    zna  = 'ZNA'
-    znbt = 'ZNBT'
-    znb  = 'ZNB'
-    znc  = 'ZNC'
-    znd  = 'ZND'
-    znp  = 'ZNP'
-    znle = 'ZNLE'
-    znl  = 'ZNL'
-    unknown = ''
-
-    def __str__(self):
-        return self.value
-
-    def is_in(self, string):
-        if self == Model.unknown:
-            return False
-        else:
-            return string.upper().find(self.value) != -1
+from .enums import Model
 
 
 class Properties(object):
@@ -34,32 +8,32 @@ class Properties(object):
 
     def is_znx(self):
         id = self._vna.id_string()
-        if Model.zna.is_in(id):
+        if Model.ZNA.is_in(id):
             return True
-        if Model.znbt.is_in(id):
+        if Model.ZNBT.is_in(id):
             return True
-        if Model.znb.is_in(id):
+        if Model.ZNB.is_in(id):
             return True
-        if Model.znc.is_in(id):
+        if Model.ZNC.is_in(id):
             return True
-        if Model.znd.is_in(id):
+        if Model.ZND.is_in(id):
             return True
-        if Model.znp.is_in(id):
+        if Model.ZNP.is_in(id):
             return True
         # else: not known znx model
         return False
 
     def is_zvx(self):
         id = self._vna.id_string()
-        if Model.zva.is_in(id):
+        if Model.ZVA.is_in(id):
             return True
-        elif Model.zvb.is_in(id):
+        elif Model.ZVB.is_in(id):
             return True
-        elif Model.zvh.is_in(id):
+        elif Model.ZVH.is_in(id):
             return True
-        elif Model.zvl.is_in(id):
+        elif Model.ZVL.is_in(id):
             return True
-        elif Model.zvt.is_in(id):
+        elif Model.ZVT.is_in(id):
             return True
         else:
             return False
@@ -69,7 +43,7 @@ class Properties(object):
         for model in Model:
             if (model.is_in(id)):
                 return model
-        return Model.unknown
+        return Model.UNKNOWN
 
     model = property(_model)
 

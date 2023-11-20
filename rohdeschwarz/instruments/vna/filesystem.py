@@ -1,20 +1,6 @@
-from   enum import Enum
+from   .enums import Directory
 import pathlib
 import os
-
-
-class Directory(Enum):
-    default = 'DEF'
-    embed = '.\\Embedding'
-    deembed = '.\\Deembedding'
-    cal_groups = '.\\Calibration\\Data'
-    cal_kits = '.\\Calibration\\Kits'
-    external_tools = '.\\External Tools'
-    recall_sets = '.\\RecallSets'
-    traces = '.\\Traces'
-
-    def __str__(self):
-        return self.value
 
 
 class FileSystem(object):
@@ -23,10 +9,10 @@ class FileSystem(object):
 
     def cd(self, path):
         if isinstance(path, Directory):
-            if path == Directory.default:
+            if path == Directory.DEFAULT:
                 self.__vna.write(":MMEM:CDIR DEF")
             else:
-                self.cd(Directory.default)
+                self.cd(Directory.DEFAULT)
                 scpi = ":MMEM:CDIR '{0}'"
                 self.__vna.write(scpi.format(path))
         else:

@@ -1,4 +1,3 @@
-from enum                 import Enum
 from rohdeschwarz.general import unique_alphanumeric_string
 
 
