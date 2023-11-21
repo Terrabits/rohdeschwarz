@@ -12,10 +12,10 @@ cd "$ROOT_DIR"
 
 
 # build docs
-cd doc
+cd docs
 # make html
-sphinx-build -M html source ../build/doc
+sphinx-build -M html source ../build/docs
 
 # open
 cd ..
-open build/doc/html/index.html
+open build/docs/html/index.html

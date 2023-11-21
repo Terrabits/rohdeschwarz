@@ -88,9 +88,9 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev':  ['ddt', 'twine', 'wheel'],
-        'doc':  ['myst-parser', 'sphinx', 'sphinx-rtd-theme'],
-        'test': ['ddt']
+        'dev':   ['ddt', 'twine', 'wheel'],
+        'docs':  ['myst-parser', 'sphinx', 'sphinx-rtd-theme'],
+        'test':  ['ddt']
     },
 
     # If there are data files included in your packages that need to be
