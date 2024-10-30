@@ -7,6 +7,11 @@ class Channel:
         self.index = index
 
 
+    # select; this becomes active channel
+    def select(self):
+        self.ngu.write(f'INST:SEL OUTP{self.index}')
+
+
     # channel voltage
     @property
     def voltage_V(self):
