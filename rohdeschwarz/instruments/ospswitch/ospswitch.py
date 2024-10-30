@@ -73,7 +73,7 @@ def _query_switch_scpi(instr, module, switch, state):
     return scpi
 
 def _is_switch_name(name):
-    return re.match('^k\d+', name, flags=re.IGNORECASE)
+    return re.match('^k\\d+', name, flags=re.IGNORECASE)
 
 def _interpret_switch_state(state):
     if isinstance(state, str):
