@@ -88,7 +88,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev':  ['ddt', 'twine', 'wheel'],
+        'dev':  ['ddt', 'setuptools', 'twine', 'wheel'],
         'test': ['ddt']
     },
 
