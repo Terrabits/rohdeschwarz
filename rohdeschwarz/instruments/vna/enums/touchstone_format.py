@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class TouchstoneFormat(str, Enum):
+class TouchstoneFormat(StringEnumMixin):
 
 
     # decibel magnitude, angle in degrees

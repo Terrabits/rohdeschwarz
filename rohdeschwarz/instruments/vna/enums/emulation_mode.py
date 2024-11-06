@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class EmulationMode(str, Enum):
+class EmulationMode(StringEnumMixin):
 
 
     # emulation modes

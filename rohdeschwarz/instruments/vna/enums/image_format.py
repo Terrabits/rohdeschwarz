@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class ImageFormat(str, Enum):
+class ImageFormat(StringEnumMixin):
 
     BMP = 'BMP'
     PNG = 'PNG'

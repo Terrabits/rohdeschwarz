@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class SweepType(str, Enum):
+class SweepType(StringEnumMixin):
 
 
     LINEAR    = 'LIN'

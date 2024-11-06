@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class Directory(str, Enum):
+class Directory(StringEnumMixin):
     DEFAULT        = 'DEF'
     EMBED          = 'Embedding'
     DEEMBED        = 'Deembedding'

@@ -1,8 +1,8 @@
-from enum                 import Enum
+from .string_enum_mixin import StringEnumMixin
 from rohdeschwarz.general import Units
 
 
-class TraceFormat(str, Enum):
+class TraceFormat(StringEnumMixin):
 
     # trace formats
     magnitude_dB = 'MLOG'

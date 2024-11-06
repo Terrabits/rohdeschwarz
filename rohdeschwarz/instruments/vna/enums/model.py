@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class Model(str, Enum):
+class Model(StringEnumMixin):
 
     # R&S VNA Models
     ZVA     = 'ZVA'

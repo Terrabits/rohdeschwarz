@@ -1,7 +1,7 @@
-from enum import Enum
+from .string_enum_mixin import StringEnumMixin
 
 
-class SaveDataFormat(str, Enum):
+class SaveDataFormat(StringEnumMixin):
 
     REAL_IMAGINARY    = 'COMP'
     DB_DEGREES        = 'LOGP'
