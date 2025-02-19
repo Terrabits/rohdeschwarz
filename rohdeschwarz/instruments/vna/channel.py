@@ -14,6 +14,12 @@ class Channel(object):
         self._vna = vna
         self.index = index
 
+
+    def __repr__(self):
+        repr = 'Channel({0})'
+        return repr.format(self.index)
+
+
     def _name(self):
         scpi = ':CONF:CHAN{0}:NAME?'
         scpi = scpi.format(self.index)
@@ -41,6 +47,15 @@ class Channel(object):
 
     traces = property(_traces)
 
+
+    # trace objects
+
+    def _trace_objects(self):
+        return [self._vna.trace(name) for name in self.traces]
+
+    trace_objects = property(_trace_objects)
+
+
     def auto_calibrate(self, ports, characterization=''):
         scpi = ""
         if type(ports) == dict:
@@ -61,32 +76,73 @@ class Channel(object):
         self._vna.write(scpi)
         self._vna.pause(timeout_ms)
 
-    def source_power_cal(self, port, sweeps=10, tolerance_dB=0.1):
-        # sweeps
+
+    def source_flatness_power_cal(self, port, sweeps=10, tolerance_dB=0.1, cal_reference_receiver=True, cal_only_port_freq=False):
+        # check zvx instrument compatibility
+        if self._vna.properties.is_zvx() and cal_only_port_freq:
+            # zvx does not support this
+            raise ValueError('zva does not support power cal option `calibrate only port frequency`')
+
+        # set sweeps
         scpi = 'SOUR{0}:POW{1}:CORR:NRE {2}'
         scpi = scpi.format(self.index, port, sweeps)
         self._vna.write(scpi)
-        # tolerance
-        scpi = 'SOUR{0}:POW{1}:CORR:NTOL {2}'
+
+        # set tolerance
+        scpi = 'SOUR{0}:POW{1}:CORR:COLL:AVER:NTOL {2}'
         scpi = scpi.format(self.index, port, tolerance_dB)
         self._vna.write(scpi)
-        if self._vna.properties.is_zvx():
-            # Calibrate reference receiver (a<port>-wave)
-            # along with source
-            self._vna.write('SOUR:POW:CORR:COLL:RREC 1')
-        # Perform power cal
+
+        # Calibrate reference receiver (a<port>-wave) along with source?
+        scpi = 'SOUR:POW:CORR:COLL:RREC {0}'
+        scpi = scpi.format('1' if cal_reference_receiver else '0')
+        self._vna.write(scpi)
+
+        # perform power cal
         scpi = 'SOUR{0}:POW:CORR:ACQ PORT,{1}'
         scpi = scpi.format(self.index, port)
+        if cal_only_port_freq:
+            scpi += ',1'
         self._vna.write(scpi)
+
         # Source power cal can take a long time...
         # *OPC? for up to 10 mins
         ten_mins = 10 * 60 * 1000
         self._vna.pause(timeout_ms=ten_mins)
 
-    def receiver_power_cal(self, receiver, source):
-        scpi = 'SENS{0}:CORR:POW:ACQ BWAV,{1},PORT,{2}'
-        scpi = scpi.format(self.index, receiver, source)
+
+    def reference_receiver_power_cal(self, port, cal_only_port_freq=False):
+        # check zvx instrument compatibility
+        if self._vna.properties.is_zvx() and cal_only_port_freq:
+            # zvx does not support this
+            raise ValueError('zva does not support power cal option `calibrate only port frequency`')
+
+        # perform power cal
+        scpi = 'SENS{0}:CORR:POW:ACQ AWAV,{1},PORT,{2}'
+        scpi = scpi.format(self.index, port, port)
+        if cal_only_port_freq:
+            scpi += ',1'
         self._vna.write(scpi)
+
+        # power cal can take a long time...
+        # *OPC? for up to 10 mins
+        ten_mins = 10 * 60 * 1000
+        self._vna.pause(timeout_ms=ten_mins)
+
+
+    def measurement_receiver_power_cal(self, receiver_port, source_port, cal_only_port_freq=False):
+        # check zvx instrument compatibility
+        if self._vna.properties.is_zvx() and cal_only_port_freq:
+            # zvx does not support this
+            raise ValueError('zva does not support power cal option `calibrate only port frequency`')
+
+        # perform power cal
+        scpi = 'SENS{0}:CORR:POW:ACQ BWAV,{1},PORT,{2}'
+        scpi = scpi.format(self.index, receiver_port, source_port)
+        if cal_only_port_freq:
+            scpi += ',1'
+        self._vna.write(scpi)
+
         # Receiver power cal can take a long time...
         # *OPC? for up to 10 mins
         ten_mins = 10 * 60 * 1000

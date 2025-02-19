@@ -1,8 +1,9 @@
-from   .enums      import SaveDataFormat, TraceFormat
-from   .limits     import Limits
-from   .marker     import Marker
+from   .enums       import SaveDataFormat, TraceFormat
+from   .limits      import Limits
+from   .marker      import Marker
 from   .preserve_data_transfer_settings import PreserveDataTransferSettings
-from   .timedomain import TimeDomain
+from   .trace_scale import TraceScale
+from   .timedomain  import TimeDomain
 import csv
 import numpy
 from   pathlib import Path
@@ -18,10 +19,32 @@ class Trace(object):
         self._vna = vna
         self.name = name
 
+
+    def __repr__(self):
+        repr = "Trace('{0}')"
+        return repr.format(self.name)
+
+
     def select(self):
         scpi = ":CALC{0}:PAR:SEL '{1}'"
         scpi = scpi.format(self.channel, self.name)
         self._vna.write(scpi)
+
+    # index
+
+    def _index(self):
+        # parse index,name list
+        index_names_str  = self._vna.query('CONF:TRAC:CAT?')
+        index_names_list = index_names_str.strip().strip("'").split(',')
+        indexes = index_names_list[::2]
+        names   = index_names_list[1::2]
+
+        # get index
+        i = names.index(self.name)
+        return int(indexes[i])
+
+    index = property(_index)
+
 
     def _channel(self):
         scpi = ":CONF:TRAC:CHAN:NAME:ID? '{0}'"
@@ -50,6 +73,28 @@ class Trace(object):
         scpi = scpi.format(index, self.name)
         self._vna.write(scpi)
     diagram = property(_diagram, _set_diagram)
+
+
+    def _diagram_index(self):
+        # is trace in diagram?
+        diagram = self.diagram
+        if diagram is None:
+            return None
+
+        # parse index names list
+        scpi = 'DISP:WIND{0}:TRAC:CAT?'
+        scpi = scpi.format(diagram)
+        index_names_str  = self._vna.query(scpi)
+        index_names_list = index_names_str.strip().strip("'").split(',')
+        indexes = index_names_list[::2]
+        names   = index_names_list[1::2]
+
+        # get diagram index
+        i = names.index(self.name)
+        return int(indexes[i])
+
+    diagram_index = property(_diagram_index)
+
 
     def _parameter(self):
         scpi = ":CALC{0}:PAR:MEAS? '{1}'"
@@ -113,6 +158,15 @@ class Trace(object):
         scpi = ":DISP:TRAC:Y:AUTO ONCE, '{0}'"
         scpi = scpi.format(self.name)
         self._vna.write(scpi)
+
+
+    # scale
+
+    def _scale(self):
+        return TraceScale(self._vna, self)
+
+    scale = property(_scale)
+
 
     def _x(self):
         self.select();

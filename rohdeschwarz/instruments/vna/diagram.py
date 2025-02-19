@@ -7,6 +7,12 @@ class Diagram(object):
         self._vna = vna
         self.index = index
 
+
+    def __repr__(self):
+        repr = 'Diagram({0})'
+        return repr.format(self.index)
+
+
     def select(self):
         # No select command...
         is_max = self.is_maximized()
@@ -43,6 +49,15 @@ class Diagram(object):
             if not t in traces:
                 self._vna.delete_trace(t)
     traces = property(_traces, _set_traces)
+
+
+    # trace objects
+
+    def _trace_objects(self):
+        return [self._vna.trace(name) for name in self.traces]
+
+    trace_objects = property(_trace_objects)
+
 
     def is_limits(self):
         for t in self.traces:

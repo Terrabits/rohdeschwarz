@@ -77,6 +77,19 @@ class Vna(GenericInstrument):
                 self.delete_channel(c)
     channels = property(_channels, _set_channels)
 
+
+    # channel objects
+
+    def _channel_objects(self):
+        return [self.channel(index) for index in self.channels]
+
+    def _set_channel_objects(self, channels):
+        indexes = [channel.index for channel in channels]
+        self.channels = indexes
+
+    channel_objects = property(_channel_objects, _set_channel_objects)
+
+
     def create_channel(self, index=None):
         if not index:
             _channels = self._channels()
@@ -124,6 +137,19 @@ class Vna(GenericInstrument):
             if t not in traces:
                 self.delete_trace(name=t)
     traces = property(_traces, _set_traces)
+
+
+    # trace objects
+
+    def _trace_objects(self):
+        return [self.trace(name) for name in self.traces]
+
+    def _set_trace_objects(self, traces):
+        names = [trace.name for trace in traces]
+        self.traces = names
+
+    trace_objects = property(_trace_objects, _set_trace_objects)
+
 
     def create_trace(self, name=None, channel=1, parameter = 'S11'):
         if not name:
@@ -176,6 +202,19 @@ class Vna(GenericInstrument):
             _allDiagrams.pop(-1)
 
     diagrams = property(_diagrams, _set_diagrams)
+
+
+    # diagram objects
+
+    def _diagram_objects(self):
+        return [self.diagram(index) for index in self.diagrams]
+
+    def _set_diagram_objects(self, diagrams):
+        indexes = [diagram.index for diagram in diagrams]
+        self.diagrams = indexes
+
+    diagram_objects = property(_diagram_objects, _set_diagram_objects)
+
 
     def create_diagram(self, index=None):
         if not index:
