@@ -23,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.17.0',
+    version='1.18.0',
 
     description='Rohde & Schwarz general purpose instrument control toolbox',
     long_description=long_description,
@@ -113,6 +113,7 @@ setup(
             'ngu=rohdeschwarz.bin.ngu:main',
             'osp=rohdeschwarz.bin.osp:main',
             'vna=rohdeschwarz.bin.vna:main',
+            'vsa=rohdeschwarz.bin.vsa:main',
             'vsg=rohdeschwarz.bin.vsg:main'
         ]
     },
