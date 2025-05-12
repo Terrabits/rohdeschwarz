@@ -12,7 +12,7 @@ cd "$ROOT_DIR"
 # files
 # when listed in alphabetical order,
 # latest version is last two files
-BDIST_FILE="dist/$(ls -1 dist | tail -n 2 | tail -n 1)"  # N-2
+BDIST_FILE="dist/$(ls -1 dist | tail -n 2 | head -n 1)"  # N-2
 SDIST_FILE="dist/$(ls -1 dist | tail -n 1)"              # N-1
 
 
