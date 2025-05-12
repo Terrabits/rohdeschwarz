@@ -503,7 +503,7 @@ class Vna(GenericInstrument):
     def _power_sensors(self):
         scpi = 'SYST:COMM:RDEV:PMET:CAT?'
         sensors = self.query(scpi)
-        sensors = sensors.strip().split(',')
+        sensors = sensors.strip().strip("'").split(',')
         return [int(i) for i in sensors if i]
     power_sensors = property(_power_sensors)
 
