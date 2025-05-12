@@ -1,4 +1,4 @@
-from rohdeschwarz.instruments.genericinstrument import GenericInstrument
+from rohdeschwarz.instruments.oscilloscope import Oscilloscope
 
 import argparse
 import code
@@ -7,7 +7,7 @@ import os
 import sys
 
 def main():
-    parser = argparse.ArgumentParser(description='Connect to an instrument')
+    parser = argparse.ArgumentParser(description='Connect to an oscilloscope')
     parser.add_argument('--visa', metavar='bus', default=False,
                         help="use VISA with 'bus'")
     parser.add_argument('--address', default='127.0.0.1',
@@ -26,24 +26,24 @@ def main():
         print('error: cannot use both --log and --log-to-stdout')
         parser.print_help()
 
-    instr = GenericInstrument()
+    oscilloscope = Oscilloscope()
     try:
         if args.visa:
-            instr.open(args.visa, args.address)
+            oscilloscope.open(args.visa, args.address)
         else:
-            instr.open_tcp(args.address, args.port)
+            oscilloscope.open_tcp(args.address, args.port)
         if args.timeout:
-            instr.timeout_ms = args.timeout
+            oscilloscope.timeout_ms = args.timeout
 
-        if instr.connected():
-            print("connected: {0}".format(instr.id_string()))
+        if oscilloscope.connected():
+            print("connected: {0}".format(oscilloscope.id_string()))
             if args.log:
-                instr.open_log(args.log)
-                instr.log.write('{0}\n'.format(datetime.datetime.now()))
-                instr.log.write('--------------------------\n\n')
-                instr.print_info()
+                oscilloscope.open_log(args.log)
+                oscilloscope.log.write('{0}\n'.format(datetime.datetime.now()))
+                oscilloscope.log.write('--------------------------\n\n')
+                oscilloscope.print_info()
             elif args.log_to_stdout:
-                instr.log = sys.stdout
+                oscilloscope.log = sys.stdout
             sys.path.insert(0, os.getcwd())
             code.interact('', local=locals())
         else:
@@ -54,10 +54,10 @@ def main():
         print('Error connecting to instrument\n')
         parser.print_help()
     finally:
-        if instr.log:
-            instr.close_log()
-        if instr.connected():
-            instr.close()
+        if oscilloscope.log:
+            oscilloscope.close_log()
+        if oscilloscope.connected():
+            oscilloscope.close()
 
 if __name__ == "__main__":
     main()

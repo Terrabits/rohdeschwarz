@@ -111,6 +111,7 @@ setup(
             'instr=rohdeschwarz.bin.instr:main',
             'nge=rohdeschwarz.bin.nge:main',
             'ngu=rohdeschwarz.bin.ngu:main',
+            'oscilloscope=rohdeschwarz.bin.oscilloscope:main',
             'osp=rohdeschwarz.bin.osp:main',
             'vna=rohdeschwarz.bin.vna:main',
             'vsa=rohdeschwarz.bin.vsa:main',
