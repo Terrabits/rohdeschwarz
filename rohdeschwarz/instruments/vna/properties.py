@@ -51,22 +51,42 @@ class Properties(object):
         return self.is_znx() or self.is_zvx()
 
     def _serial_number(self):
-        id_list = self._vna.id_string().strip().split(',');
+        id_list = self._vna.id_string().strip().split(',')
         if len(id_list) < 3:
             return None
-        else:
-            return id_list[2].strip();
+
+        return id_list[2].strip()[-6:]
 
     serial_number = property(_serial_number)
 
+    def _order_number(self):
+        id_list = self._vna.id_string().strip().split(',')
+        if len(id_list) < 3:
+            return None
+
+        order_and_serial_no = id_list[2].strip()
+        part1 = order_and_serial_no[:4]
+        part2 = order_and_serial_no[4:8]
+        part3 = order_and_serial_no[8:10]
+        return '{0}.{1}.{2}'.format(part1, part2, part3)
+
+    order_number = property(_order_number)
+
     def _firmware_version(self):
-        id_list = self._vna.id_string().strip().split(',');
+        id_list = self._vna.id_string().strip().split(',')
         if len(id_list) < 4:
             return None
         else:
-            return id_list[3].strip();
+            return id_list[3].strip()
 
     firmware_version = property(_firmware_version)
+
+
+    def _is_simulated_instrument(self):
+        return self.serial_number == '999999'
+
+    is_simulated_instrument = property(_is_simulated_instrument)
+
 
     def _options_list(self):
         return self._vna.options_string().strip().split(',')
