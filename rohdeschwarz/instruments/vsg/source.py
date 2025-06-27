@@ -1,10 +1,13 @@
-from ..mixins import scpi_method, scpi_property, ScpiMixin
+from ..mixins  import scpi_method, scpi_property, ScpiMixin
+from .baseband import Baseband
+from .iq       import Iq
 
 
 class Source(ScpiMixin):
 
     def __init__(self, vsg, index):
         ScpiMixin.__init__(self, vsg)
+        self.vsg   = vsg
         self.index = index
 
 
@@ -14,5 +17,13 @@ class Source(ScpiMixin):
     level_offset_dB = scpi_property('SOUR{self.index}:POW:LEV:IMM:OFFS', type=float)
     rf_on           = scpi_property('OUTP{self.index}:STAT',             type=bool)
 
-    # modulation
-    modulation_on = scpi_property('SOUR{self.index}:MOD:ALL:STAT',    type=bool)
+
+    # baseband
+    @property
+    def baseband(self):
+        return Baseband(self.vsg, self)
+
+
+    @property
+    def iq(self):
+        return Iq(self.vsg, self)
