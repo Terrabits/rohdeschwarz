@@ -1,7 +1,7 @@
 def scope_property(prop):
 
-    current_getter = prop.getter
-    current_setter = prop.setter
+    current_getter = prop.fget
+    current_setter = prop.fset
 
     def getter(self):
         self.set_scope()

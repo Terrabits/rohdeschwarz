@@ -1,4 +1,4 @@
-from ....mixins  import scpi_method, scpi_property, ScpiMixin
+from ....mixins import scpi_method, scpi_property, ScpiMixin
 from .user_data import UserData
 
 
