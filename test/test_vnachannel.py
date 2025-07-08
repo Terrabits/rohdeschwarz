@@ -18,7 +18,7 @@ class TestVnaChannel(unittest.TestCase):
            ],
            'writes': [
                 {'command': 'SOUR5:POW3:CORR:NRE 13'   },
-                {'command': 'SOUR5:POW3:CORR:NTOL 0.03'},
+                {'command': 'SOUR5:POW3:CORR:COLL:AVER:NTOL 0.03'},
                 {'command': 'SOUR:POW:CORR:COLL:RREC 1'},
                 {'command': 'SOUR5:POW:CORR:ACQ PORT,3', 'position': -2},
                 {'command': '*OPC?',                     'position': -1}
@@ -33,11 +33,11 @@ class TestVnaChannel(unittest.TestCase):
          ],
          'writes': [
                 {'command': 'SOUR10:POW10:CORR:NRE 1'  },
-                {'command': 'SOUR10:POW10:CORR:NTOL 1' },
+                {'command': 'SOUR10:POW10:CORR:COLL:AVER:NTOL 1' },
                 {'command': 'SOUR10:POW:CORR:ACQ PORT,10', 'position': -2},
                 {'command': '*OPC?',                       'position': -1}
           ]})
-    def test_source_power_cal(self, data):
+    def test_source_flatness_power_cal(self, data):
         reads     = data['reads']
         ch        = data['channel']
         port      = data['port']
@@ -46,7 +46,7 @@ class TestVnaChannel(unittest.TestCase):
 
         vna = Vna()
         vna.bus = FifoBus(reads)
-        vna.channel(ch).source_power_cal(port, sweeps, tolerance)
+        vna.channel(ch).source_flatness_power_cal(port, sweeps, tolerance)
         for write in data['writes']:
             if 'position' in write:
                 pos = write['position']
