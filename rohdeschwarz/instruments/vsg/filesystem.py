@@ -27,6 +27,11 @@ class FileSystem(object):
             self._vsg.write("MMEM:CDIR '{}'".format(path))
 
 
+    def cd_default(self):
+        self._vsg.write('MMEM:CDIR DEF')
+
+
+
     def rm(self, filename):
         scpi = "MMEM:DEL '{}'".format(filename)
         self._vsg.write(scpi)

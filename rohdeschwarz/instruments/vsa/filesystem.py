@@ -13,9 +13,14 @@ class FileSystem(object):
         return [i[0] for i in self._mmem_cat() if i[1] == 'DIR']
     def cd(self, path=None):
         if not path:
-            return self._vsg.query('MMEM:CDIR?').replace('"', '').strip()
+            return self._vsg.query('MMEM:CDIR?').strip().strip('"').strip("'")
         else:
             self._vsg.write("MMEM:CDIR '{}'".format(path))
+
+
+    def cd_default(self):
+        self._vsg.write('MMEM:CDIR DEF')
+
 
     def rm(self, filename):
         scpi = "MMEM:DEL '{}'".format(filename)
